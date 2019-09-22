@@ -34,7 +34,7 @@ namespace OdyHostNginx
             sb.AppendLine(startConfig);
             foreach (var path in list)
             {
-                sb.AppendLine("include " + nginxConfigDir + "\\" + path);
+                sb.AppendLine("include " + nginxConfigDir + "\\" + path + ";");
             }
             sb.AppendLine(endConfig);
             sb = readConfig(sb.ToString());
