@@ -57,10 +57,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ApplicationHelper.cs" />
     <Compile Include="CmdHelper.cs" />
     <Compile Include="EnvConfig.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Flag.cs" />
+    <Compile Include="HostConfig.cs" />
     <Compile Include="Nginx.cs" />
     <Compile Include="NginxConfig.cs" />
     <Compile Include="NginxUpstream.cs" />
