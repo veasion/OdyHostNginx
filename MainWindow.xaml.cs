@@ -22,6 +22,8 @@ namespace OdyHostNginx
         public MainWindow()
         {
             InitializeComponent();
+
+            Test.test();
         }
     }
 }
