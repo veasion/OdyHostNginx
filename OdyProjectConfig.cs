@@ -9,10 +9,10 @@ namespace OdyHostNginx
     {
 
         private bool use;
-        private ProjectConfig[] projects;
+        private List<ProjectConfig> projects;
 
         public bool Use { get => use; set => use = value; }
-        internal ProjectConfig[] Projects { get => projects; set => projects = value; }
+        internal List<ProjectConfig> Projects { get => projects; set => projects = value; }
 
     }
 }

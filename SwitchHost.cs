@@ -8,9 +8,9 @@ namespace OdyHostNginx
     interface SwitchHost
     {
 
-        void switchHost(string domain, string ip, bool enable);
+        void switchHost(HostConfig host, bool enable);
 
-        void switchHost(string[] domain, string[] ip, bool enable);
+        void switchHost(List<HostConfig> hosts, bool enable);
 
     }
 }

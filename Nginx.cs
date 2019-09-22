@@ -12,7 +12,7 @@ namespace OdyHostNginx
 
         void stop();
 
-        void include(string[] path);
+        void include(List<string> list);
 
         void reset();
 

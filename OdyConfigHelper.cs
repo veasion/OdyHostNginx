@@ -13,7 +13,7 @@ namespace OdyHostNginx
         /// <summary>
         /// project => envs => *.conf
         /// </summary>
-        public static List<ProjectConfig> loadConfig(string path)
+        public static OdyProjectConfig loadConfig(string path)
         {
             List<ProjectConfig> projects = new List<ProjectConfig>();
             DirectoryInfo dir = new DirectoryInfo(path);
@@ -70,7 +70,49 @@ namespace OdyHostNginx
                     projects.Add(pro);
                 }
             }
-            return projects;
+            OdyProjectConfig odyProjectConfig = new OdyProjectConfig
+            {
+                Projects = projects
+            };
+            return odyProjectConfig;
+        }
+
+        public static List<HostConfig> getHosts(OdyProjectConfig config)
+        {
+            HashSet<string> domainSet = new HashSet<string>();
+            if (config.Use)
+            {
+                foreach (var p in config.Projects)
+                {
+                    if (!p.Use)
+                    {
+                        continue;
+                    }
+                    foreach (var e in p.Envs)
+                    {
+                        if (!e.Use)
+                        {
+                            continue;
+                        }
+                        foreach (var configs in e.Configs)
+                        {
+                            domainSet.Add(configs.ServerName);
+                        }
+                    }
+                }
+            }
+            List<HostConfig> hosts = new List<HostConfig>();
+            foreach (var domain in domainSet)
+            {
+                HostConfig host = new HostConfig
+                {
+                    Use = true,
+                    Ip = "127.0.0.1",
+                    Domain = domain
+                };
+                hosts.Add(host);
+            }
+            return hosts;
         }
 
         private static List<NginxUpstream> parseUpstream(string context)
@@ -122,7 +164,7 @@ namespace OdyHostNginx
             string server_name = StringHelper.substring(context, "server_name", ";");
             if (!StringHelper.isBlank(server_name))
             {
-                conf.Server_name = server_name.Trim();
+                conf.ServerName = server_name.Trim();
             }
             return conf;
         }
@@ -130,13 +172,13 @@ namespace OdyHostNginx
         /// <summary>
         /// /projects/envs/*.conf
         /// </summary>
-        public static void writeConfig(List<ProjectConfig> configs, string path)
+        public static void writeConfig(OdyProjectConfig config, string path)
         {
-            foreach (var config in configs)
+            foreach (var projectConfig in config.Projects)
             {
-                string projectDir = path + "\\" + config.Name;
+                string projectDir = path + "\\" + projectConfig.Name;
                 FileHelper.mkdirAndDel(projectDir);
-                List<EnvConfig> envs = config.Envs;
+                List<EnvConfig> envs = projectConfig.Envs;
                 foreach (var env in envs)
                 {
                     string envDir = projectDir + "\\" + env.EnvName;

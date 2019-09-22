@@ -14,22 +14,26 @@ namespace OdyHostNginx
         public static string flushdnsCmd = "ipconfig /flushdns";
         public static string hostsPath = @"C:\Windows\System32\drivers\etc\hosts";
 
-        public void switchHost(string domain, string ip, bool enable)
+        public void switchHost(HostConfig host, bool enable)
         {
-            if (StringHelper.isBlank(domain))
+            if (StringHelper.isBlank(host.Domain))
             {
                 return;
             }
-            if (enable && StringHelper.isBlank(ip))
+            if (enable && StringHelper.isBlank(host.Ip))
             {
                 return;
             }
-            switchHost(new string[] { domain }, new string[] { ip }, enable);
+            List<HostConfig> hosts = new List<HostConfig>
+            {
+                host
+            };
+            switchHost(hosts, enable);
         }
 
-        public void switchHost(string[] domains, string[] ips, bool enable)
+        public void switchHost(List<HostConfig> hosts, bool enable)
         {
-            string check = checkDomains(domains, ips, enable);
+            string check = checkDomains(hosts, enable);
             if (check != null)
             {
                 throw new ServiceException(check);
@@ -37,7 +41,7 @@ namespace OdyHostNginx
             try
             {
                 // 更改 host
-                bool suc = updateHost(domains, ips, enable);
+                bool suc = updateHost(hosts, enable);
                 if (!suc)
                 {
                     MessageBox.Show("切换host失败，请重试！");
@@ -53,7 +57,7 @@ namespace OdyHostNginx
             }
         }
 
-        private bool updateHost(string[] domains, string[] ips, bool enable)
+        private bool updateHost(List<HostConfig> hosts, bool enable)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -61,7 +65,7 @@ namespace OdyHostNginx
 
             FileHelper.readTextFile(hostsPath, hostsEncoding, (index, line) =>
             {
-                if (isAnnotation(line) || !exists(line, domains))
+                if (isAnnotation(line) || !exists(line, hosts))
                 {
                     sb.AppendLine(line);
                 }
@@ -69,9 +73,9 @@ namespace OdyHostNginx
 
             if (enable)
             {
-                for (int i = 0; i < domains.Length; i++)
+                for (int i = 0; i < hosts.Count; i++)
                 {
-                    sb.AppendLine(ips[i] + "  " + domains[i]);
+                    sb.AppendLine(hosts[i].Ip + "  " + hosts[i].Domain);
                 }
             }
             bool suc = false;
@@ -87,13 +91,13 @@ namespace OdyHostNginx
             return line != null && line.TrimStart().StartsWith("#");
         }
 
-        private bool exists(string line, string[] domains)
+        private bool exists(string line, List<HostConfig> hosts)
         {
-            if (domains.Length > 0)
+            if (hosts.Count > 0)
             {
-                for (int i = 0; i < domains.Length; i++)
+                for (int i = 0; i < hosts.Count; i++)
                 {
-                    if (exists(line, domains[i]))
+                    if (exists(line, hosts[i].Domain))
                     {
                         return true;
                     }
@@ -126,23 +130,27 @@ namespace OdyHostNginx
             return false;
         }
 
-        private string checkDomains(string[] domains, string[] ips, bool enable)
+        private string checkDomains(List<HostConfig> hosts, bool enable)
         {
-            if (domains == null || domains.Length == 0 || (enable && (ips == null || ips.Length == 0)))
+            if (hosts == null || hosts.Count == 0)
             {
                 return "domain / ip is null";
             }
-            else if (enable && domains.Length > ips.Length)
+            foreach (var host in hosts)
             {
-                return "domains != ips";
-            }
-            for (int i = 0; i < domains.Length; i++)
-            {
-                domains[i] = domains[i].Trim();
+                if (StringHelper.isBlank(host.Domain))
+                {
+                    return "domain 不能为空";
+                }
                 if (enable)
                 {
-                    ips[i] = ips[i].Trim();
+                    if (StringHelper.isBlank(host.Ip))
+                    {
+                        return host.Domain + "对应的ip不能为空";
+                    }
+                    host.Ip = host.Ip.Trim();
                 }
+                host.Domain = host.Domain.Trim();
             }
             return null;
         }

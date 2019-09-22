@@ -10,12 +10,12 @@ namespace OdyHostNginx
 
         private string fileName;
         private string listen;
-        private string server_name;
+        private string serverName;
         private string body;
 
         public string FileName { get => fileName; set => fileName = value; }
         public string Listen { get => listen; set => listen = value; }
-        public string Server_name { get => server_name; set => server_name = value; }
+        public string ServerName { get => serverName; set => serverName = value; }
         public string Body { get => body; set => body = value; }
 
     }
