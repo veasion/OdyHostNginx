@@ -111,11 +111,33 @@ namespace OdyHostNginx
 
         public static void mkdirAndDel(string dirPath)
         {
+            delDir(dirPath, true);
+            Directory.CreateDirectory(dirPath);
+        }
+
+        public static void delDir(string dirPath, bool recursive)
+        {
             if (Directory.Exists(dirPath))
             {
-                Directory.Delete(dirPath);
+                if (recursive)
+                {
+                    foreach (string path in Directory.GetFileSystemEntries(dirPath))
+                    {
+                        if (File.Exists(path))
+                        {
+                            File.Delete(path);
+                        }
+                        else
+                        {
+                            delDir(path, true);
+                        }
+                    }
+                }
+                else
+                {
+                    Directory.Delete(dirPath);
+                }
             }
-            Directory.CreateDirectory(dirPath);
         }
 
         public static string getCurrentDirectory()

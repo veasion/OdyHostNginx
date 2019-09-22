@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,12 @@ namespace OdyHostNginx
 
         public static void applyNginx(OdyProjectConfig config)
         {
+            string configDir = WindowsNginxImpl.nginxConfigDir;
+            foreach (var project in config.Projects)
+            {
+                FileHelper.delDir(configDir + "\\" + project.Name, true);
+            }
+            OdyConfigHelper.writeConfig(config, configDir);
             List<string> confs = new List<string>();
             getUseConfig(config, confs);
             nginx.include(confs);
