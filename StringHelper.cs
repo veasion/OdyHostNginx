@@ -33,17 +33,21 @@ namespace OdyHostNginx
 
         public static string substring(string str, string start, string end, int startIndex)
         {
+            return substring(str, start, end, startIndex, -1);
+        }
+
+        public static string substring(string str, string start, string end, int startIndex, int maxDiffer)
+        {
             if (isEmpty(str))
             {
                 return null;
             }
-            int sIndex = str.IndexOf(start, startIndex);
-            int eIndex = -1;
+            int sIndex = str.IndexOf(start, startIndex), eIndex;
             if (sIndex > -1)
             {
                 sIndex += start.Length;
                 eIndex = str.IndexOf(end, sIndex);
-                if (eIndex > 0)
+                if (eIndex > 0 && (maxDiffer == -1 || eIndex - startIndex < maxDiffer))
                 {
                     return str.Substring(sIndex, eIndex - sIndex);
                 }

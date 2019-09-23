@@ -63,12 +63,15 @@ namespace OdyHostNginx
                             NginxConfig conf = parseConf(context);
                             conf.Env = env;
                             conf.FileName = file.Name;
+                            conf.FilePath = file.FullName;
                             confs.Add(conf);
                         }
                     }
                     env.Configs = confs;
                     if (!(env.Upstreams == null || env.Upstreams.Count == 0 || env.Configs == null || env.Configs.Count == 0))
                     {
+                        fillUpstream(env);
+                        env.Configs.ForEach(conf => conf.Body = null);
                         envs.Add(env);
                     }
                 }
@@ -83,6 +86,48 @@ namespace OdyHostNginx
                 Projects = projects
             };
             return odyProjectConfig;
+        }
+
+        public static void fillUpstream(EnvConfig env)
+        {
+            int index, start;
+            string uri, contextPath;
+            List<string> uris;
+            List<string> contextPaths;
+            foreach (var conf in env.Configs)
+            {
+                string context = conf.Body;
+                int len = context.Length;
+                foreach (var item in env.Upstreams)
+                {
+                    index = 0;
+                    uris = new List<string>();
+                    contextPaths = new List<string>();
+                    while ((index = context.IndexOf(item.ServerName, index)) > 0)
+                    {
+                        start = context.LastIndexOf("location", index);
+                        if (start != -1)
+                        {
+                            uri = StringHelper.substring(context, "/", "{", start, 200);
+                            if (!StringHelper.isBlank(uri))
+                            {
+                                uris.Add("/" + uri.Trim());
+                            }
+                        }
+                        index += item.ServerName.Length;
+                        if (index < len && context[index] == '/')
+                        {
+                            contextPath = StringHelper.substring(context, "/", ";", index, 100);
+                            if (!StringHelper.isBlank(contextPath))
+                            {
+                                contextPaths.Add(contextPath);
+                            }
+                        }
+                    }
+                    item.Uris = uris;
+                    item.ContextPaths = contextPaths;
+                }
+            }
         }
 
         public static List<HostConfig> getHosts(OdyProjectConfig config)
@@ -224,6 +269,15 @@ namespace OdyHostNginx
                 }
             }
         }
+
+        /// <summary>
+        /// /projects/envs/*.conf
+        /// </summary>
+        public static void copyConfig(string fromPath, string toPath, bool replace)
+        {
+            FileHelper.copyDirectory(fromPath, toPath, replace);
+        }
+
     }
 
 }

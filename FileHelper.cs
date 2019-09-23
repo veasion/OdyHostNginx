@@ -147,6 +147,43 @@ namespace OdyHostNginx
             }
         }
 
+        public static void copyDirectory(string sourceDir, string targetDir, bool replace)
+        {
+            try
+            {
+                if (!Directory.Exists(targetDir))
+                {
+                    Directory.CreateDirectory(targetDir);
+                }
+                string[] files = Directory.GetFiles(sourceDir);
+                foreach (string file in files)
+                {
+                    string pFilePath = targetDir + "\\" + Path.GetFileName(file);
+                    if (File.Exists(pFilePath))
+                    {
+                        if (replace)
+                        {
+                            File.Delete(pFilePath);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    File.Copy(file, pFilePath, true);
+                }
+                string[] dirs = Directory.GetDirectories(sourceDir);
+                foreach (string dir in dirs)
+                {
+                    copyDirectory(dir, targetDir + "\\" + Path.GetFileName(dir), replace);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ServiceException("复制文件发生错误", e);
+            }
+        }
+
         public static string getCurrentDirectory()
         {
             return Directory.GetCurrentDirectory();

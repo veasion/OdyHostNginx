@@ -50,16 +50,8 @@ namespace OdyHostNginx
 
         public static OdyProjectConfig copyUserConfigToNginx(bool replace)
         {
-            OdyProjectConfig config = OdyConfigHelper.loadConfig(OdyConfigHelper.userNginxConfigDir);
-            OdyConfigHelper.writeConfig(config, WindowsNginxImpl.nginxConfigDir, replace);
-            if (replace)
-            {
-                return config;
-            }
-            else
-            {
-                return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir);
-            }
+            OdyConfigHelper.copyConfig(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace);
+            return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir);
         }
 
         private static void getUseConfig(OdyProjectConfig config, List<string> confs)

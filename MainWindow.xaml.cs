@@ -21,6 +21,8 @@ namespace OdyHostNginx
     public partial class MainWindow : Window
     {
 
+        bool isHostConfig;
+        EnvConfig currentEnv;
         List<HostConfig> hostConfigs;
         OdyProjectConfig odyProjectConfig;
         Dictionary<string, Image> envSwitchUI = new Dictionary<string, Image>();
@@ -29,14 +31,13 @@ namespace OdyHostNginx
         public MainWindow()
         {
             InitializeComponent();
-            Test.test();
             odyProjectConfig = OdyConfigHelper.loadConfig(null);
             if (odyProjectConfig == null || odyProjectConfig.Projects == null || odyProjectConfig.Projects.Count == 0)
             {
                 odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
             }
             hostConfigs = OdyConfigHelper.getHosts(odyProjectConfig);
-            drawingUI();
+            drawingSwitchUI();
         }
 
         /// <summary>
@@ -51,13 +52,16 @@ namespace OdyHostNginx
             apply();
         }
 
-        /// <summary>
-        /// 重新加载
-        /// </summary>
         private void Reload_Click(object sender, RoutedEventArgs e)
         {
             odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(false);
-            drawingUI();
+            drawingSwitchUI();
+        }
+
+        private void Reset_Click(object sender, RoutedEventArgs e)
+        {
+            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+            drawingSwitchUI();
         }
 
         private void ApplyBut_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -69,8 +73,8 @@ namespace OdyHostNginx
 
         private void ResetBut_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
-            drawingUI();
+            // TODO currentEnv reset
+            drawingCurrentEnvUI();
             apply();
         }
 
@@ -94,9 +98,20 @@ namespace OdyHostNginx
         }
 
         /// <summary>
-        /// 绘制 UI
+        /// 绘制 env config UI
         /// </summary>
-        private void drawingUI()
+        private void drawingCurrentEnvUI()
+        {
+            // currentEnv
+            // 选中样式
+            // 配置渲染, isHostConfig ? host : config
+
+        }
+
+        /// <summary>
+        /// 绘制 Switch UI
+        /// </summary>
+        private void drawingSwitchUI()
         {
             this.ProjectSwitch.Children.Clear();
             foreach (var project in odyProjectConfig.Projects)
@@ -129,6 +144,10 @@ namespace OdyHostNginx
                 // envs
                 foreach (var env in project.Envs)
                 {
+                    if (currentEnv == null)
+                    {
+                        currentEnv = env;
+                    }
                     DockPanel dockRoot = new DockPanel
                     {
                         Height = 45
@@ -186,6 +205,8 @@ namespace OdyHostNginx
                 border.Child = uniformGrid;
                 this.ProjectSwitch.Children.Add(border);
             }
+            // 绘制 env
+            drawingCurrentEnvUI();
         }
 
         private void EnvSwitchMouseButtonEventHandler(object sender, MouseButtonEventArgs e)

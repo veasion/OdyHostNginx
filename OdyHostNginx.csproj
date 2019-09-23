@@ -76,7 +76,7 @@
     <Compile Include="ServiceException.cs" />
     <Compile Include="StringHelper.cs" />
     <Compile Include="SwitchHost.cs" />
-    <Compile Include="Test.cs" />
+    <Compile Include="UpstreamDetails.cs" />
     <Compile Include="WindowsLocalHostImpl.cs" />
     <Compile Include="WindowsNginxImpl.cs" />
     <Page Include="MainWindow.xaml">

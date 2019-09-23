@@ -13,9 +13,10 @@
             <DockPanel DockPanel.Dock="Top">
                 <Menu Name="FileMenu" BorderThickness="0" FontSize="12" Foreground="Black" Height="20" Margin="0,0,0,0" VerticalAlignment="Top" Background="#FFF0F0F0">
                     <MenuItem Header="File" FontSize="14" Width="40" MaxWidth="40">
+                        <MenuItem x:Name="Reload" Header="Reload" FontSize="12" Background="White" Foreground="Black" Click="Reload_Click"/>
                         <MenuItem x:Name="Import" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem x:Name="Export" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Reload" Header="Reload" FontSize="12" Background="White" Foreground="Black" Click="Reload_Click"/>
+                        <MenuItem x:Name="Reset" Header="Reset" FontSize="12" Background="White" Foreground="Black" Click="Reset_Click"/>
                         <MenuItem x:Name="About" Header="About" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem x:Name="Quit" Header="Quit" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
