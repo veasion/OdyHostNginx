@@ -109,10 +109,17 @@ namespace OdyHostNginx
             }
         }
 
-        public static void mkdirAndDel(string dirPath)
+        public static void mkdirAndDel(string dirPath, bool del)
         {
-            delDir(dirPath, true);
-            Directory.CreateDirectory(dirPath);
+            if (del)
+            {
+                delDir(dirPath, true);
+                Directory.CreateDirectory(dirPath);
+            }
+            else
+            {
+                mkdir(dirPath);
+            }
         }
 
         public static void delDir(string dirPath, bool recursive)

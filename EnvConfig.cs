@@ -15,11 +15,14 @@ namespace OdyHostNginx
         private String upstreamFileName;
         private List<NginxUpstream> upstreams;
 
+        private ProjectConfig project;
+
         public bool Use { get => use; set => use = value; }
         public string EnvName { get => envName; set => envName = value; }
         internal List<NginxConfig> Configs { get => configs; set => configs = value; }
         public string UpstreamFileName { get => upstreamFileName; set => upstreamFileName = value; }
         internal List<NginxUpstream> Upstreams { get => upstreams; set => upstreams = value; }
+        internal ProjectConfig Project { get => project; set => project = value; }
 
     }
 }

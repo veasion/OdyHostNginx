@@ -10,11 +10,17 @@ namespace OdyHostNginx
     class OdyConfigHelper
     {
 
+        public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
+
         /// <summary>
         /// project => envs => *.conf
         /// </summary>
         public static OdyProjectConfig loadConfig(string path)
         {
+            if (path == null)
+            {
+                path = WindowsNginxImpl.nginxConfigDir;
+            }
             List<ProjectConfig> projects = new List<ProjectConfig>();
             DirectoryInfo dir = new DirectoryInfo(path);
             DirectoryInfo[] proDirs = dir.GetDirectories();
@@ -30,6 +36,7 @@ namespace OdyHostNginx
                 {
                     EnvConfig env = new EnvConfig
                     {
+                        Project = pro,
                         EnvName = envDir.Name
                     };
                     FileInfo[] files = envDir.GetFiles("*.conf");
@@ -49,11 +56,12 @@ namespace OdyHostNginx
                         if (isUpstream)
                         {
                             env.UpstreamFileName = file.Name;
-                            env.Upstreams = parseUpstream(context);
+                            env.Upstreams = parseUpstream(env, context);
                         }
                         else
                         {
                             NginxConfig conf = parseConf(context);
+                            conf.Env = env;
                             conf.FileName = file.Name;
                             confs.Add(conf);
                         }
@@ -84,10 +92,6 @@ namespace OdyHostNginx
             {
                 foreach (var p in config.Projects)
                 {
-                    if (!p.Use)
-                    {
-                        continue;
-                    }
                     foreach (var e in p.Envs)
                     {
                         if (!e.Use)
@@ -115,13 +119,16 @@ namespace OdyHostNginx
             return hosts;
         }
 
-        private static List<NginxUpstream> parseUpstream(string context)
+        private static List<NginxUpstream> parseUpstream(EnvConfig env, string context)
         {
             int startIndex = 0;
             List<NginxUpstream> upstreams = new List<NginxUpstream>();
             while ((startIndex = context.IndexOf("upstream", startIndex)) != -1)
             {
-                NginxUpstream upstream = new NginxUpstream();
+                NginxUpstream upstream = new NginxUpstream
+                {
+                    Env = env
+                };
                 string serverName = StringHelper.substring(context, "upstream", "{", startIndex);
                 if (StringHelper.isBlank(serverName))
                 {
@@ -172,17 +179,21 @@ namespace OdyHostNginx
         /// <summary>
         /// /projects/envs/*.conf
         /// </summary>
-        public static void writeConfig(OdyProjectConfig config, string path)
+        public static void writeConfig(OdyProjectConfig config, string path, bool replace)
         {
+            if (path == null)
+            {
+                path = WindowsNginxImpl.nginxConfigDir;
+            }
             foreach (var projectConfig in config.Projects)
             {
                 string projectDir = path + "\\" + projectConfig.Name;
-                FileHelper.mkdirAndDel(projectDir);
+                FileHelper.mkdirAndDel(projectDir, replace);
                 List<EnvConfig> envs = projectConfig.Envs;
                 foreach (var env in envs)
                 {
                     string envDir = projectDir + "\\" + env.EnvName;
-                    FileHelper.mkdirAndDel(envDir);
+                    FileHelper.mkdirAndDel(envDir, replace);
                     string upstreamFile = envDir + "\\" + env.UpstreamFileName;
                     StringBuilder upstreamBody = new StringBuilder();
                     List<NginxUpstream> upstreams = env.Upstreams;
@@ -197,12 +208,18 @@ namespace OdyHostNginx
                         upstreamBody.AppendLine(";");
                         upstreamBody.AppendLine("}");
                     }
-                    FileHelper.writeFile(upstreamFile, Encoding.UTF8, upstreamBody.ToString());
+                    if (replace || !File.Exists(upstreamFile))
+                    {
+                        FileHelper.writeFile(upstreamFile, Encoding.UTF8, upstreamBody.ToString());
+                    }
                     List<NginxConfig> confs = env.Configs;
                     foreach (var conf in confs)
                     {
                         string confFile = envDir + "\\" + conf.FileName;
-                        FileHelper.writeFile(confFile, Encoding.UTF8, conf.Body);
+                        if (replace || !File.Exists(confFile))
+                        {
+                            FileHelper.writeFile(confFile, Encoding.UTF8, conf.Body);
+                        }
                     }
                 }
             }

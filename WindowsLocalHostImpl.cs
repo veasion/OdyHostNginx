@@ -33,45 +33,49 @@ namespace OdyHostNginx
 
         public void switchHost(List<HostConfig> hosts, bool enable)
         {
+            if (hosts == null || hosts.Count == 0)
+            {
+                updateHost(null, false);
+                return;
+            }
             string check = checkDomains(hosts, enable);
             if (check != null)
             {
                 throw new ServiceException(check);
             }
-            try
+            // 更改 host
+            bool suc = updateHost(hosts, enable);
+            if (!suc)
             {
-                // 更改 host
-                bool suc = updateHost(hosts, enable);
-                if (!suc)
-                {
-                    MessageBox.Show("切换host失败，请重试！");
-                    return;
-                }
-                // 刷新 dns
-                CmdHelper.Cmd(flushdnsCmd);
+                MessageBox.Show("切换host失败，请重试！");
+                return;
             }
-            catch (UnauthorizedAccessException)
-            {
-                MessageBox.Show("请右键以管理员身份运行该程序，谢谢！");
-                Environment.Exit(0);
-            }
+            // 刷新 dns
+            CmdHelper.Cmd(flushdnsCmd);
         }
 
         private bool updateHost(List<HostConfig> hosts, bool enable)
         {
             StringBuilder sb = new StringBuilder();
-
-            File.SetAttributes(hostsPath, File.GetAttributes(hostsPath) & (~FileAttributes.ReadOnly));
-
-            FileHelper.readTextFile(hostsPath, hostsEncoding, (index, line) =>
+            try
             {
-                if (isAnnotation(line) || !exists(line, hosts))
-                {
-                    sb.AppendLine(line);
-                }
-            });
+                File.SetAttributes(hostsPath, File.GetAttributes(hostsPath) & (~FileAttributes.ReadOnly));
 
-            if (enable)
+                FileHelper.readTextFile(hostsPath, hostsEncoding, (index, line) =>
+                {
+                    if (isAnnotation(line) || !exists(line, hosts))
+                    {
+                        sb.AppendLine(line);
+                    }
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MessageBox.Show("请右键以管理员身份运行该程序，谢谢！", "小问题", MessageBoxButton.OK, MessageBoxImage.Error);
+                Environment.Exit(0);
+                return false;
+            }
+            if (enable && hosts != null)
             {
                 for (int i = 0; i < hosts.Count; i++)
                 {
@@ -93,7 +97,7 @@ namespace OdyHostNginx
 
         private bool exists(string line, List<HostConfig> hosts)
         {
-            if (hosts.Count > 0)
+            if (hosts != null && hosts.Count > 0)
             {
                 for (int i = 0; i < hosts.Count; i++)
                 {
@@ -132,10 +136,6 @@ namespace OdyHostNginx
 
         private string checkDomains(List<HostConfig> hosts, bool enable)
         {
-            if (hosts == null || hosts.Count == 0)
-            {
-                return "domain / ip is null";
-            }
             foreach (var host in hosts)
             {
                 if (StringHelper.isBlank(host.Domain))

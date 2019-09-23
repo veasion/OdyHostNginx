@@ -72,7 +72,7 @@ namespace OdyHostNginx
                     list.Add(line);
                     if (include != null && "}".Equals(line.Trim()))
                     {
-                        f.count = index - 1;
+                        f.count = list.Count - 1;
                     }
                 }
             });

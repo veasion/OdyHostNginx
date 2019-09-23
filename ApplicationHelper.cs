@@ -13,6 +13,19 @@ namespace OdyHostNginx
         private static Nginx nginx = new WindowsNginxImpl();
         private static SwitchHost switchHost = new WindowsLocalHostImpl();
 
+        public static void exit()
+        {
+            try
+            {
+                nginx.stop();
+                switchHost.switchHost((List<HostConfig>)null, false);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
         public static void applySwitch(List<HostConfig> hosts)
         {
             switchHost.switchHost(hosts.Where(host => host.Use).ToList(), true);
@@ -21,15 +34,32 @@ namespace OdyHostNginx
         public static void applyNginx(OdyProjectConfig config)
         {
             string configDir = WindowsNginxImpl.nginxConfigDir;
-            foreach (var project in config.Projects)
-            {
-                FileHelper.delDir(configDir + "\\" + project.Name, true);
-            }
-            OdyConfigHelper.writeConfig(config, configDir);
+            OdyConfigHelper.writeConfig(config, configDir, true);
             List<string> confs = new List<string>();
             getUseConfig(config, confs);
             nginx.include(confs);
-            nginx.restart();
+            if (config.Use)
+            {
+                nginx.restart();
+            }
+            else
+            {
+                nginx.stop();
+            }
+        }
+
+        public static OdyProjectConfig copyUserConfigToNginx(bool replace)
+        {
+            OdyProjectConfig config = OdyConfigHelper.loadConfig(OdyConfigHelper.userNginxConfigDir);
+            OdyConfigHelper.writeConfig(config, WindowsNginxImpl.nginxConfigDir, replace);
+            if (replace)
+            {
+                return config;
+            }
+            else
+            {
+                return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir);
+            }
         }
 
         private static void getUseConfig(OdyProjectConfig config, List<string> confs)
@@ -38,10 +68,6 @@ namespace OdyHostNginx
             {
                 foreach (var p in config.Projects)
                 {
-                    if (!p.Use)
-                    {
-                        continue;
-                    }
                     foreach (var e in p.Envs)
                     {
                         if (!e.Use)
