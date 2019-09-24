@@ -183,7 +183,25 @@ namespace OdyHostNginx
                         }
                         foreach (var configs in e.Configs)
                         {
-                            domainSet.Add(configs.ServerName);
+                            if (!StringHelper.isBlank(configs.ServerName))
+                            {
+                                configs.ServerName = configs.ServerName.Trim();
+                                string[] servers = configs.ServerName.Split(' ');
+                                if (servers.Length > 1)
+                                {
+                                    foreach (var item in servers)
+                                    {
+                                        if (!StringHelper.isBlank(item))
+                                        {
+                                            domainSet.Add(item.Trim());
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    domainSet.Add(configs.ServerName);
+                                }
+                            }
                         }
                     }
                 }
@@ -284,12 +302,17 @@ namespace OdyHostNginx
                     List<NginxUpstream> upstreams = env.Upstreams;
                     foreach (var upstream in upstreams)
                     {
+                        if (StringHelper.isBlank(upstream.Ip))
+                        {
+                            continue;
+                        }
                         upstreamBody.Append("upstream ");
                         upstreamBody.Append(upstream.ServerName);
                         upstreamBody.AppendLine(" {");
                         upstreamBody.Append("server ");
                         upstreamBody.Append(upstream.Ip);
-                        upstreamBody.Append(upstream.Port);
+                        upstreamBody.Append(":");
+                        upstreamBody.Append(upstream.Port > 0 ? upstream.Port : 80);
                         upstreamBody.AppendLine(";");
                         upstreamBody.AppendLine("}");
                     }

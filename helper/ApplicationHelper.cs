@@ -66,7 +66,7 @@ namespace OdyHostNginx
                         {
                             continue;
                         }
-                        confs.Add(p.Name + "\\" + e.EnvName + "\\*.conf");
+                        confs.Add(p.Name + "/" + e.EnvName + "/*.conf");
                     }
                 }
             }

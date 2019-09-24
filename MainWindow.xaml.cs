@@ -53,16 +53,16 @@ namespace OdyHostNginx
         {
             ApplicationHelper.applyNginx(odyProjectConfig);
             hostConfigs = OdyConfigHelper.getHosts(odyProjectConfig);
-            List<HostConfig> hosts = new List<HostConfig>();
-            if (userHosts != null)
-            {
-                userHosts.ForEach(host => hosts.Add(host));
-            }
+            Dictionary<string, HostConfig> hostDic = new Dictionary<string, HostConfig>();
             if (hostConfigs != null)
             {
-                hostConfigs.ForEach(host => hosts.Add(host));
+                hostConfigs.ForEach(host => hostDic[host.Domain] = host);
             }
-            ApplicationHelper.applySwitch(hosts);
+            if (userHosts != null)
+            {
+                userHosts.ForEach(host => hostDic[host.Domain] = host);
+            }
+            ApplicationHelper.applySwitch(new List<HostConfig>(hostDic.Values));
             this.applyBut.Source = global::OdyHostNginx.Resources.img_not_apply;
         }
 
