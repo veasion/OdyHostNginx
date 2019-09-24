@@ -16,8 +16,8 @@ namespace OdyHostNginx
 
         public static Encoding confEncoding = new UTF8Encoding(false);
 
-        private const string startConfig = "#OdyHostNginx(start)";
-        private const string endConfig = "#OdyHostNginx(end)";
+        private const string startConfig = "# OdyHostNginx(start)";
+        private const string endConfig = "# OdyHostNginx(end)";
 
         public void restart()
         {

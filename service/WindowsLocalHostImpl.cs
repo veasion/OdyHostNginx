@@ -14,6 +14,9 @@ namespace OdyHostNginx
         public static string flushdnsCmd = "ipconfig /flushdns";
         public static string hostsPath = @"C:\Windows\System32\drivers\etc\hosts";
 
+        private const string startConfig = "# OdyHostNginx(start)";
+        private const string endConfig = "# OdyHostNginx(end)";
+
         public void switchHost(HostConfig host, bool enable)
         {
             if (StringHelper.isBlank(host.Domain))
@@ -61,9 +64,23 @@ namespace OdyHostNginx
             {
                 File.SetAttributes(hostsPath, File.GetAttributes(hostsPath) & (~FileAttributes.ReadOnly));
 
+                Flag f = new Flag
+                {
+                    flag = false
+                };
                 FileHelper.readTextFile(hostsPath, hostsEncoding, (index, line) =>
                 {
-                    if (isAnnotation(line) || !exists(line, hosts))
+                    if (line.StartsWith(startConfig))
+                    {
+                        f.flag = true;
+                        return;
+                    }
+                    else if (line.EndsWith(endConfig))
+                    {
+                        f.flag = false;
+                        return;
+                    }
+                    if (!f.flag && (isAnnotation(line) || !exists(line, hosts)))
                     {
                         sb.AppendLine(line);
                     }
@@ -77,10 +94,12 @@ namespace OdyHostNginx
             }
             if (enable && hosts != null)
             {
+                sb.AppendLine(startConfig);
                 for (int i = 0; i < hosts.Count; i++)
                 {
                     sb.AppendLine(hosts[i].Ip + "  " + hosts[i].Domain);
                 }
+                sb.AppendLine(endConfig);
             }
             bool suc = false;
             if (sb.Length > 0)
