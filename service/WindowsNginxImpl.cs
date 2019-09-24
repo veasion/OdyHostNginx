@@ -14,7 +14,7 @@ namespace OdyHostNginx
         public static string nginxExePath = nginxPath + "\\nginx.exe";
         public static string nginxConfigPath = nginxConfigDir + "\\nginx.conf";
 
-        public static Encoding confEncoding = Encoding.UTF8;
+        public static Encoding confEncoding = new UTF8Encoding(false);
 
         private const string startConfig = "#OdyHostNginx(start)";
         private const string endConfig = "#OdyHostNginx(end)";
