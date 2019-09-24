@@ -268,6 +268,8 @@ namespace OdyHostNginx
             {
                 path = WindowsNginxImpl.nginxConfigDir;
             }
+            // 加载 body
+            config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body)));
             foreach (var projectConfig in config.Projects)
             {
                 string projectDir = path + "\\" + projectConfig.Name;
@@ -306,6 +308,8 @@ namespace OdyHostNginx
                     }
                 }
             }
+            // 清楚 body
+            config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = null)));
         }
 
     }

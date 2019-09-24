@@ -25,11 +25,7 @@ namespace OdyHostNginx
             get
             {
                 // body 懒加载
-                if (body != null)
-                {
-                    return body;
-                }
-                else if (filePath != null)
+                if (StringHelper.isEmpty(body) && !StringHelper.isEmpty(filePath))
                 {
                     return FileHelper.readTextFile(filePath);
                 }

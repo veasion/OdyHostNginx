@@ -72,7 +72,7 @@ namespace OdyHostNginx
             catch (UnauthorizedAccessException)
             {
                 MessageBox.Show("请右键以管理员身份运行该程序，谢谢！", "小问题", MessageBoxButton.OK, MessageBoxImage.Error);
-                Environment.Exit(0);
+                // Environment.Exit(0);
                 return false;
             }
             if (enable && hosts != null)

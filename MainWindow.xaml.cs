@@ -51,8 +51,7 @@ namespace OdyHostNginx
 
         private void apply()
         {
-            // TODO 取消注释
-            // ApplicationHelper.applyNginx(odyProjectConfig);
+            ApplicationHelper.applyNginx(odyProjectConfig);
             hostConfigs = OdyConfigHelper.getHosts(odyProjectConfig);
             List<HostConfig> hosts = new List<HostConfig>();
             if (userHosts != null)
@@ -63,7 +62,7 @@ namespace OdyHostNginx
             {
                 hostConfigs.ForEach(host => hosts.Add(host));
             }
-            // ApplicationHelper.applySwitch(hosts);
+            ApplicationHelper.applySwitch(hosts);
             this.applyBut.Source = global::OdyHostNginx.Resources.img_not_apply;
         }
 
