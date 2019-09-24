@@ -12,7 +12,5 @@ namespace OdyHostNginx
 
         public int count;
 
-        public string text;
-
     }
 }
