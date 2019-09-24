@@ -25,19 +25,33 @@ namespace OdyHostNginx
         EnvConfig currentEnv;
         List<HostConfig> hostConfigs;
         OdyProjectConfig odyProjectConfig;
+        Dictionary<string, UpstreamDetails> upstreamDetailsMap;
         Dictionary<string, Image> envSwitchUI = new Dictionary<string, Image>();
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
 
         public MainWindow()
         {
+            this.ContentRendered += (sender, e) => initData();
             InitializeComponent();
-            odyProjectConfig = OdyConfigHelper.loadConfig(null);
+        }
+
+        private void initData()
+        {
+            upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
+            odyProjectConfig = OdyConfigHelper.loadConfig(null, upstreamDetailsMap);
             if (odyProjectConfig == null || odyProjectConfig.Projects == null || odyProjectConfig.Projects.Count == 0)
             {
                 odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
             }
             hostConfigs = OdyConfigHelper.getHosts(odyProjectConfig);
             drawingSwitchUI();
+        }
+
+        private void apply()
+        {
+            // TODO
+            // ApplicationHelper.applyNginx(odyProjectConfig);
+            // ApplicationHelper.applySwitch(hostConfigs);
         }
 
         /// <summary>
@@ -47,9 +61,22 @@ namespace OdyHostNginx
         {
             Image img = (Image)sender;
             odyProjectConfig.Use = !odyProjectConfig.Use;
+            apply();
             img.Source = odyProjectConfig.Use ? ResourceHelper.img_open : ResourceHelper.img_close;
             img.ToolTip = odyProjectConfig.Use ? "Close OdyHostNginx" : "Open OdyHostNginx";
-            apply();
+            EnvConfig env;
+            foreach (var key in envMap.Keys)
+            {
+                env = envMap[key];
+                if (env != null && env.Use)
+                {
+                    Image image = envSwitchUI[key];
+                    if (image != null)
+                    {
+                        image.Source = odyProjectConfig.Use ? ResourceHelper.img_open : ResourceHelper.img_open_disable;
+                    }
+                }
+            }
         }
 
         private void Reload_Click(object sender, RoutedEventArgs e)
@@ -73,8 +100,8 @@ namespace OdyHostNginx
 
         private void ResetBut_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // TODO currentEnv reset
-            drawingCurrentEnvUI();
+            // TODO env reset
+            drawingConfig(currentEnv, true);
             apply();
         }
 
@@ -91,21 +118,23 @@ namespace OdyHostNginx
             }
         }
 
-        private void apply()
+        private void Button_Config_Host_Click(object sender, RoutedEventArgs e)
         {
-            // ApplicationHelper.applyNginx(odyProjectConfig);
-            // ApplicationHelper.applySwitch(hostConfigs);
-        }
-
-        /// <summary>
-        /// 绘制 env config UI
-        /// </summary>
-        private void drawingCurrentEnvUI()
-        {
-            // currentEnv
-            // 选中样式
-            // 配置渲染, isHostConfig ? host : config
-
+            Button but = (Button)sender;
+            if (but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()))
+            {
+                // host click
+                isHostConfig = true;
+                this.hostBut.Background = new SolidColorBrush(ResourceHelper.butClickColor);
+                this.configBut.Background = new SolidColorBrush(ResourceHelper.butInitColor);
+            }
+            else
+            {
+                // config click
+                isHostConfig = false;
+                this.configBut.Background = new SolidColorBrush(ResourceHelper.butClickColor);
+                this.hostBut.Background = new SolidColorBrush(ResourceHelper.butInitColor);
+            }
         }
 
         /// <summary>
@@ -114,13 +143,14 @@ namespace OdyHostNginx
         private void drawingSwitchUI()
         {
             this.ProjectSwitch.Children.Clear();
+            EnvConfig firstEnv = null;
             foreach (var project in odyProjectConfig.Projects)
             {
                 int envCount = project.Envs != null ? project.Envs.Count : 0;
                 Border border = new Border
                 {
                     BorderThickness = new Thickness(0, 1, 0, 0),
-                    BorderBrush = new SolidColorBrush(ResourceHelper.switchColor)
+                    BorderBrush = new SolidColorBrush(ResourceHelper.switchBorderColor)
                 };
                 UniformGrid uniformGrid = new UniformGrid
                 {
@@ -144,14 +174,21 @@ namespace OdyHostNginx
                 // envs
                 foreach (var env in project.Envs)
                 {
-                    if (currentEnv == null)
+                    if (firstEnv == null)
                     {
-                        currentEnv = env;
+                        firstEnv = env;
                     }
+
+                    string key = envKey(env);
+
                     DockPanel dockRoot = new DockPanel
                     {
-                        Height = 45
+                        Height = 45,
+                        DataContext = key,
+                        Cursor = Cursors.Hand
                     };
+
+                    dockRoot.MouseLeftButtonUp += EnvDockRoot_MouseLeftButtonUp;
 
                     // doc image
                     DockPanel dockLeftImg = new DockPanel
@@ -177,7 +214,6 @@ namespace OdyHostNginx
                         Source = ResourceHelper.img_close,
                         Margin = new Thickness(0, 6, 0, 0)
                     };
-                    string key = envKey(env);
                     envSwitchImg.DataContext = key;
                     envSwitchImg.MouseLeftButtonUp += EnvSwitchMouseButtonEventHandler;
                     dockRightImg.Children.Add(envSwitchImg);
@@ -206,7 +242,21 @@ namespace OdyHostNginx
                 this.ProjectSwitch.Children.Add(border);
             }
             // 绘制 env
-            drawingCurrentEnvUI();
+            drawingConfig(firstEnv);
+        }
+
+        private void EnvDockRoot_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            DockPanel dock = (DockPanel)sender;
+            string key = (string)dock.DataContext;
+            if (key != null)
+            {
+                EnvConfig env = envMap[key];
+                if (env != null)
+                {
+                    drawingConfig(env);
+                }
+            }
         }
 
         private void EnvSwitchMouseButtonEventHandler(object sender, MouseButtonEventArgs e)
@@ -242,12 +292,79 @@ namespace OdyHostNginx
             return env.Project.Name + env.EnvName;
         }
 
+        private EnvConfig getFirstEnv()
+        {
+            foreach (var p in odyProjectConfig.Projects)
+            {
+                foreach (var env in p.Envs)
+                {
+                    return env;
+                }
+            }
+            return null;
+        }
+
+        private void drawingConfig(EnvConfig env)
+        {
+            drawingConfig(env, false);
+        }
+
         /// <summary>
         /// 绘制 nginx config
         /// </summary>
-        private void drawingNginxConfig(EnvConfig env)
+        private void drawingConfig(EnvConfig env, bool force)
         {
+            if (!force && env != null && currentEnv == env)
+            {
+                return;
+            }
+            if (currentEnv != null)
+            {
+                changeEnv(currentEnv, false);
+            }
+            currentEnv = env;
+            if (currentEnv == null)
+            {
+                currentEnv = getFirstEnv();
+            }
+            if (isHostConfig)
+            {
+                this.hostBut.Background = new SolidColorBrush(ResourceHelper.butClickColor);
+                this.configBut.Background = new SolidColorBrush(ResourceHelper.butInitColor);
+            }
+            else
+            {
+                this.configBut.Background = new SolidColorBrush(ResourceHelper.butClickColor);
+                this.hostBut.Background = new SolidColorBrush(ResourceHelper.butInitColor);
+            }
+            // env switch dock color
+            changeEnv(currentEnv, true);
+            // TODO
+            // config drawing
+            // 配置渲染, isHostConfig ? host : config
 
+        }
+
+        private void changeEnv(EnvConfig env, bool isCurrent)
+        {
+            if (env == null)
+            {
+                return;
+            }
+            string key = envKey(env);
+            Image switchImg = envSwitchUI[key];
+            if (switchImg != null)
+            {
+                DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(switchImg));
+                if (isCurrent)
+                {
+                    dockRoot.Background = new SolidColorBrush(ResourceHelper.switchCurrentBackgroundColor);
+                }
+                else
+                {
+                    dockRoot.Background = new SolidColorBrush(ResourceHelper.switchBackgroundColor);
+                }
+            }
         }
 
     }

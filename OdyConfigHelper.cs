@@ -17,6 +17,11 @@ namespace OdyHostNginx
         /// </summary>
         public static OdyProjectConfig loadConfig(string path)
         {
+            return loadConfig(path, null);
+        }
+
+        public static OdyProjectConfig loadConfig(string path, Dictionary<string, UpstreamDetails> upstreamDetailsMap)
+        {
             if (path == null)
             {
                 path = WindowsNginxImpl.nginxConfigDir;
@@ -70,7 +75,10 @@ namespace OdyHostNginx
                     env.Configs = confs;
                     if (!(env.Upstreams == null || env.Upstreams.Count == 0 || env.Configs == null || env.Configs.Count == 0))
                     {
-                        fillUpstream(env);
+                        if (upstreamDetailsMap != null)
+                        {
+                            fillUpstream(upstreamDetailsMap, env);
+                        }
                         env.Configs.ForEach(conf => conf.Body = null);
                         envs.Add(env);
                     }
@@ -88,7 +96,7 @@ namespace OdyHostNginx
             return odyProjectConfig;
         }
 
-        public static void fillUpstream(EnvConfig env)
+        public static void fillUpstream(Dictionary<string, UpstreamDetails> upstreamDetailsMap, EnvConfig env)
         {
             int index, start;
             string uri, contextPath;
@@ -124,8 +132,12 @@ namespace OdyHostNginx
                             }
                         }
                     }
-                    item.Uris = uris;
-                    item.ContextPaths = contextPaths;
+                    upstreamDetailsMap[item.ServerName] = new UpstreamDetails
+                    {
+                        Uris = uris,
+                        ContextPaths = contextPaths,
+                        ServerName = item.ServerName
+                    };
                 }
             }
         }
@@ -268,14 +280,6 @@ namespace OdyHostNginx
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// /projects/envs/*.conf
-        /// </summary>
-        public static void copyConfig(string fromPath, string toPath, bool replace)
-        {
-            FileHelper.copyDirectory(fromPath, toPath, replace);
         }
 
     }

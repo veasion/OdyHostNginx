@@ -35,14 +35,14 @@
                     </MenuItem>
                 </Menu>
             </DockPanel>
-            <DockPanel DockPanel.Dock="Left" Width="200" Background="#FF373D47">
+            <DockPanel DockPanel.Dock="Left" Width="220" Background="#FF373D47">
                 <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Height="50" Background="#FF2D3138">
+                    <DockPanel DockPanel.Dock="Top" Height="50" Background="#FF373D47">
                         <!-- 总开关 -->
                         <DockPanel>
-                            <DockPanel DockPanel.Dock="Left" Width="120">
+                            <DockPanel DockPanel.Dock="Left" Width="130">
                                 <DockPanel>
-                                    <DockPanel DockPanel.Dock="Left" Width="40">
+                                    <DockPanel DockPanel.Dock="Left" Width="45">
                                         <Image Width="16" Source="pack://siteoforigin:,,,/bin/images/computer.png"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Left">
@@ -87,11 +87,11 @@
             </DockPanel>
             <DockPanel DockPanel.Dock="Right">
                 <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Height="50">
+                    <DockPanel DockPanel.Dock="Top" Height="40">
                         <!-- config/host -->
                         <UniformGrid Columns="2">
-                            <Button Content="Config" Background="#FFF0F0F0" FontSize="18"></Button>
-                            <Button Content="Host" Background="#FFF0F0F0" FontSize="18"></Button>
+                            <Button x:Name="configBut" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" Click="Button_Config_Host_Click" />
+                            <Button x:Name="hostBut" BorderThickness="0,1,0,0" Content="Host" Background="#FFF0F0F0" FontSize="18" Click="Button_Config_Host_Click" />
                         </UniformGrid>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Bottom" Height="50">
@@ -119,10 +119,9 @@
                             </DockPanel>
                         </DockPanel>
                     </DockPanel>
-                    <DockPanel DockPanel.Dock="Top">
+                    <DockPanel DockPanel.Dock="Top" Background="White">
                         <StackPanel x:Name="EnvConfig" Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <!-- 动态 config -->
-
                         </StackPanel>
                     </DockPanel>
                 </DockPanel>

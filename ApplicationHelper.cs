@@ -50,7 +50,7 @@ namespace OdyHostNginx
 
         public static OdyProjectConfig copyUserConfigToNginx(bool replace)
         {
-            OdyConfigHelper.copyConfig(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace);
+            FileHelper.copyDirectory(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace);
             return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir);
         }
 
