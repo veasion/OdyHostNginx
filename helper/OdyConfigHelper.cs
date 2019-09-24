@@ -90,7 +90,7 @@ namespace OdyHostNginx
             foreach (var file in files)
             {
                 bool isUpstream = false;
-                string context = FileHelper.readTextFile(file.FullName);
+                string context = FileHelper.readTextFile(file.FullName, WindowsNginxImpl.confEncoding);
                 if (file.Name.EndsWith("upstream.conf") && context.IndexOf("upstream") > 0)
                 {
                     isUpstream = true;
@@ -295,7 +295,7 @@ namespace OdyHostNginx
                     }
                     if (replace || !File.Exists(upstreamFile))
                     {
-                        FileHelper.writeFile(upstreamFile, Encoding.UTF8, upstreamBody.ToString());
+                        FileHelper.writeFile(upstreamFile, WindowsNginxImpl.confEncoding, upstreamBody.ToString());
                     }
                     List<NginxConfig> confs = env.Configs;
                     foreach (var conf in confs)
@@ -303,7 +303,7 @@ namespace OdyHostNginx
                         string confFile = envDir + "\\" + conf.FileName;
                         if (replace || !File.Exists(confFile))
                         {
-                            FileHelper.writeFile(confFile, Encoding.UTF8, conf.Body);
+                            FileHelper.writeFile(confFile, WindowsNginxImpl.confEncoding, conf.Body);
                         }
                     }
                 }

@@ -14,6 +14,8 @@ namespace OdyHostNginx
         public static string nginxExePath = nginxPath + "\\nginx.exe";
         public static string nginxConfigPath = nginxConfigDir + "\\nginx.conf";
 
+        public static Encoding confEncoding = Encoding.ASCII;
+
         private const string startConfig = "#OdyHostNginx(start)";
         private const string endConfig = "#OdyHostNginx(end)";
 
@@ -38,13 +40,13 @@ namespace OdyHostNginx
             }
             sb.AppendLine(endConfig);
             sb = readConfig(sb.ToString());
-            FileHelper.writeFile(nginxConfigPath, Encoding.UTF8, sb.ToString());
+            FileHelper.writeFile(nginxConfigPath, confEncoding, sb.ToString());
         }
 
         public void reset()
         {
             StringBuilder sb = readConfig(null);
-            FileHelper.writeFile(nginxConfigPath, Encoding.UTF8, sb.ToString());
+            FileHelper.writeFile(nginxConfigPath, confEncoding, sb.ToString());
         }
 
         private StringBuilder readConfig(string include)
@@ -55,7 +57,7 @@ namespace OdyHostNginx
                 flag = false
             };
             ArrayList list = new ArrayList();
-            FileHelper.readTextFile(nginxConfigPath, Encoding.UTF8, (index, line) =>
+            FileHelper.readTextFile(nginxConfigPath, confEncoding, (index, line) =>
             {
                 if (line.StartsWith(startConfig))
                 {

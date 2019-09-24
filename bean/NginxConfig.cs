@@ -27,7 +27,7 @@ namespace OdyHostNginx
                 // body 懒加载
                 if (StringHelper.isEmpty(body) && !StringHelper.isEmpty(filePath))
                 {
-                    return FileHelper.readTextFile(filePath);
+                    return FileHelper.readTextFile(filePath, WindowsNginxImpl.confEncoding);
                 }
                 return body;
             }
