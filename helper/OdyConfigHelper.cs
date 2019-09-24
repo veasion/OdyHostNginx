@@ -44,35 +44,7 @@ namespace OdyHostNginx
                         Project = pro,
                         EnvName = envDir.Name
                     };
-                    FileInfo[] files = envDir.GetFiles("*.conf");
-                    List<NginxConfig> confs = new List<NginxConfig>();
-                    foreach (var file in files)
-                    {
-                        bool isUpstream = false;
-                        string context = FileHelper.readTextFile(file.FullName);
-                        if (file.Name.EndsWith("upstream.conf") && context.IndexOf("upstream") > 0)
-                        {
-                            isUpstream = true;
-                        }
-                        else if (context.StartsWith("upstream"))
-                        {
-                            isUpstream = true;
-                        }
-                        if (isUpstream)
-                        {
-                            env.UpstreamFileName = file.Name;
-                            env.Upstreams = parseUpstream(env, context);
-                        }
-                        else
-                        {
-                            NginxConfig conf = parseConf(context);
-                            conf.Env = env;
-                            conf.FileName = file.Name;
-                            conf.FilePath = file.FullName;
-                            confs.Add(conf);
-                        }
-                    }
-                    env.Configs = confs;
+                    parseEnv(env, envDir);
                     if (!(env.Upstreams == null || env.Upstreams.Count == 0 || env.Configs == null || env.Configs.Count == 0))
                     {
                         if (upstreamDetailsMap != null)
@@ -94,6 +66,54 @@ namespace OdyHostNginx
                 Projects = projects
             };
             return odyProjectConfig;
+        }
+
+        public static void reloadEnv(EnvConfig env, bool hasConfBody)
+        {
+            string projectName = env.Project.Name;
+            string envName = env.EnvName;
+            DirectoryInfo envDir = new DirectoryInfo(WindowsNginxImpl.nginxConfigDir + "\\" + projectName + "\\" + envName);
+            if (envDir.Exists)
+            {
+                parseEnv(env, envDir);
+                if (!hasConfBody)
+                {
+                    env.Configs.ForEach(conf => conf.Body = null);
+                }
+            }
+        }
+
+        private static void parseEnv(EnvConfig env, DirectoryInfo envDir)
+        {
+            FileInfo[] files = envDir.GetFiles("*.conf");
+            List<NginxConfig> confs = new List<NginxConfig>();
+            foreach (var file in files)
+            {
+                bool isUpstream = false;
+                string context = FileHelper.readTextFile(file.FullName);
+                if (file.Name.EndsWith("upstream.conf") && context.IndexOf("upstream") > 0)
+                {
+                    isUpstream = true;
+                }
+                else if (context.StartsWith("upstream"))
+                {
+                    isUpstream = true;
+                }
+                if (isUpstream)
+                {
+                    env.UpstreamFileName = file.Name;
+                    env.Upstreams = parseUpstream(env, context);
+                }
+                else
+                {
+                    NginxConfig conf = parseConf(context);
+                    conf.Env = env;
+                    conf.FileName = file.Name;
+                    conf.FilePath = file.FullName;
+                    confs.Add(conf);
+                }
+            }
+            env.Configs = confs;
         }
 
         public static void fillUpstream(Dictionary<string, UpstreamDetails> upstreamDetailsMap, EnvConfig env)
@@ -140,6 +160,12 @@ namespace OdyHostNginx
                     };
                 }
             }
+        }
+
+        public static List<HostConfig> loadUserHosts()
+        {
+            // TODO 读取用户 hosts 配置
+            return new List<HostConfig>();
         }
 
         public static List<HostConfig> getHosts(OdyProjectConfig config)

@@ -60,25 +60,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ApplicationHelper.cs" />
-    <Compile Include="CmdHelper.cs" />
-    <Compile Include="EnvConfig.cs" />
-    <Compile Include="FileHelper.cs" />
-    <Compile Include="Flag.cs" />
-    <Compile Include="HostConfig.cs" />
-    <Compile Include="Nginx.cs" />
-    <Compile Include="NginxConfig.cs" />
-    <Compile Include="NginxUpstream.cs" />
-    <Compile Include="OdyConfigHelper.cs" />
-    <Compile Include="OdyProjectConfig.cs" />
-    <Compile Include="ProjectConfig.cs" />
-    <Compile Include="ResourceHelper.cs" />
-    <Compile Include="ServiceException.cs" />
-    <Compile Include="StringHelper.cs" />
-    <Compile Include="SwitchHost.cs" />
-    <Compile Include="UpstreamDetails.cs" />
-    <Compile Include="WindowsLocalHostImpl.cs" />
-    <Compile Include="WindowsNginxImpl.cs" />
+    <Compile Include="helper\ApplicationHelper.cs" />
+    <Compile Include="helper\CmdHelper.cs" />
+    <Compile Include="bean\EnvConfig.cs" />
+    <Compile Include="helper\FileHelper.cs" />
+    <Compile Include="bean\Flag.cs" />
+    <Compile Include="bean\HostConfig.cs" />
+    <Compile Include="service\Nginx.cs" />
+    <Compile Include="bean\NginxConfig.cs" />
+    <Compile Include="bean\NginxUpstream.cs" />
+    <Compile Include="helper\OdyConfigHelper.cs" />
+    <Compile Include="bean\OdyProjectConfig.cs" />
+    <Compile Include="bean\ProjectConfig.cs" />
+    <Compile Include="ui\Resources.cs" />
+    <Compile Include="exception\ServiceException.cs" />
+    <Compile Include="helper\StringHelper.cs" />
+    <Compile Include="service\SwitchHost.cs" />
+    <Compile Include="bean\UpstreamDetails.cs" />
+    <Compile Include="service\WindowsLocalHostImpl.cs" />
+    <Compile Include="service\WindowsNginxImpl.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace OdyHostNginx
 {
-    class ResourceHelper
+    class Resources
     {
 
         public static BitmapImage img_doc = getImage("doc.png");

@@ -104,7 +104,7 @@
                                         <Image x:Name="applyBut" MouseLeftButtonUp="ApplyBut_MouseLeftButtonUp"  Width="22" ToolTip="apply" Source="pack://siteoforigin:,,,/bin/images/not_apply.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <Image x:Name="resetBut" MouseLeftButtonUp="ResetBut_MouseLeftButtonUp"  Width="20" ToolTip="reset" Source="pack://siteoforigin:,,,/bin/images/reset.png" Cursor="Hand"/>
+                                        <Image x:Name="resetBut" MouseLeftButtonUp="ResetBut_MouseLeftButtonUp"  Width="20" ToolTip="reset config" Source="pack://siteoforigin:,,,/bin/images/reset.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
                                         <Image x:Name="searchBut" Width="20" ToolTip="search" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
