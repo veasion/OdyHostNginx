@@ -29,6 +29,12 @@
                         <!-- 文件夹 -->
                         <MenuItem x:Name="Explorer" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
+                    <MenuItem Header="Tools" FontSize="14" Width="46">
+                        <!-- Trace -->
+                        <MenuItem x:Name="Trace" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
+                        <!-- 抓包 -->
+                        <MenuItem x:Name="HttpPacket" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
+                    </MenuItem>
                     <MenuItem Header="Help" FontSize="14" Width="40" MaxWidth="40">
                         <!-- 钉钉 -->
                         <MenuItem x:Name="DingTalk" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
@@ -61,27 +67,29 @@
                         </DockPanel>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Bottom">
-                        <StackPanel x:Name="ProjectSwitch" Orientation="Vertical">
-                            <!-- 动态项目开关 -->
-                            <!--
-                            <Border BorderBrush="#979DA7" BorderThickness="0,0,0,0" CornerRadius="0">
-                                <UniformGrid Rows="2">
-                                    <Label Content="2.8" FontSize="16" Height="30" FontWeight="Bold" Foreground="#979DA7" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="6,0,0,0"/>
-                                    <DockPanel Height="45">
-                                        <DockPanel DockPanel.Dock="Left" Width="50">
-                                            <Image Width="16" Source="pack://siteoforigin:,,,/bin/images/doc.png"/>
+                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel x:Name="ProjectSwitch" Orientation="Vertical">
+                                <!-- 动态项目开关 -->
+                                <!--
+                                <Border BorderBrush="#979DA7" BorderThickness="0,0,0,0" CornerRadius="0">
+                                    <UniformGrid Rows="2">
+                                        <Label Content="2.8" FontSize="16" Height="30" FontWeight="Bold" Foreground="#979DA7" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="6,0,0,0"/>
+                                        <DockPanel Height="45">
+                                            <DockPanel DockPanel.Dock="Left" Width="50">
+                                                <Image Width="16" Source="pack://siteoforigin:,,,/bin/images/doc.png"/>
+                                            </DockPanel>
+                                            <DockPanel DockPanel.Dock="Right" Width="80">
+                                                <Image Width="80" Source="pack://siteoforigin:,,,/bin/images/close.png" Cursor="Hand" Margin="0,6,0,0"/>
+                                            </DockPanel>
+                                            <DockPanel DockPanel.Dock="Left">
+                                                <Label Content="==> dev" FontSize="14" Foreground="#979DA7" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                            </DockPanel>
                                         </DockPanel>
-                                        <DockPanel DockPanel.Dock="Right" Width="80">
-                                            <Image Width="80" Source="pack://siteoforigin:,,,/bin/images/close.png" Cursor="Hand" Margin="0,6,0,0"/>
-                                        </DockPanel>
-                                        <DockPanel DockPanel.Dock="Left">
-                                            <Label Content="==> dev" FontSize="14" Foreground="#979DA7" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                        </DockPanel>
-                                    </DockPanel>
-                                </UniformGrid>
-                            </Border>
-                            -->
-                        </StackPanel>
+                                    </UniformGrid>
+                                </Border>
+                                -->
+                            </StackPanel>
+                        </ScrollViewer>
                     </DockPanel>
                 </DockPanel>
             </DockPanel>
@@ -120,9 +128,29 @@
                         </DockPanel>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Top" Background="White">
-                        <StackPanel x:Name="EnvConfig" Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer x:Name="configHostViewer" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <!-- 动态 config -->
-                        </StackPanel>
+                            <!--
+                            <StackPanel Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <Border BorderBrush="#979DA7" BorderThickness="1,1,1,1" CornerRadius="22" Margin="5,10,5,0">
+                                    <DockPanel Height="45">
+                                        <DockPanel DockPanel.Dock="Left" Width="200">
+                                            <Label Foreground="#979DA7" Content="basics-promotion-service" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </DockPanel>
+                                        <DockPanel DockPanel.Dock="Left" Width="130">
+                                            <TextBox Foreground="#979DA7" BorderThickness="1,0,0,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">192.168.0.100</TextBox>
+                                        </DockPanel>
+                                        <DockPanel DockPanel.Dock="Left" Width="80">
+                                            <TextBox Foreground="#979DA7" BorderThickness="1,0,1,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">8080</TextBox>
+                                        </DockPanel>
+                                        <DockPanel DockPanel.Dock="Left">
+                                            <Button ToolTip="Set to local IP" Width="42" Height="28" Background="#FFF0F0F0" Foreground="#979DA7" Cursor="Hand">local</Button>
+                                        </DockPanel>
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+                            -->
+                        </ScrollViewer>
                     </DockPanel>
                 </DockPanel>
             </DockPanel>

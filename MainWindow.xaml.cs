@@ -30,6 +30,13 @@ namespace OdyHostNginx
         Dictionary<string, Image> envSwitchUI = new Dictionary<string, Image>();
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
 
+        StackPanel configViewer = new StackPanel
+        {
+            Orientation = Orientation.Vertical
+        };
+
+        object hostViewer = null;
+
         public MainWindow()
         {
             this.ContentRendered += (sender, e) => initData();
@@ -146,6 +153,8 @@ namespace OdyHostNginx
                 this.resetBut.ToolTip = "reset host";
                 this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
                 this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.configHostViewer.Content = hostViewer;
+                // drawingHostConfig();
             }
             else
             {
@@ -154,6 +163,8 @@ namespace OdyHostNginx
                 this.resetBut.ToolTip = "reset config";
                 this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
                 this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.configHostViewer.Content = configViewer;
+                // drawingNginxConfig();
             }
         }
 
@@ -363,16 +374,143 @@ namespace OdyHostNginx
             drawingNginxConfig();
             // drawing host config
             drawingHostConfig();
+            if (isHostConfig)
+            {
+                // host
+                this.configHostViewer.Content = hostViewer;
+            }
+            else
+            {
+                // config
+                this.configHostViewer.Content = configViewer;
+            }
         }
 
         private void drawingNginxConfig()
         {
-            // TODO 渲染 nginx config
+            // 渲染 nginx config
+            configViewer.Children.Clear();
+            foreach (var u in currentEnv.Upstreams)
+            {
+                HashSet<string> contextPaths = new HashSet<string>();
+                UpstreamDetails ud = upstreamDetailsMap[u.ServerName];
+                if (ud != null)
+                {
+                    ud.ContextPaths.ForEach(name => contextPaths.Add(name));
+                }
+                if (contextPaths.Count == 0)
+                {
+                    contextPaths.Add(u.ServerName);
+                }
+                foreach (var contextPath in contextPaths)
+                {
+                    Border border = new Border
+                    {
+                        Margin = new Thickness(5, 10, 5, 0),
+                        CornerRadius = new CornerRadius(22),
+                        BorderThickness = new Thickness(1, 1, 1, 1),
+                        BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.configBorderColor)
+                    };
+                    DockPanel dockRoot = new DockPanel
+                    {
+                        Height = 45
+                    };
+
+                    // Server Name
+                    DockPanel dockServer = new DockPanel
+                    {
+                        Width = 200
+                    };
+                    DockPanel.SetDock(dockServer, Dock.Left);
+                    StringBuilder tip = new StringBuilder();
+                    tip.Append("=== ");
+                    tip.Append(contextPath);
+                    tip.Append(" ===");
+                    if (ud != null)
+                    {
+                        tip.AppendLine();
+                        ud.Uris.ForEach(uri => tip.AppendLine(uri));
+                    }
+                    Label serverNameLabel = new Label
+                    {
+                        FontSize = 14,
+                        Content = contextPath,
+                        ToolTip = tip.ToString(),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                    };
+                    dockServer.Children.Add(serverNameLabel);
+
+                    // IP
+                    DockPanel dockIp = new DockPanel
+                    {
+                        Width = 130
+                    };
+                    DockPanel.SetDock(dockIp, Dock.Left);
+                    TextBox ipText = new TextBox
+                    {
+                        Text = u.Ip,
+                        FontSize = 12,
+                        BorderThickness = new Thickness(1, 0, 0, 0),
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        HorizontalContentAlignment = HorizontalAlignment.Center,
+                        Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
+                        Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                    };
+                    dockIp.Children.Add(ipText);
+
+                    // Port
+                    DockPanel dockPort = new DockPanel
+                    {
+                        Width = 80
+                    };
+                    DockPanel.SetDock(dockPort, Dock.Left);
+                    TextBox portText = new TextBox
+                    {
+                        FontSize = 12,
+                        Text = u.Port + "",
+                        BorderThickness = new Thickness(1, 0, 1, 0),
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        HorizontalContentAlignment = HorizontalAlignment.Center,
+                        Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
+                        Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                    };
+                    dockPort.Children.Add(portText);
+
+                    // local button
+                    DockPanel dockLocal = new DockPanel
+                    {
+                        Width = 80
+                    };
+                    DockPanel.SetDock(dockPort, Dock.Left);
+                    Button localBut = new Button
+                    {
+                        Width = 42,
+                        Height = 28,
+                        Content = "local",
+                        Cursor = Cursors.Hand,
+                        ToolTip = "Set to local IP",
+                        Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor),
+                        Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                    };
+                    dockLocal.Children.Add(localBut);
+
+                    dockRoot.Children.Add(dockServer);
+                    dockRoot.Children.Add(dockIp);
+                    dockRoot.Children.Add(dockPort);
+                    dockRoot.Children.Add(dockLocal);
+
+                    border.Child = dockRoot;
+                    configViewer.Children.Add(border);
+                }
+            }
         }
 
         private void drawingHostConfig()
         {
-            // TODO 渲染 host config
+            // 渲染 host config
+            // TODO hostViewer
         }
 
         private void changeEnv(EnvConfig env, bool isCurrent)

@@ -148,6 +148,12 @@ namespace OdyHostNginx
                             contextPath = StringHelper.substring(context, "/", ";", index, 100);
                             if (!StringHelper.isBlank(contextPath))
                             {
+                                contextPath = contextPath.Trim();
+                                if (contextPath.Contains("/"))
+                                {
+                                    int startIndex = contextPath.IndexOf("/");
+                                    contextPath = contextPath.Substring(0, startIndex);
+                                }
                                 contextPaths.Add(contextPath);
                             }
                         }
@@ -245,7 +251,7 @@ namespace OdyHostNginx
                 host = host.Trim();
                 string[] hostArray = host.Split(':');
                 upstream.Ip = hostArray[0].Trim();
-                if (hostArray.Length > 1 && !StringHelper.isNumberic(hostArray[1].Trim()))
+                if (hostArray.Length > 1 && StringHelper.isNumberic(hostArray[1].Trim()))
                 {
                     upstream.Port = Convert.ToInt32(hostArray[1].Trim());
                 }
