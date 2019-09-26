@@ -12,6 +12,37 @@ namespace OdyHostNginx
 
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
 
+        private static Dictionary<string, int> priority = new Dictionary<string, int>();
+
+        static OdyConfigHelper()
+        {
+            priority["oms-web"] = 99;
+            priority["oms-api"] = 98;
+            priority["oms-dataex"] = 97;
+            priority["ouser-web"] = 96;
+            priority["ouser-center"] = 95;
+            priority["ouser-service"] = 94;
+            priority["back-merchant-web"] = 93;
+            priority["back-product-web"] = 92;
+            priority["back-product-service"] = 91;
+            priority["frontier-trade-web"] = 90;
+            priority["frontier-cms"] = 90;
+            priority["back-promotion-web"] = 89;
+            priority["basics-promotion-service"] = 89;
+            priority["social-web"] = 88;
+            priority["social-back-web"] = 87;
+            priority["search"] = 86;
+            priority["search-backend-web"] = 85;
+            priority["odts-web"] = 84;
+            priority["opay-web"] = 84;
+            priority["ody-scheduler"] = 84;
+            priority["osc-web"] = 84;
+            priority["agent-web"] = 83;
+            priority["opms-web"] = 82;
+            priority["back-finance-web"] = 81;
+            priority["ad-whale-web"] = 80;
+        }
+
         /// <summary>
         /// project => envs => *.conf
         /// </summary>
@@ -251,7 +282,7 @@ namespace OdyHostNginx
                 host = host.Trim();
                 string[] hostArray = host.Split(':');
                 upstream.Ip = hostArray[0].Trim();
-                if (hostArray.Length > 1 && StringHelper.isNumberic(hostArray[1].Trim()))
+                if (hostArray.Length > 1 && StringHelper.isInt(hostArray[1].Trim()))
                 {
                     upstream.Port = Convert.ToInt32(hostArray[1].Trim());
                 }
@@ -259,9 +290,60 @@ namespace OdyHostNginx
                 {
                     upstream.Port = 80;
                 }
+                upstream.OldIp = upstream.Ip;
+                upstream.OldPort = upstream.Port;
                 upstreams.Add(upstream);
             }
             return upstreams;
+        }
+
+        private static int priorityServerName(string serverName)
+        {
+            int p;
+            if (priority.TryGetValue(serverName, out p))
+            {
+                return p;
+            }
+            else
+            {
+                foreach (var item in priority.Keys)
+                {
+                    if (serverName.IndexOf(item) != -1)
+                    {
+                        return priority[item] - serverName.Length * 2;
+                    }
+                }
+                return 0;
+            }
+        }
+
+        public static void sortUpstream(List<NginxUpstream> upstreams)
+        {
+            // 配置 local 排前面，否则按优先级排序，名字越长越靠后
+            if (upstreams != null && upstreams.Count > 0)
+            {
+                upstreams.Sort((x, y) =>
+                {
+                    if ("127.0.0.1".Equals(x.Ip) && !"127.0.0.1".Equals(y.Ip))
+                    {
+                        return -1;
+                    }
+                    else if ("127.0.0.1".Equals(y.Ip) && !"127.0.0.1".Equals(x.Ip))
+                    {
+                        return 1;
+                    }
+                    int xp = priorityServerName(x.ServerName);
+                    int yp = priorityServerName(y.ServerName);
+                    if (xp != 0 || yp != 0)
+                    {
+                        return xp > yp ? -1 : 1;
+                    }
+                    else
+                    {
+                        return x.ServerName.Length > y.ServerName.Length ? -1 : 1;
+                    }
+                });
+            }
         }
 
         private static NginxConfig parseConf(string context)

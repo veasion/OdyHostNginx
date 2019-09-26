@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OdyHostNginx
 {
     class StringHelper
     {
+
+        static string ipPattern = @"^(([1-9]\d?)|(1\d{2})|(2[01]\d)|(22[0-3]))(\.((1?\d\d?)|(2[04]/d)|(25[0-5]))){3}$";
 
         public static bool isEmpty(string str)
         {
@@ -16,6 +19,24 @@ namespace OdyHostNginx
         public static bool isBlank(string str)
         {
             return isEmpty(str) || "".Equals(str.Trim());
+        }
+
+        public static bool isIp(string ip)
+        {
+            return !isEmpty(ip) && Regex.IsMatch(ip, ipPattern);
+        }
+
+        public static bool isPort(string port)
+        {
+            return !isEmpty(port) && port.Length <= 5 && isInt(port);
+        }
+
+        public static bool isInt(string str)
+        {
+            bool isNum;
+            int vsNum;
+            isNum = int.TryParse(str, System.Globalization.NumberStyles.Integer, System.Globalization.NumberFormatInfo.InvariantInfo, out vsNum);
+            return isNum;
         }
 
         public static bool isNumberic(string str)

@@ -89,7 +89,8 @@ namespace OdyHostNginx
                 env = envMap[key];
                 if (env != null && env.Use)
                 {
-                    Image image = envSwitchUI[key];
+                    Image image;
+                    envSwitchUI.TryGetValue(key, out image);
                     if (image != null)
                     {
                         image.Source = odyProjectConfig.Use ? global::OdyHostNginx.Resources.img_open : global::OdyHostNginx.Resources.img_open_disable;
@@ -282,7 +283,8 @@ namespace OdyHostNginx
             string key = (string)dock.DataContext;
             if (key != null)
             {
-                EnvConfig env = envMap[key];
+                EnvConfig env;
+                envMap.TryGetValue(key, out env);
                 if (env != null)
                 {
                     drawingEnvConfig(env);
@@ -294,7 +296,8 @@ namespace OdyHostNginx
         {
             Image envSwitchImg = (Image)sender;
             string key = (string)envSwitchImg.DataContext;
-            EnvConfig env = envMap[key];
+            EnvConfig env;
+            envMap.TryGetValue(key, out env);
             if (env != null && odyProjectConfig.Use)
             {
                 env.Use = !env.Use;
@@ -305,7 +308,8 @@ namespace OdyHostNginx
                         if (envConfig != env)
                         {
                             envConfig.Use = false;
-                            Image eui = envSwitchUI[envKey(envConfig)];
+                            Image eui;
+                            envSwitchUI.TryGetValue(envKey(envConfig), out eui);
                             if (eui != null)
                             {
                                 eui.Source = global::OdyHostNginx.Resources.img_close;
@@ -390,10 +394,12 @@ namespace OdyHostNginx
         {
             // 渲染 nginx config
             configViewer.Children.Clear();
+            OdyConfigHelper.sortUpstream(currentEnv.Upstreams);
             foreach (var u in currentEnv.Upstreams)
             {
+                UpstreamDetails ud;
+                upstreamDetailsMap.TryGetValue(u.ServerName, out ud);
                 HashSet<string> contextPaths = new HashSet<string>();
-                UpstreamDetails ud = upstreamDetailsMap[u.ServerName];
                 if (ud != null)
                 {
                     ud.ContextPaths.ForEach(name => contextPaths.Add(name));
@@ -458,6 +464,8 @@ namespace OdyHostNginx
                         Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
                         Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
                     };
+                    ipText.DataContext = u;
+                    ipText.TextChanged += IpText_TextChanged;
                     dockIp.Children.Add(ipText);
 
                     // Port
@@ -476,6 +484,11 @@ namespace OdyHostNginx
                         Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
                         Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
                     };
+                    portText.DataContext = u;
+                    portText.KeyDown += PortText_KeyDown;
+                    portText.TextChanged += PortText_TextChanged;
+                    portText.PreviewTextInput += PortText_PreviewTextInput;
+                    InputMethod.SetIsInputMethodEnabled(portText, false);
                     dockPort.Children.Add(portText);
 
                     // local button
@@ -494,6 +507,8 @@ namespace OdyHostNginx
                         Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor),
                         Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
                     };
+                    localBut.DataContext = u;
+                    localBut.Click += LocalBut_Click;
                     dockLocal.Children.Add(localBut);
 
                     dockRoot.Children.Add(dockServer);
@@ -505,6 +520,62 @@ namespace OdyHostNginx
                     configViewer.Children.Add(border);
                 }
             }
+        }
+
+        private void LocalBut_Click(object sender, RoutedEventArgs e)
+        {
+            Button but = sender as Button;
+            NginxUpstream u = (NginxUpstream)but.DataContext;
+            if ("local".Equals(but.Content))
+            {
+                u.Ip = "127.0.0.1";
+                but.Content = "back";
+            }
+            else
+            {
+                u.Ip = u.OldIp;
+                u.Port = u.OldPort;
+                but.Content = "local";
+            }
+            DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(but));
+            ((dockRoot.Children[1] as DockPanel).Children[0] as TextBox).Text = u.Ip;
+            ((dockRoot.Children[2] as DockPanel).Children[0] as TextBox).Text = u.Port + "";
+            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+        }
+
+        private void PortText_KeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = (sender as TextBox).SelectionStart > 5;
+        }
+
+        private void PortText_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !StringHelper.isInt(e.Text);
+        }
+
+        private void PortText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox port = (TextBox)sender;
+            NginxUpstream u = (NginxUpstream)port.DataContext;
+            if (StringHelper.isInt(port.Text.Trim()))
+            {
+                u.Port = Convert.ToInt32(port.Text.Trim());
+                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            }
+            port.Foreground = new SolidColorBrush(StringHelper.isPort(port.Text) ? global::OdyHostNginx.Resources.configFontColor : Colors.Red);
+        }
+
+        private void IpText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox ip = (TextBox)sender;
+            NginxUpstream u = (NginxUpstream)ip.DataContext;
+            u.Ip = ip.Text;
+            bool isIp = StringHelper.isIp(u.Ip);
+            if (isIp)
+            {
+                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            }
+            ip.Foreground = new SolidColorBrush(isIp ? global::OdyHostNginx.Resources.configFontColor : Colors.Red);
         }
 
         private void drawingHostConfig()
@@ -520,7 +591,8 @@ namespace OdyHostNginx
                 return;
             }
             string key = envKey(env);
-            Image switchImg = envSwitchUI[key];
+            Image switchImg;
+            envSwitchUI.TryGetValue(key, out switchImg);
             if (switchImg != null)
             {
                 DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(switchImg));
