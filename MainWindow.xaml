@@ -7,27 +7,31 @@
         mc:Ignorable="d"
         Title="OdyHostNginx" Height="528.504" Width="804.206" WindowStartupLocation="CenterScreen" Closing="OdyHostNginx_Closing">
     <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ui/ScrollViewDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
     <Grid>
         <DockPanel>
             <DockPanel DockPanel.Dock="Top">
                 <Menu Name="FileMenu" BorderThickness="0" FontSize="12" Foreground="Black" Height="20" Margin="0,0,0,0" VerticalAlignment="Top" Background="#FFF0F0F0">
                     <MenuItem Header="File" FontSize="14" Width="40" MaxWidth="40">
-                        <MenuItem x:Name="Reload" Header="Reload" FontSize="12" Background="White" Foreground="Black" Click="Reload_Click"/>
-                        <MenuItem x:Name="Import" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Export" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Reset" Header="Reset" FontSize="12" Background="White" Foreground="Black" Click="Reset_Click"/>
-                        <MenuItem x:Name="About" Header="About" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Quit" Header="Quit" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="Reload" Click="Reload_Click" Header="Reload" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="Import" Click="Import_Click" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="Export" Click="Export_Click" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="Reset" Click="Reset_Click" Header="Reset" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="About" Click="About_Click" Header="About" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Edit" FontSize="14" Width="40" MaxWidth="40">
-                        <MenuItem x:Name="HostConfig" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="NginxConfig" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="UserConfig" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="HostConfig" Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="NginxConfig" Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="UserConfig" Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="View" FontSize="14" Width="40" MaxWidth="40">
                         <!-- 文件夹 -->
-                        <MenuItem x:Name="Explorer" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem x:Name="Explorer" Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Tools" FontSize="14" Width="46">
                         <!-- Trace -->
@@ -67,7 +71,7 @@
                         </DockPanel>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Bottom">
-                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ScrollViewer Grid.Column="1" Template="{StaticResource MyScrollViewer}" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel x:Name="ProjectSwitch" Orientation="Vertical">
                                 <!-- 动态项目开关 -->
                                 <!--
@@ -115,15 +119,17 @@
                                         <Image x:Name="resetBut" MouseLeftButtonUp="ResetBut_MouseLeftButtonUp"  Width="20" ToolTip="reset config" Source="pack://siteoforigin:,,,/bin/images/reset.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <Image x:Name="searchBut" Width="20" ToolTip="search" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
+                                        <Image x:Name="searchBut" Width="20" ToolTip="search" MouseLeftButtonDown="SearchBut_MouseLeftButtonDown" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
                                         <Image x:Name="addBut" Width="24" ToolTip="add" Source="pack://siteoforigin:,,,/bin/images/add.png" Cursor="Hand"/>
                                     </DockPanel>
                                 </DockPanel>
                             </DockPanel>
+                            <DockPanel DockPanel.Dock="Left" Width="80" />
                             <DockPanel DockPanel.Dock="Left">
                                 <!-- 搜索 -->
+                                <TextBox x:Name="searchText" TextChanged="SearchText_TextChanged" Visibility="Hidden" Foreground="#979DA7" Background="#FFF0F0F0" BorderThickness="1,1,1,1" Width="180" Height="30" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" />
                             </DockPanel>
                         </DockPanel>
                     </DockPanel>

@@ -109,6 +109,22 @@ namespace OdyHostNginx
             }
         }
 
+        public static void copyFiles(string[] sourceFilePath, string targetDir, bool replace)
+        {
+            mkdir(targetDir);
+            if (sourceFilePath != null && sourceFilePath.Length > 0)
+            {
+                foreach (var filePath in sourceFilePath)
+                {
+                    FileInfo file = new FileInfo(filePath);
+                    if (file.Exists)
+                    {
+                        file.CopyTo(targetDir + "\\" + file.Name, replace);
+                    }
+                }
+            }
+        }
+
         public static void mkdirAndDel(string dirPath, bool del)
         {
             if (del)
@@ -170,7 +186,7 @@ namespace OdyHostNginx
                             continue;
                         }
                     }
-                    File.Copy(file, pFilePath, true);
+                    File.Copy(file, pFilePath, replace);
                 }
                 string[] dirs = Directory.GetDirectories(sourceDir);
                 foreach (string dir in dirs)

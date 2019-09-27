@@ -10,7 +10,10 @@ namespace OdyHostNginx
     class OdyConfigHelper
     {
 
+        public static string nginxConfigDir = WindowsNginxImpl.nginxConfigDir;
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
+        public static string userHostsDir = FileHelper.getCurrentDirectory() + "\\bin\\hosts";
+        public static string userHostsPath = FileHelper.getCurrentDirectory() + "\\bin\\hosts\\hosts.config";
 
         private static Dictionary<string, int> priority = new Dictionary<string, int>();
 
@@ -55,7 +58,7 @@ namespace OdyHostNginx
         {
             if (path == null)
             {
-                path = WindowsNginxImpl.nginxConfigDir;
+                path = nginxConfigDir;
             }
             List<ProjectConfig> projects = new List<ProjectConfig>();
             DirectoryInfo dir = new DirectoryInfo(path);
@@ -103,7 +106,7 @@ namespace OdyHostNginx
         {
             string projectName = env.Project.Name;
             string envName = env.EnvName;
-            DirectoryInfo envDir = new DirectoryInfo(WindowsNginxImpl.nginxConfigDir + "\\" + projectName + "\\" + envName);
+            DirectoryInfo envDir = new DirectoryInfo(nginxConfigDir + "\\" + projectName + "\\" + envName);
             if (envDir.Exists)
             {
                 parseEnv(env, envDir);
@@ -201,8 +204,41 @@ namespace OdyHostNginx
 
         public static List<HostConfig> loadUserHosts()
         {
-            // TODO 读取用户 hosts 配置
-            return new List<HostConfig>();
+            // 读取用户 hosts 配置
+            List<HostConfig> list = new List<HostConfig>();
+            FileHelper.readTextFile(userHostsPath, Encoding.UTF8, (index, line) =>
+            {
+                if (!StringHelper.isBlank(line))
+                {
+                    line = line.Trim();
+                    if (line.StartsWith("#"))
+                    {
+                        return;
+                    }
+                    string[] hosts = line.Split('=');
+                    if (hosts != null && hosts.Length > 1)
+                    {
+                        HostConfig config = new HostConfig();
+                        config.Domain = hosts[0];
+                        config.Ip = hosts[1];
+                        list.Add(config);
+                    }
+                }
+            });
+            return list;
+        }
+
+        public static void writeUserHosts(List<HostConfig> userHostConfigs)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (userHostConfigs != null && userHostConfigs.Count > 0)
+            {
+                foreach (var item in userHostConfigs)
+                {
+                    sb.Append(item.Domain).Append("=").AppendLine(item.Ip);
+                }
+            }
+            FileHelper.writeFile(userHostsPath, Encoding.UTF8, sb.ToString());
         }
 
         public static List<HostConfig> getHosts(OdyProjectConfig config)
@@ -372,7 +408,7 @@ namespace OdyHostNginx
         {
             if (path == null)
             {
-                path = WindowsNginxImpl.nginxConfigDir;
+                path = nginxConfigDir;
             }
             // 加载 body
             config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body)));

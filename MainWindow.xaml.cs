@@ -1,17 +1,13 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace OdyHostNginx
 {
@@ -167,6 +163,7 @@ namespace OdyHostNginx
                 this.configHostViewer.Content = configViewer;
                 // drawingNginxConfig();
             }
+            CommonMouseLeftButtonUp(null, null);
         }
 
         /// <summary>
@@ -193,6 +190,7 @@ namespace OdyHostNginx
                     Height = 30,
                     FontSize = 16,
                     Content = project.Name,
+                    ToolTip = project.Name,
                     FontWeight = FontWeights.Bold,
                     Margin = new Thickness(6, 0, 0, 0),
                     VerticalAlignment = VerticalAlignment.Center,
@@ -260,6 +258,7 @@ namespace OdyHostNginx
                     {
                         FontSize = 14,
                         Content = env.EnvName,
+                        ToolTip = env.EnvName,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Left,
                         Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.switchColor)
@@ -392,13 +391,24 @@ namespace OdyHostNginx
 
         private void drawingNginxConfig()
         {
+            this.searchText.Text = "";
+            drawingNginxConfig(null);
+        }
+
+        private void drawingNginxConfig(string search)
+        {
             // 渲染 nginx config
+            string prefix = "-prod-";
             configViewer.Children.Clear();
             OdyConfigHelper.sortUpstream(currentEnv.Upstreams);
             foreach (var u in currentEnv.Upstreams)
             {
                 UpstreamDetails ud;
                 upstreamDetailsMap.TryGetValue(u.ServerName, out ud);
+                if (search != null && filterSearch(u, ud, search))
+                {
+                    continue;
+                }
                 HashSet<string> contextPaths = new HashSet<string>();
                 if (ud != null)
                 {
@@ -406,7 +416,15 @@ namespace OdyHostNginx
                 }
                 if (contextPaths.Count == 0)
                 {
-                    contextPaths.Add(u.ServerName);
+                    int index;
+                    if ((index = u.ServerName.IndexOf(prefix)) > 0)
+                    {
+                        contextPaths.Add(u.ServerName.Substring(index + prefix.Length));
+                    }
+                    else
+                    {
+                        contextPaths.Add(u.ServerName);
+                    }
                 }
                 foreach (var contextPath in contextPaths)
                 {
@@ -421,6 +439,8 @@ namespace OdyHostNginx
                     {
                         Height = 45
                     };
+
+                    dockRoot.MouseLeftButtonUp += CommonMouseLeftButtonUp;
 
                     // Server Name
                     DockPanel dockServer = new DockPanel
@@ -509,6 +529,7 @@ namespace OdyHostNginx
                     };
                     localBut.DataContext = u;
                     localBut.Click += LocalBut_Click;
+                    dockLocal.MouseLeftButtonDown += CommonMouseLeftButtonUp;
                     dockLocal.Children.Add(localBut);
 
                     dockRoot.Children.Add(dockServer);
@@ -519,6 +540,49 @@ namespace OdyHostNginx
                     border.Child = dockRoot;
                     configViewer.Children.Add(border);
                 }
+            }
+        }
+
+        private bool filterSearch(NginxUpstream u, UpstreamDetails ud, string search)
+        {
+            if (StringHelper.isBlank(search))
+            {
+                return false;
+            }
+            search = search.Trim();
+            if (ud != null && search.StartsWith("/"))
+            {
+                foreach (var uri in ud.Uris)
+                {
+                    if (uri.Contains(search))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (u.ServerName.Contains(search) || u.Ip.Contains(search))
+            {
+                return false;
+            }
+            else if (ud != null)
+            {
+                foreach (var item in ud.ContextPaths)
+                {
+                    if (item.Contains(search))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private void CommonMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (this.searchText.IsVisible && StringHelper.isBlank(this.searchText.Text))
+            {
+                this.searchText.Text = "";
+                this.searchText.Visibility = Visibility.Hidden;
             }
         }
 
@@ -550,6 +614,7 @@ namespace OdyHostNginx
 
         private void PortText_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
+            CommonMouseLeftButtonUp(null, null);
             e.Handled = !StringHelper.isInt(e.Text);
         }
 
@@ -567,6 +632,7 @@ namespace OdyHostNginx
 
         private void IpText_TextChanged(object sender, TextChangedEventArgs e)
         {
+            CommonMouseLeftButtonUp(null, null);
             TextBox ip = (TextBox)sender;
             NginxUpstream u = (NginxUpstream)ip.DataContext;
             u.Ip = ip.Text;
@@ -605,6 +671,89 @@ namespace OdyHostNginx
                     dockRoot.Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchBackgroundColor);
                 }
             }
+        }
+
+        private void SearchBut_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!isHostConfig)
+            {
+                // 搜索
+                this.searchText.Visibility = Visibility.Visible;
+                this.searchText.Select(0, 1);
+            }
+        }
+
+        private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (this.searchText.IsVisible)
+            {
+                drawingNginxConfig(this.searchText.Text);
+            }
+        }
+
+        private void Explorer_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", FileHelper.getCurrentDirectory());
+        }
+
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(" 非常感谢使用这个小工具").AppendLine();
+            sb.AppendLine(" 该工具专门为欧电云开发小伙伴打造").AppendLine();
+            sb.AppendLine(" 业余开发，如有漏洞或建议请在非工作时间钉我~");
+            MessageBox.Show(sb.ToString(), "关于", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("该配置将导出到桌面，是否继续？", "导出提示", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                string path = FileHelper.getDesktopDirectory() + "\\ExportConfigs";
+                OdyConfigHelper.writeConfig(odyProjectConfig, path, true);
+                MessageBox.Show("导出成功！\r\n\r\n路径：" + path, "导出提示");
+            }
+        }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                Multiselect = true,
+                Title = "导入nginx配置文件",
+                Filter = "(nginx 配置文件 *.conf) | *.conf",
+                InitialDirectory = FileHelper.getDesktopDirectory()
+            };
+            if (ofd.ShowDialog() == true)
+            {
+                if (ofd.FileNames != null && ofd.FileNames.Length >= 0)
+                {
+                    new NginxConfigWindows().ShowDialog();
+                    if (NginxConfigData.import && NginxConfigData.path != null)
+                    {
+                        FileHelper.copyFiles(ofd.FileNames, NginxConfigData.path, true);
+                        MessageBox.Show("导入成功！");
+                        odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+                        initData();
+                    }
+                }
+            }
+        }
+
+        private void HostConfig_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", OdyConfigHelper.userHostsDir);
+        }
+
+        private void NginxConfig_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", OdyConfigHelper.nginxConfigDir);
+        }
+
+        private void UserConfig_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", OdyConfigHelper.userNginxConfigDir);
         }
 
     }
