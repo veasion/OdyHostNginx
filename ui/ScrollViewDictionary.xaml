@@ -33,7 +33,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <!--滚动条颜色、圆角等设置-->
     <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
         <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -53,7 +53,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <Style x:Key="HorizontalScrollBarPageButton" TargetType="{x:Type RepeatButton}">
         <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -67,7 +67,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <Style x:Key="MyScrollBarStyle" TargetType="{x:Type ScrollBar}">
         <Setter Property="Background" Value="AliceBlue"/>
         <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
@@ -103,7 +103,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        
+
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>

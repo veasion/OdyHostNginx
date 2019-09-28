@@ -10,6 +10,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ui/ScrollViewDictionary.xaml" />
+                <ResourceDictionary Source="ui/SwitchButDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -63,7 +64,7 @@
                             <DockPanel DockPanel.Dock="Right">
                                 <DockPanel>
                                     <DockPanel DockPanel.Dock="Left">
-                                        <Image x:Name="odyHostNginxBut" Width="Auto" MouseLeftButtonUp="OdyHostNginxBut_MouseLeftButtonUp" ToolTip="Open OdyHostNginx" Source="pack://siteoforigin:,,,/bin/images/close.png" Cursor="Hand" Margin="0,6,0,0"/>
+                                        <CheckBox x:Name="odyHostNginxBut" Click="OdyHostNginxBut_Click" Width="Auto" Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip="Open OdyHostNginx" Cursor="Hand" Margin="0,6,0,0" Style="{DynamicResource SliderCheckBox}" />
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Left" Width="10" />
                                 </DockPanel>
@@ -83,7 +84,7 @@
                                                 <Image Width="16" Source="pack://siteoforigin:,,,/bin/images/doc.png"/>
                                             </DockPanel>
                                             <DockPanel DockPanel.Dock="Right" Width="80">
-                                                <Image Width="80" Source="pack://siteoforigin:,,,/bin/images/close.png" Cursor="Hand" Margin="0,6,0,0"/>
+                                                <CheckBox Cursor="Hand" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{DynamicResource SliderCheckBox}" />
                                             </DockPanel>
                                             <DockPanel DockPanel.Dock="Left">
                                                 <Label Content="==> dev" FontSize="14" Foreground="#979DA7" VerticalAlignment="Center" HorizontalAlignment="Left" />
@@ -102,8 +103,8 @@
                     <DockPanel DockPanel.Dock="Top" Height="40">
                         <!-- config/host -->
                         <UniformGrid Columns="2">
-                            <Button x:Name="configBut" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" Click="Button_Config_Host_Click" />
-                            <Button x:Name="hostBut" BorderThickness="0,1,0,0" Content="Host" Background="#FFF0F0F0" FontSize="18" Click="Button_Config_Host_Click" />
+                            <Button x:Name="configBut" Click="Button_Config_Host_Click" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" />
+                            <Button x:Name="hostBut" Click="Button_Config_Host_Click" BorderThickness="0,1,0,0" Content="Host" Background="#FFF0F0F0" FontSize="18" />
                         </UniformGrid>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Bottom" Height="50">
@@ -122,7 +123,7 @@
                                         <Image x:Name="searchBut" Width="20" ToolTip="search" MouseLeftButtonDown="SearchBut_MouseLeftButtonDown" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <Image x:Name="addBut" Width="24" ToolTip="add" Source="pack://siteoforigin:,,,/bin/images/add.png" Cursor="Hand"/>
+                                        <Image x:Name="addBut" Visibility="Hidden" Width="24" ToolTip="add" Source="pack://siteoforigin:,,,/bin/images/add.png" Cursor="Hand"/>
                                     </DockPanel>
                                 </DockPanel>
                             </DockPanel>

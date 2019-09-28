@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -14,12 +15,8 @@ namespace OdyHostNginx
 
         public static BitmapImage img_doc = getImage("doc.png");
         public static BitmapImage img_del = getImage("del.png");
-        public static BitmapImage img_open = getImage("open.png");
-        public static BitmapImage img_close = getImage("close.png");
         public static BitmapImage img_not_apply = getImage("not_apply.png");
         public static BitmapImage img_can_apply = getImage("can_apply.png");
-        public static BitmapImage img_close_env = getImage("close_env.png");
-        public static BitmapImage img_open_disable = getImage("open_disable.png");
 
         public static Color butClickColor = Colors.White;
         public static Color configBgColor = Colors.White;
@@ -31,10 +28,16 @@ namespace OdyHostNginx
         public static Color switchBackgroundColor = (Color)ColorConverter.ConvertFromString("#FF373D47");
         public static Color switchCurrentBackgroundColor = (Color)ColorConverter.ConvertFromString("#FF2D3138");
 
+        public static Style switchButStyle = getResource("ui/SwitchButDictionary.xaml", "SliderCheckBox") as Style;
 
         public static BitmapImage getImage(string fileName)
         {
             return new BitmapImage(new Uri("pack://siteoforigin:,,,/bin/images/" + fileName));
+        }
+
+        public static object getResource(string uri, string key)
+        {
+            return ((ResourceDictionary)Application.LoadComponent(new Uri(uri, UriKind.Relative)))[key];
         }
 
     }

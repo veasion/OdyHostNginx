@@ -18,13 +18,15 @@ namespace OdyHostNginx
     {
 
         bool isHostConfig;
+        string hostSearch;
+        string configSearch;
         EnvConfig currentEnv;
         List<HostConfig> userHosts;
         List<HostConfig> hostConfigs;
         OdyProjectConfig odyProjectConfig;
         Dictionary<string, UpstreamDetails> upstreamDetailsMap;
-        Dictionary<string, Image> envSwitchUI = new Dictionary<string, Image>();
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
+        Dictionary<string, CheckBox> envSwitchUI = new Dictionary<string, CheckBox>();
 
         StackPanel configViewer = new StackPanel
         {
@@ -72,24 +74,23 @@ namespace OdyHostNginx
         /// <summary>
         /// 总开关
         /// </summary>
-        private void OdyHostNginxBut_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void OdyHostNginxBut_Click(object sender, RoutedEventArgs e)
         {
-            Image img = (Image)sender;
-            odyProjectConfig.Use = !odyProjectConfig.Use;
+            CheckBox check = (CheckBox)sender;
+            odyProjectConfig.Use = check.IsChecked != null && check.IsChecked == true ? true : false;
             apply();
-            img.Source = odyProjectConfig.Use ? global::OdyHostNginx.Resources.img_open : global::OdyHostNginx.Resources.img_close;
-            img.ToolTip = odyProjectConfig.Use ? "Close OdyHostNginx" : "Open OdyHostNginx";
+            check.ToolTip = odyProjectConfig.Use ? "Close OdyHostNginx" : "Open OdyHostNginx";
             EnvConfig env;
             foreach (var key in envMap.Keys)
             {
                 env = envMap[key];
                 if (env != null && env.Use)
                 {
-                    Image image;
-                    envSwitchUI.TryGetValue(key, out image);
-                    if (image != null)
+                    CheckBox box;
+                    envSwitchUI.TryGetValue(key, out box);
+                    if (box != null)
                     {
-                        image.Source = odyProjectConfig.Use ? global::OdyHostNginx.Resources.img_open : global::OdyHostNginx.Resources.img_open_disable;
+                        box.IsEnabled = odyProjectConfig.Use;
                     }
                 }
             }
@@ -145,25 +146,70 @@ namespace OdyHostNginx
             Button but = (Button)sender;
             if (but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()))
             {
+                if (isHostConfig)
+                {
+                    return;
+                }
                 // host click
                 isHostConfig = true;
                 this.resetBut.ToolTip = "reset host";
+                this.addBut.Visibility = Visibility.Visible;
                 this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
                 this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
                 this.configHostViewer.Content = hostViewer;
-                // drawingHostConfig();
             }
             else
             {
+                if (!isHostConfig)
+                {
+                    return;
+                }
                 // config click
                 isHostConfig = false;
                 this.resetBut.ToolTip = "reset config";
+                this.addBut.Visibility = Visibility.Hidden;
                 this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
                 this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
                 this.configHostViewer.Content = configViewer;
-                // drawingNginxConfig();
             }
-            CommonMouseLeftButtonUp(null, null);
+            if (isHostConfig)
+            {
+                if (!StringHelper.isBlank(this.searchText.Text))
+                {
+                    configSearch = this.searchText.Text;
+                }
+                if (hostSearch != null)
+                {
+                    this.searchText.Text = hostSearch;
+                    drawingHostConfig(hostSearch);
+                    hostSearch = null;
+                    this.searchText.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.searchText.Text = "";
+                    this.searchText.Visibility = Visibility.Hidden;
+                }
+            }
+            else
+            {
+                if (!StringHelper.isBlank(this.searchText.Text))
+                {
+                    hostSearch = this.searchText.Text;
+                }
+                if (configSearch != null)
+                {
+                    this.searchText.Text = configSearch;
+                    drawingNginxConfig(configSearch);
+                    configSearch = null;
+                    this.searchText.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.searchText.Text = "";
+                    this.searchText.Visibility = Visibility.Hidden;
+                }
+            }
         }
 
         /// <summary>
@@ -215,41 +261,42 @@ namespace OdyHostNginx
                     {
                         Height = 45,
                         DataContext = key,
-                        Cursor = Cursors.Hand
+                        Cursor = Cursors.Hand,
+                        Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchBackgroundColor)
                     };
 
                     dockRoot.MouseLeftButtonUp += EnvDockRoot_MouseLeftButtonUp;
 
                     // doc image
-                    DockPanel dockLeftImg = new DockPanel
+                    DockPanel dockLeftDoc = new DockPanel
                     {
                         Width = 50
                     };
-                    DockPanel.SetDock(dockLeftImg, Dock.Left);
+                    DockPanel.SetDock(dockLeftDoc, Dock.Left);
                     Image docImg = new Image
                     {
                         Width = 16,
                         Source = global::OdyHostNginx.Resources.img_doc
                     };
-                    dockLeftImg.Children.Add(docImg);
+                    dockLeftDoc.Children.Add(docImg);
 
-                    // close image
-                    DockPanel dockRightImg = new DockPanel();
-                    dockLeftImg.Width = 80;
-                    DockPanel.SetDock(dockRightImg, Dock.Right);
-                    Image envSwitchImg = new Image
+                    // switch
+                    DockPanel dockRightSwitch = new DockPanel();
+                    dockRightSwitch.Width = 80;
+                    DockPanel.SetDock(dockRightSwitch, Dock.Right);
+                    CheckBox envSwitch = new CheckBox
                     {
-                        Width = 80,
                         Cursor = Cursors.Hand,
-                        Source = global::OdyHostNginx.Resources.img_close,
-                        Margin = new Thickness(0, 6, 0, 0)
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Style = global::OdyHostNginx.Resources.switchButStyle
                     };
-                    envSwitchImg.DataContext = key;
-                    envSwitchImg.MouseLeftButtonUp += EnvSwitchMouseButtonEventHandler;
-                    dockRightImg.Children.Add(envSwitchImg);
+                    envSwitch.DataContext = key;
+                    envSwitch.Click += EnvSwitchClickEventHandler;
+                    dockRightSwitch.Children.Add(envSwitch);
 
                     envMap[key] = env;
-                    envSwitchUI[key] = envSwitchImg;
+                    envSwitchUI[key] = envSwitch;
 
                     // env
                     DockPanel dockLeftLabel = new DockPanel();
@@ -264,8 +311,8 @@ namespace OdyHostNginx
                         Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.switchColor)
                     };
                     dockLeftLabel.Children.Add(envLabel);
-                    dockRoot.Children.Add(dockLeftImg);
-                    dockRoot.Children.Add(dockRightImg);
+                    dockRoot.Children.Add(dockLeftDoc);
+                    dockRoot.Children.Add(dockRightSwitch);
                     dockRoot.Children.Add(dockLeftLabel);
                     uniformGrid.Children.Add(dockRoot);
                 }
@@ -291,10 +338,10 @@ namespace OdyHostNginx
             }
         }
 
-        private void EnvSwitchMouseButtonEventHandler(object sender, MouseButtonEventArgs e)
+        private void EnvSwitchClickEventHandler(object sender, RoutedEventArgs e)
         {
-            Image envSwitchImg = (Image)sender;
-            string key = (string)envSwitchImg.DataContext;
+            CheckBox envSwitch = (CheckBox)sender;
+            string key = (string)envSwitch.DataContext;
             EnvConfig env;
             envMap.TryGetValue(key, out env);
             if (env != null && odyProjectConfig.Use)
@@ -307,18 +354,23 @@ namespace OdyHostNginx
                         if (envConfig != env)
                         {
                             envConfig.Use = false;
-                            Image eui;
+                            CheckBox eui;
                             envSwitchUI.TryGetValue(envKey(envConfig), out eui);
-                            if (eui != null)
+                            if (eui != null && eui.IsChecked == true)
                             {
-                                eui.Source = global::OdyHostNginx.Resources.img_close;
+                                eui.IsChecked = false;
                             }
                         }
                     }
                 }
-                envSwitchImg.Source = env.Use ? global::OdyHostNginx.Resources.img_open : global::OdyHostNginx.Resources.img_close;
+                envSwitch.IsChecked = env.Use;
                 apply();
             }
+            else if (env != null)
+            {
+                envSwitch.IsChecked = env.Use;
+            }
+            drawingEnvConfig(env);
         }
 
         private string envKey(EnvConfig env)
@@ -646,6 +698,11 @@ namespace OdyHostNginx
 
         private void drawingHostConfig()
         {
+            drawingHostConfig(null);
+        }
+
+        private void drawingHostConfig(string search)
+        {
             // 渲染 host config
             // TODO hostViewer
         }
@@ -657,11 +714,11 @@ namespace OdyHostNginx
                 return;
             }
             string key = envKey(env);
-            Image switchImg;
-            envSwitchUI.TryGetValue(key, out switchImg);
-            if (switchImg != null)
+            CheckBox switchBox;
+            envSwitchUI.TryGetValue(key, out switchBox);
+            if (switchBox != null)
             {
-                DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(switchImg));
+                DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(switchBox));
                 if (isCurrent)
                 {
                     dockRoot.Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchCurrentBackgroundColor);
@@ -675,18 +732,24 @@ namespace OdyHostNginx
 
         private void SearchBut_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!isHostConfig)
-            {
-                // 搜索
-                this.searchText.Visibility = Visibility.Visible;
-                this.searchText.Select(0, 1);
-            }
+            this.searchText.Visibility = Visibility.Visible;
+            this.searchText.Select(0, 1);
         }
 
         private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (this.searchText.IsVisible)
+            if (!this.searchText.IsVisible)
             {
+                return;
+            }
+            if (isHostConfig)
+            {
+                // 搜索 host
+                drawingHostConfig(this.searchText.Text);
+            }
+            else
+            {
+                // 搜索 config
                 drawingNginxConfig(this.searchText.Text);
             }
         }
