@@ -42,8 +42,8 @@
                         <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Help" FontSize="14" Width="40" MaxWidth="40">
-                        <!-- 钉钉 -->
                         <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Flushdns_Click" Header="Flush DNS" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                 </Menu>
             </DockPanel>

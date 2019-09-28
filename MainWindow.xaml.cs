@@ -218,6 +218,11 @@ namespace OdyHostNginx
             CmdHelper.openDingTalk();
         }
 
+        private void Flushdns_Click(object sender, RoutedEventArgs e)
+        {
+            CmdHelper.Cmd(WindowsLocalHostImpl.flushdnsCmd);
+        }
+
         private void Trace_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("功能待开发，敬请期待！");

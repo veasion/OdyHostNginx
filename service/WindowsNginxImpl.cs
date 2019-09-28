@@ -83,9 +83,23 @@ namespace OdyHostNginx
             {
                 list.Insert(f.count, include);
             }
+
+            bool isBlank = false;
             StringBuilder sb = new StringBuilder();
             foreach (string item in list)
             {
+                if (isBlank && StringHelper.isBlank(item))
+                {
+                    continue;
+                }
+                else
+                {
+                    isBlank = false;
+                }
+                if (StringHelper.isBlank(item))
+                {
+                    isBlank = true;
+                }
                 sb.AppendLine(item);
             }
             return sb;
