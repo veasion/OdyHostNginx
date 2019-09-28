@@ -12,6 +12,7 @@ namespace OdyHostNginx
         public static string nginxPath = FileHelper.getCurrentDirectory() + "\\bin\\nginx";
         public static string nginxConfigDir = nginxPath + "\\conf";
         public static string nginxExePath = nginxPath + "\\nginx.exe";
+        public static string nginxLogPath = nginxPath + "\\logs\\error.log";
         public static string nginxConfigPath = nginxConfigDir + "\\nginx.conf";
 
         public static Encoding confEncoding = new UTF8Encoding(false);

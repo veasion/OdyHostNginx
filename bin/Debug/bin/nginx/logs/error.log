@@ -1,1 +1,0 @@
-2019/09/22 17:28:12 [error] 6056#15744: *1 CreateFile() "C:\Users\Veasion\Desktop\OdyHostNginx\bin\Debug\bin\nginx/html/favicon.ico" failed (2: The system cannot find the file specified), client: 127.0.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "127.0.0.1", referrer: "http://127.0.0.1/"

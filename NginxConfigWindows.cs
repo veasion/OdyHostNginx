@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,21 +19,33 @@ namespace OdyHostNginx
             InitializeComponent();
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void Cancel_Click(object sender, EventArgs e)
         {
-            NginxConfigData.projectName = null;
-            NginxConfigData.envName = null;
-            NginxConfigData.path = null;
-            NginxConfigData.import = false;
+            ConfigDialogData.projectName = null;
+            ConfigDialogData.envName = null;
+            ConfigDialogData.path = null;
+            ConfigDialogData.success = false;
             this.Close();
         }
 
-        private void Button2_Click(object sender, EventArgs e)
+        private void Confirm_Click(object sender, EventArgs e)
         {
-            NginxConfigData.projectName = this.projectName.Text;
-            NginxConfigData.envName = this.envName.Text;
-            NginxConfigData.import = true;
-            string path = OdyConfigHelper.userNginxConfigDir + "\\" + NginxConfigData.projectName + "\\" + NginxConfigData.envName;
+            if (StringHelper.isBlank(this.projectName.Text) || StringHelper.isBlank(this.envName.Text))
+            {
+                MessageBox.Show("名称不能为空");
+                return;
+            }
+            /*
+            else if (!Regex.IsMatch(this.projectName.Text + this.envName.Text, "^[0-9a-zA-Z_]{1,}$"))
+            {
+                MessageBox.Show("名称只能由数字、字母、下划线组成");
+                return;
+            }
+            */
+            ConfigDialogData.projectName = this.projectName.Text;
+            ConfigDialogData.envName = this.envName.Text;
+            ConfigDialogData.success = true;
+            string path = OdyConfigHelper.userNginxConfigDir + "\\" + ConfigDialogData.projectName + "\\" + ConfigDialogData.envName;
             if (Directory.Exists(path))
             {
                 DialogResult result = MessageBox.Show("该项目环境已存在，是否替换？", "提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
@@ -42,7 +55,7 @@ namespace OdyHostNginx
                     return;
                 }
             }
-            NginxConfigData.path = path;
+            ConfigDialogData.path = path;
             this.Close();
         }
 

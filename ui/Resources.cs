@@ -10,17 +10,24 @@ using System.Windows.Media.Imaging;
 
 namespace OdyHostNginx
 {
-    class Resources
+    public class Resources
     {
 
         public static BitmapImage img_doc = getImage("doc.png");
-        public static BitmapImage img_del = getImage("del.png");
+        public static BitmapImage img_del_red = getImage("del_red.png");
+        public static BitmapImage img_del_grey = getImage("del_grey.png");
+        public static BitmapImage img_add_grey = getImage("add_grey.png");
+        public static BitmapImage img_add_blue = getImage("add_blue.png");
         public static BitmapImage img_not_apply = getImage("not_apply.png");
         public static BitmapImage img_can_apply = getImage("can_apply.png");
 
+        public static Color hostBgColor = Colors.White;
         public static Color butClickColor = Colors.White;
         public static Color configBgColor = Colors.White;
+        public static Color hostBorderColor = Colors.LightBlue;
+
         public static Color switchColor = (Color)ColorConverter.ConvertFromString("#979DA7");
+        public static Color hostFontColor = (Color)ColorConverter.ConvertFromString("#979DA7");
         public static Color butInitColor = (Color)ColorConverter.ConvertFromString("#FFF0F0F0");
         public static Color configFontColor = (Color)ColorConverter.ConvertFromString("#979DA7");
         public static Color configBorderColor = (Color)ColorConverter.ConvertFromString("#979DA7");

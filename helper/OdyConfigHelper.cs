@@ -10,6 +10,7 @@ namespace OdyHostNginx
     class OdyConfigHelper
     {
 
+        public static string sysHostsPath = WindowsLocalHostImpl.hostsPath;
         public static string nginxConfigDir = WindowsNginxImpl.nginxConfigDir;
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
         public static string userHostsDir = FileHelper.getCurrentDirectory() + "\\bin\\hosts";
@@ -148,6 +149,7 @@ namespace OdyHostNginx
                 }
             }
             env.Configs = confs;
+            env.Hosts = getHosts(env);
         }
 
         public static void fillUpstream(Dictionary<string, UpstreamDetails> upstreamDetailsMap, EnvConfig env)
@@ -241,41 +243,28 @@ namespace OdyHostNginx
             FileHelper.writeFile(userHostsPath, Encoding.UTF8, sb.ToString());
         }
 
-        public static List<HostConfig> getHosts(OdyProjectConfig config)
+        private static List<HostConfig> getHosts(EnvConfig env)
         {
             HashSet<string> domainSet = new HashSet<string>();
-            if (config.Use)
+            foreach (var configs in env.Configs)
             {
-                foreach (var p in config.Projects)
+                if (!StringHelper.isBlank(configs.ServerName))
                 {
-                    foreach (var e in p.Envs)
+                    configs.ServerName = configs.ServerName.Trim();
+                    string[] servers = configs.ServerName.Split(' ');
+                    if (servers.Length > 1)
                     {
-                        if (!e.Use)
+                        foreach (var item in servers)
                         {
-                            continue;
-                        }
-                        foreach (var configs in e.Configs)
-                        {
-                            if (!StringHelper.isBlank(configs.ServerName))
+                            if (!StringHelper.isBlank(item))
                             {
-                                configs.ServerName = configs.ServerName.Trim();
-                                string[] servers = configs.ServerName.Split(' ');
-                                if (servers.Length > 1)
-                                {
-                                    foreach (var item in servers)
-                                    {
-                                        if (!StringHelper.isBlank(item))
-                                        {
-                                            domainSet.Add(item.Trim());
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    domainSet.Add(configs.ServerName);
-                                }
+                                domainSet.Add(item.Trim());
                             }
                         }
+                    }
+                    else
+                    {
+                        domainSet.Add(configs.ServerName);
                     }
                 }
             }
@@ -284,9 +273,9 @@ namespace OdyHostNginx
             {
                 HostConfig host = new HostConfig
                 {
-                    Use = true,
-                    Ip = "127.0.0.1",
-                    Domain = domain
+                    Use = false,
+                    Domain = domain,
+                    Ip = "127.0.0.1"
                 };
                 hosts.Add(host);
             }
@@ -376,8 +365,28 @@ namespace OdyHostNginx
                     }
                     else
                     {
-                        return x.ServerName.Length > y.ServerName.Length ? -1 : 1;
+                        return x.ServerName.Length > y.ServerName.Length ? 1 : -1;
                     }
+                });
+            }
+        }
+
+        public static void sortHosts(List<HostConfig> hosts)
+        {
+            // 使用中的排在前面，否则域名越长越靠后
+            if (hosts != null)
+            {
+                hosts.Sort((x, y) =>
+                {
+                    if (x.Use && !y.Use)
+                    {
+                        return -1;
+                    }
+                    else if (y.Use && !x.Use)
+                    {
+                        return 1;
+                    }
+                    return x.Domain.Length > y.Domain.Length ? 1 : -1;
                 });
             }
         }
@@ -455,7 +464,7 @@ namespace OdyHostNginx
                     }
                 }
             }
-            // 清楚 body
+            // 清除 body，采用懒加载
             config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = null)));
         }
 

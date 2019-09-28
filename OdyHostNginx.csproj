@@ -68,6 +68,12 @@
     <Compile Include="helper\FileHelper.cs" />
     <Compile Include="bean\Flag.cs" />
     <Compile Include="bean\HostConfig.cs" />
+    <Compile Include="HostConfigWindows.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HostConfigWindows.Designer.cs">
+      <DependentUpon>HostConfigWindows.cs</DependentUpon>
+    </Compile>
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,7 +86,7 @@
     <Compile Include="helper\OdyConfigHelper.cs" />
     <Compile Include="bean\OdyProjectConfig.cs" />
     <Compile Include="bean\ProjectConfig.cs" />
-    <Compile Include="ui\NginxConfigData.cs" />
+    <Compile Include="ui\ConfigDialogData.cs" />
     <Compile Include="ui\Resources.cs" />
     <Compile Include="exception\ServiceException.cs" />
     <Compile Include="helper\StringHelper.cs" />
@@ -123,6 +129,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="HostConfigWindows.resx">
+      <DependentUpon>HostConfigWindows.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="NginxConfigWindows.resx">
       <DependentUpon>NginxConfigWindows.cs</DependentUpon>
     </EmbeddedResource>

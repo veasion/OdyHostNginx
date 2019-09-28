@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OdyHostNginx"
         mc:Ignorable="d"
-        Title="OdyHostNginx" Height="528.504" Width="804.206" WindowStartupLocation="CenterScreen" Closing="OdyHostNginx_Closing">
+        Title="OdyHostNginx" Height="540" Width="805" WindowStartupLocation="CenterScreen" Closing="OdyHostNginx_Closing" ResizeMode="CanMinimize">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -19,30 +19,31 @@
             <DockPanel DockPanel.Dock="Top">
                 <Menu Name="FileMenu" BorderThickness="0" FontSize="12" Foreground="Black" Height="20" Margin="0,0,0,0" VerticalAlignment="Top" Background="#FFF0F0F0">
                     <MenuItem Header="File" FontSize="14" Width="40" MaxWidth="40">
-                        <MenuItem x:Name="Reload" Click="Reload_Click" Header="Reload" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Import" Click="Import_Click" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Export" Click="Export_Click" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="Reset" Click="Reset_Click" Header="Reset" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="About" Click="About_Click" Header="About" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Reload_Click" Header="Reload" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Import_Click" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Export_Click" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Reset_Click" Header="Reset" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="About_Click" Header="About" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Edit" FontSize="14" Width="40" MaxWidth="40">
-                        <MenuItem x:Name="HostConfig" Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="NginxConfig" Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem x:Name="UserConfig" Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="View" FontSize="14" Width="40" MaxWidth="40">
-                        <!-- 文件夹 -->
-                        <MenuItem x:Name="Explorer" Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="ShowLog_Click" Header="Show Log" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="ShowHosts_Click" Header="Show Hosts" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Tools" FontSize="14" Width="46">
                         <!-- Trace -->
-                        <MenuItem x:Name="Trace" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Trace_Click" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
                         <!-- 抓包 -->
-                        <MenuItem x:Name="HttpPacket" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Help" FontSize="14" Width="40" MaxWidth="40">
                         <!-- 钉钉 -->
-                        <MenuItem x:Name="DingTalk" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                 </Menu>
             </DockPanel>
@@ -113,17 +114,16 @@
                                 <DockPanel LastChildFill="False">
                                     <!-- 底部按钮 -->
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <!-- Source="pack://siteoforigin:,,,/bin/images/can_apply.png" -->
                                         <Image x:Name="applyBut" MouseLeftButtonUp="ApplyBut_MouseLeftButtonUp"  Width="22" ToolTip="apply" Source="pack://siteoforigin:,,,/bin/images/not_apply.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
                                         <Image x:Name="resetBut" MouseLeftButtonUp="ResetBut_MouseLeftButtonUp"  Width="20" ToolTip="reset config" Source="pack://siteoforigin:,,,/bin/images/reset.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <Image x:Name="searchBut" Width="20" ToolTip="search" MouseLeftButtonDown="SearchBut_MouseLeftButtonDown" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
+                                        <Image x:Name="searchBut" MouseLeftButtonDown="SearchBut_MouseLeftButtonDown" Width="20" ToolTip="search" Source="pack://siteoforigin:,,,/bin/images/search.png" Cursor="Hand"/>
                                     </DockPanel>
                                     <DockPanel DockPanel.Dock="Right" Width="60">
-                                        <Image x:Name="addBut" Visibility="Hidden" Width="24" ToolTip="add" Source="pack://siteoforigin:,,,/bin/images/add.png" Cursor="Hand"/>
+                                        <Image x:Name="addBut" MouseLeftButtonDown="AddBut_MouseLeftButtonDown" Visibility="Hidden" Width="24" ToolTip="add" Source="pack://siteoforigin:,,,/bin/images/add.png" Cursor="Hand"/>
                                     </DockPanel>
                                 </DockPanel>
                             </DockPanel>
@@ -155,6 +155,77 @@
                                         </DockPanel>
                                     </DockPanel>
                                 </Border>
+                            </StackPanel>
+                            -->
+                            <!-- 动态 host -->
+                            <!--
+                            <StackPanel Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <GroupBox Header="current" Foreground="#979DA7" Margin="5,5,5,0">
+                                    <StackPanel Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <Border BorderBrush="LightBlue" BorderThickness="1,1,1,1" Margin="5,5,5,0">
+                                            <DockPanel Height="30">
+                                                <DockPanel DockPanel.Dock="Left" Width="220">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">admin.2d7devback.oudianyun.com</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="80">
+                                                    <Label Foreground="#979DA7" Content="==>" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="130">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="14" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">192.168.0.100</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="100">
+                                                    <Image Margin="10,0,10,0" Width="22" ToolTip="delete" Source="pack://siteoforigin:,,,/bin/images/del_grey.png"/>
+                                                    <CheckBox Cursor="Hand" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{DynamicResource SliderCheckBox}" />
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" />
+                                            </DockPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </GroupBox>
+                                <GroupBox Header="user host" Foreground="#979DA7" Margin="5,5,5,0">
+                                    <StackPanel Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <Border BorderBrush="LightBlue" BorderThickness="1,1,1,1" Margin="5,5,5,0">
+                                            <DockPanel Height="30">
+                                                <DockPanel DockPanel.Dock="Left" Width="220">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">admin.2d7devback.oudianyun.com</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="80">
+                                                    <Label Foreground="#979DA7" Content="==>" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="130">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="14" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">192.168.0.100</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="100">
+                                                    <Image Margin="10,0,10,0" Width="22" ToolTip="delete" Source="pack://siteoforigin:,,,/bin/images/del_grey.png"/>
+                                                    <CheckBox Cursor="Hand" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{DynamicResource SliderCheckBox}" />
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" />
+                                            </DockPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </GroupBox>
+                                <GroupBox Header="env host" Foreground="#979DA7" Margin="5,5,5,0">
+                                    <StackPanel Orientation="Vertical" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <Border BorderBrush="LightBlue" BorderThickness="1,1,1,1" Margin="5,5,5,0">
+                                            <DockPanel Height="30">
+                                                <DockPanel DockPanel.Dock="Left" Width="220">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">admin.2d7devback.oudianyun.com</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="80">
+                                                    <Label Foreground="#979DA7" Content="==>" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="130">
+                                                    <TextBox Foreground="#979DA7" BorderThickness="0,0,0,0" Background="White" FontSize="14" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">192.168.0.100</TextBox>
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" Width="100">
+                                                    <Image Visibility="Hidden" Margin="10,0,10,0" Width="22" ToolTip="delete" Source="pack://siteoforigin:,,,/bin/images/del_grey.png" />
+                                                    <CheckBox Cursor="Hand" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{DynamicResource SliderCheckBox}" />
+                                                </DockPanel>
+                                                <DockPanel DockPanel.Dock="Left" />
+                                            </DockPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </GroupBox>
                             </StackPanel>
                             -->
                         </ScrollViewer>

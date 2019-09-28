@@ -10,6 +10,7 @@ namespace OdyHostNginx
     {
 
         static string ipPattern = @"^(([1-9]\d?)|(1\d{2})|(2[01]\d)|(22[0-3]))(\.((1?\d\d?)|(2[04]/d)|(25[0-5]))){3}$";
+        static string domainPattern = @"^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
 
         public static bool isEmpty(string str)
         {
@@ -19,6 +20,11 @@ namespace OdyHostNginx
         public static bool isBlank(string str)
         {
             return isEmpty(str) || "".Equals(str.Trim());
+        }
+
+        public static bool isDomain(string domain)
+        {
+            return !isEmpty(domain) && Regex.IsMatch(domain, domainPattern);
         }
 
         public static bool isIp(string ip)

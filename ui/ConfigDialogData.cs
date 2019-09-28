@@ -6,13 +6,17 @@ using System.Threading.Tasks;
 
 namespace OdyHostNginx
 {
-    class NginxConfigData
+    class ConfigDialogData
     {
 
         public static string projectName;
         public static string envName;
         public static string path;
-        public static bool import;
+
+        public static string domain;
+        public static string ip;
+
+        public static bool success;
 
     }
 }

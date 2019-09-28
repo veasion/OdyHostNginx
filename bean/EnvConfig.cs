@@ -14,6 +14,7 @@ namespace OdyHostNginx
         private List<NginxConfig> configs;
         private String upstreamFileName;
         private List<NginxUpstream> upstreams;
+        private List<HostConfig> hosts;
 
         private ProjectConfig project;
 
@@ -23,6 +24,7 @@ namespace OdyHostNginx
         public string UpstreamFileName { get => upstreamFileName; set => upstreamFileName = value; }
         internal List<NginxUpstream> Upstreams { get => upstreams; set => upstreams = value; }
         internal ProjectConfig Project { get => project; set => project = value; }
+        internal List<HostConfig> Hosts { get => hosts; set => hosts = value; }
 
     }
 }
