@@ -16,6 +16,7 @@ namespace OdyHostNginx
     /// </summary>
     public partial class MainWindow : Window
     {
+
         #region 变量
         bool isHostConfig;
         string hostSearch;
@@ -137,15 +138,63 @@ namespace OdyHostNginx
             {
                 if (ofd.FileNames != null && ofd.FileNames.Length >= 0)
                 {
-                    new NginxConfigWindows().ShowDialog();
-                    if (ConfigDialogData.success && ConfigDialogData.path != null)
+                    import(ofd.FileNames);
+                }
+            }
+        }
+
+        private void import(string[] fileNames)
+        {
+            string[] pe = OdyConfigHelper.projectEnvName(fileNames);
+            if (pe != null && pe.Length > 1)
+            {
+                ConfigDialogData.projectName = pe[0];
+                ConfigDialogData.envName = pe[1];
+            }
+            new NginxConfigWindows().ShowDialog();
+            if (ConfigDialogData.success && ConfigDialogData.path != null)
+            {
+                FileHelper.copyFiles(fileNames, ConfigDialogData.path, true);
+                MessageBox.Show("导入成功！");
+                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+                initData();
+            }
+        }
+
+        private void OdyHostNginx_DragEnter(object sender, DragEventArgs e)
+        {
+            string[] array = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (array != null && array.Length > 0)
+            {
+                List<string> list = new List<string>();
+                foreach (var item in array)
+                {
+                    if (item.EndsWith(".conf"))
                     {
-                        FileHelper.copyFiles(ofd.FileNames, ConfigDialogData.path, true);
-                        MessageBox.Show("导入成功！");
-                        odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
-                        initData();
+                        list.Add(item);
                     }
                 }
+                if (list.Count > 0)
+                {
+                    string[] fileNames = new string[list.Count];
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        fileNames[i] = list[i];
+                    }
+                    import(fileNames);
+                }
+            }
+        }
+
+        private void OdyHostNginx_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Link;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
             }
         }
 

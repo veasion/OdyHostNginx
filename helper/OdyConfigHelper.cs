@@ -10,6 +10,7 @@ namespace OdyHostNginx
     class OdyConfigHelper
     {
 
+        public static string deleteStartsWith = "deleted_";
         public static string sysHostsPath = WindowsLocalHostImpl.hostsPath;
         public static string nginxConfigDir = WindowsNginxImpl.nginxConfigDir;
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
@@ -66,6 +67,10 @@ namespace OdyHostNginx
             DirectoryInfo[] proDirs = dir.GetDirectories();
             foreach (var proDir in proDirs)
             {
+                if (proDir.Name.StartsWith(deleteStartsWith))
+                {
+                    continue;
+                }
                 ProjectConfig pro = new ProjectConfig
                 {
                     Name = proDir.Name
@@ -74,6 +79,10 @@ namespace OdyHostNginx
                 DirectoryInfo[] envDirs = proDir.GetDirectories();
                 foreach (var envDir in envDirs)
                 {
+                    if (envDir.Name.StartsWith(deleteStartsWith))
+                    {
+                        continue;
+                    }
                     EnvConfig env = new EnvConfig
                     {
                         Project = pro,
@@ -466,6 +475,67 @@ namespace OdyHostNginx
             }
             // 清除 body，采用懒加载
             config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = null)));
+        }
+
+        public static void deleteProject(ProjectConfig project)
+        {
+            FileHelper.delDir(nginxConfigDir + "\\" + project.Name, true);
+            DirectoryInfo envDir = new DirectoryInfo(userNginxConfigDir + "\\" + project.Name);
+            if (envDir.Exists)
+            {
+                envDir.MoveTo(userNginxConfigDir + "\\" + deleteStartsWith + project.Name);
+            }
+        }
+
+        public static void deleteEnv(EnvConfig env)
+        {
+            FileHelper.delDir(nginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName, true);
+            DirectoryInfo envDir = new DirectoryInfo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName);
+            if (envDir.Exists)
+            {
+                envDir.MoveTo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + deleteStartsWith + env.EnvName);
+            }
+        }
+
+        public static string[] projectEnvName(string[] names)
+        {
+            string[] pe = new string[2];
+            foreach (var name in names)
+            {
+                int index = -1;
+                string fileName = name, str = null;
+                if ((index = fileName.LastIndexOf("\\")) > -1)
+                {
+                    fileName = fileName.Substring(index + 1);
+                }
+                if (fileName.StartsWith("adminportal"))
+                {
+                    str = StringHelper.substring(fileName, "adminportal", ".oudianyun.com");
+                }
+                else if (fileName.StartsWith("api."))
+                {
+                    str = StringHelper.substring(fileName, "api.", ".com.conf");
+                }
+                if (str != null)
+                {
+                    index = str.LastIndexOf("dev");
+                    if (index == -1)
+                    {
+                        index = str.LastIndexOf("test");
+                    }
+                    if (index == -1)
+                    {
+                        index = str.LastIndexOf("trunk");
+                    }
+                    if (index > -1)
+                    {
+                        pe[0] = str.Substring(0, index);
+                        pe[1] = str.Substring(index);
+                        break;
+                    }
+                }
+            }
+            return pe;
         }
 
     }

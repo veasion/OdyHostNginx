@@ -5,7 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OdyHostNginx"
         mc:Ignorable="d"
-        Title="OdyHostNginx" Height="540" Width="805" WindowStartupLocation="CenterScreen" Closing="OdyHostNginx_Closing" ResizeMode="CanMinimize">
+        Title="OdyHostNginx"
+        Height="540" Width="805"
+        WindowStartupLocation="CenterScreen"
+        AllowDrop="True"
+        Drop="OdyHostNginx_Drop"
+        DragEnter="OdyHostNginx_DragEnter"
+        Closing="OdyHostNginx_Closing"
+        ResizeMode="CanMinimize">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

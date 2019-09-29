@@ -17,6 +17,12 @@ namespace OdyHostNginx
         public NginxConfigWindows()
         {
             InitializeComponent();
+            ConfigDialogData.success = false;
+            if (ConfigDialogData.projectName != null && ConfigDialogData.envName != null)
+            {
+                this.envName.Text = ConfigDialogData.envName;
+                this.projectName.Text = ConfigDialogData.projectName;
+            }
         }
 
         private void Cancel_Click(object sender, EventArgs e)
@@ -48,7 +54,7 @@ namespace OdyHostNginx
             string path = OdyConfigHelper.userNginxConfigDir + "\\" + ConfigDialogData.projectName + "\\" + ConfigDialogData.envName;
             if (Directory.Exists(path))
             {
-                DialogResult result = MessageBox.Show("该项目环境已存在，是否替换？", "提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show("该项目环境已存在，相同配置时是否替换？", "提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
                 if (result != DialogResult.OK)
                 {
                     MessageBox.Show("请更换项目或环境名称");
