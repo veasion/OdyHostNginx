@@ -42,17 +42,18 @@ namespace OdyHostNginx
         #region 初始化、退出
         public MainWindow()
         {
+            upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
             this.ContentRendered += (sender, e) => initData();
             InitializeComponent();
         }
 
         private void initData()
         {
-            upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
+            upstreamDetailsMap.Clear();
             odyProjectConfig = OdyConfigHelper.loadConfig(null, upstreamDetailsMap);
             if (odyProjectConfig == null || odyProjectConfig.Projects == null || odyProjectConfig.Projects.Count == 0)
             {
-                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
             }
             userHosts = OdyConfigHelper.loadUserHosts();
             drawingSwitchUI();
@@ -156,7 +157,7 @@ namespace OdyHostNginx
             {
                 FileHelper.copyFiles(fileNames, ConfigDialogData.path, true);
                 MessageBox.Show("导入成功！");
-                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
                 initData();
             }
         }
@@ -252,13 +253,13 @@ namespace OdyHostNginx
 
         private void Reload_Click(object sender, RoutedEventArgs e)
         {
-            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(false);
+            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
             drawingSwitchUI();
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
-            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(true);
+            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
             drawingSwitchUI();
         }
 
@@ -592,7 +593,7 @@ namespace OdyHostNginx
 
         private void Button_Config_Host_Click(object sender, RoutedEventArgs e)
         {
-            Button but = (Button)sender;
+            var but = sender as ContentControl;
             if (but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()))
             {
                 if (isHostConfig)
@@ -733,13 +734,15 @@ namespace OdyHostNginx
 
         private Border drawingConfig(NginxUpstream u, UpstreamDetails ud, string contextPath)
         {
+            Color borderColor = global::OdyHostNginx.Resources.configBorderColor;
             Border border = new Border
             {
                 Margin = new Thickness(5, 10, 5, 0),
                 CornerRadius = new CornerRadius(22),
                 BorderThickness = new Thickness(1, 1, 1, 1),
-                BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.configBorderColor)
+                BorderBrush = new SolidColorBrush(borderColor)
             };
+
             DockPanel dockRoot = new DockPanel
             {
                 Height = 45
@@ -784,6 +787,7 @@ namespace OdyHostNginx
                 Text = u.Ip,
                 FontSize = 12,
                 BorderThickness = new Thickness(1, 0, 0, 0),
+                BorderBrush = new SolidColorBrush(borderColor),
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
@@ -804,6 +808,7 @@ namespace OdyHostNginx
                 FontSize = 12,
                 Text = u.Port + "",
                 BorderThickness = new Thickness(1, 0, 1, 0),
+                BorderBrush = new SolidColorBrush(borderColor),
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
@@ -1028,7 +1033,7 @@ namespace OdyHostNginx
                 {
                     Margin = new Thickness(5, 5, 5, 0),
                     BorderThickness = new Thickness(1, 1, 1, 1),
-                    BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.hostBorderColor)
+                    BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.selectBorderColor)
                 };
                 DockPanel rootDock = new DockPanel
                 {

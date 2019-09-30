@@ -111,8 +111,12 @@
                     <DockPanel DockPanel.Dock="Top" Height="40">
                         <!-- config/host -->
                         <UniformGrid Columns="2">
-                            <Button x:Name="configBut" Click="Button_Config_Host_Click" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" />
+                            <Label x:Name="configBut" MouseLeftButtonUp="Button_Config_Host_Click" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                            <Label x:Name="hostBut" MouseLeftButtonUp="Button_Config_Host_Click" BorderThickness="0,1,0,0" Content="Host" Background="#FFF0F0F0" FontSize="18" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                            <!--
+                            <Button x:Name="configButa" Click="Button_Config_Host_Click" BorderThickness="0,1,1,0" Content="Config" Background="White" FontSize="18" />
                             <Button x:Name="hostBut" Click="Button_Config_Host_Click" BorderThickness="0,1,0,0" Content="Host" Background="#FFF0F0F0" FontSize="18" />
+                            -->
                         </UniformGrid>
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Bottom" Height="50">

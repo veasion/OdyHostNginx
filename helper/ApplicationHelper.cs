@@ -48,10 +48,10 @@ namespace OdyHostNginx
             }
         }
 
-        public static OdyProjectConfig copyUserConfigToNginx(bool replace)
+        public static OdyProjectConfig copyUserConfigToNginx(Dictionary<string, UpstreamDetails> upstreamDetailsMap, bool replace)
         {
             FileHelper.copyDirectory(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace);
-            return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir);
+            return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir, upstreamDetailsMap);
         }
 
         private static void getUseConfig(OdyProjectConfig config, List<string> confs)

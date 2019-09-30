@@ -32,6 +32,11 @@ namespace OdyHostNginx
             return !isEmpty(ip) && Regex.IsMatch(ip, ipPattern);
         }
 
+        public static bool isLocalIp(string ip)
+        {
+            return "127.0.0.1".Equals(ip);
+        }
+
         public static bool isPort(string port)
         {
             return !isEmpty(port) && port.Length <= 5 && isInt(port);
