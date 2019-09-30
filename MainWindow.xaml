@@ -25,30 +25,30 @@
         <DockPanel>
             <DockPanel DockPanel.Dock="Top">
                 <Menu Name="FileMenu" BorderThickness="0" FontSize="12" Foreground="Black" Height="20" Margin="0,0,0,0" VerticalAlignment="Top" Background="#FFF0F0F0">
-                    <MenuItem Header="File" FontSize="14" Width="40" MaxWidth="40">
+                    <MenuItem Header="File" FontSize="14">
                         <MenuItem Click="Reload_Click" Header="Reload" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Import_Click" Header="Import" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Export_Click" Header="Export" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Reset_Click" Header="Reset" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="About_Click" Header="About" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
-                    <MenuItem Header="Edit" FontSize="14" Width="40" MaxWidth="40">
+                    <MenuItem Header="Edit" FontSize="14">
                         <MenuItem Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
-                    <MenuItem Header="View" FontSize="14" Width="40" MaxWidth="40">
+                    <MenuItem Header="View" FontSize="14">
                         <MenuItem Click="ShowLog_Click" Header="Show Log" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="ShowHosts_Click" Header="Show Hosts" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
-                    <MenuItem Header="Tools" FontSize="14" Width="46">
+                    <MenuItem Header="Tools" FontSize="14">
                         <!-- Trace -->
                         <MenuItem Click="Trace_Click" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
                         <!-- 抓包 -->
                         <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
-                    <MenuItem Header="Help" FontSize="14" Width="40" MaxWidth="40">
+                    <MenuItem Header="Help" FontSize="14">
                         <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Flushdns_Click" Header="Flush DNS" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>

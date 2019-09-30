@@ -226,7 +226,7 @@ namespace OdyHostNginx
         {
             Process.Start("explorer.exe", OdyConfigHelper.userNginxConfigDir);
         }
-        
+
         private void ShowLog_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("notepad.exe", WindowsNginxImpl.nginxLogPath);
@@ -320,6 +320,43 @@ namespace OdyHostNginx
                 if (env != null)
                 {
                     drawingEnvConfig(env);
+                    CheckBox eui;
+                    envSwitchUI.TryGetValue(key, out eui);
+                    if (eui != null)
+                    {
+                        Image delImage = VisualTreeHelper.GetChild(VisualTreeHelper.GetParent(eui), 0) as Image;
+                        if (delImage != null && delImage.Visibility != Visibility.Hidden)
+                        {
+                            delImage.Visibility = Visibility.Hidden;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DockRoot_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            string key = (string)(sender as DockPanel).DataContext;
+            EnvConfig env;
+            envMap.TryGetValue(key, out env);
+            if (env != null)
+            {
+                CheckBox eui;
+                envSwitchUI.TryGetValue(envKey(env), out eui);
+                if (eui != null)
+                {
+                    Image delImage = VisualTreeHelper.GetChild(VisualTreeHelper.GetParent(eui), 0) as Image;
+                    if (delImage != null)
+                    {
+                        if (delImage.Visibility == Visibility.Hidden)
+                        {
+                            delImage.Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            delImage.Visibility = Visibility.Hidden;
+                        }
+                    }
                 }
             }
         }
@@ -424,6 +461,7 @@ namespace OdyHostNginx
                 Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchBackgroundColor)
             };
 
+            dockRoot.MouseRightButtonUp += DockRoot_MouseRightButtonUp;
             dockRoot.MouseLeftButtonUp += EnvDockRoot_MouseLeftButtonUp;
 
             // doc image
@@ -439,10 +477,25 @@ namespace OdyHostNginx
             };
             dockLeftDoc.Children.Add(docImg);
 
-            // switch
+            // switch/delete
             DockPanel dockRightSwitch = new DockPanel();
             dockRightSwitch.Width = 80;
             DockPanel.SetDock(dockRightSwitch, Dock.Right);
+            // delete
+            Image delImage = new Image
+            {
+                Width = 22,
+                ToolTip = "delete",
+                Cursor = Cursors.Hand,
+                Visibility = Visibility.Hidden,
+                Margin = new Thickness(5, 0, 5, 0),
+                Source = global::OdyHostNginx.Resources.img_del_grey
+            };
+            delImage.DataContext = env;
+            delImage.MouseEnter += DelImage_MouseEnter;
+            delImage.MouseLeave += DelImage_MouseLeave;
+            delImage.MouseLeftButtonUp += DelImage_MouseLeftButtonUp;
+            // switch
             CheckBox envSwitch = new CheckBox
             {
                 Cursor = Cursors.Hand,
@@ -452,6 +505,7 @@ namespace OdyHostNginx
             };
             envSwitch.DataContext = key;
             envSwitch.Click += EnvSwitchClickEventHandler;
+            dockRightSwitch.Children.Add(delImage);
             dockRightSwitch.Children.Add(envSwitch);
 
             envMap[key] = env;
@@ -1059,7 +1113,8 @@ namespace OdyHostNginx
                     delImage.MouseLeave += DelImage_MouseLeave;
                     delImage.MouseLeftButtonUp += DelImage_MouseLeftButtonUp;
                     butDock.Children.Add(delImage);
-                } else
+                }
+                else
                 {
                     Image addImage = new Image
                     {
@@ -1143,6 +1198,37 @@ namespace OdyHostNginx
             domain.Foreground = new SolidColorBrush(isDomain ? global::OdyHostNginx.Resources.hostFontColor : Colors.Red);
         }
 
+        private void AddImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            CommonMouseLeftButtonUp(null, null);
+            Image addImage = sender as Image;
+            HostConfig host = addImage.DataContext as HostConfig;
+            userHosts.Add(new HostConfig()
+            {
+                Use = false,
+                Ip = host.Ip,
+                PingIp = host.PingIp,
+                Domain = host.Domain
+            });
+            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            drawingHostConfig();
+        }
+        #endregion
+
+        #region other
+
+        private void AddImage_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Image addImage = sender as Image;
+            addImage.Source = global::OdyHostNginx.Resources.img_add_blue;
+        }
+
+        private void AddImage_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Image addImage = sender as Image;
+            addImage.Source = global::OdyHostNginx.Resources.img_add_grey;
+        }
+
         private void DelImage_MouseEnter(object sender, MouseEventArgs e)
         {
             Image delImage = sender as Image;
@@ -1159,45 +1245,37 @@ namespace OdyHostNginx
         {
             CommonMouseLeftButtonUp(null, null);
             Image delImage = sender as Image;
-            HostConfig host = delImage.DataContext as HostConfig;
-            foreach (var item in userHosts)
+            var data = delImage.DataContext;
+            if (data is HostConfig)
             {
-                if (host == item)
+                HostConfig host = data as HostConfig;
+                foreach (var item in userHosts)
                 {
-                    userHosts.Remove(host);
-                    this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
-                    drawingHostConfig();
-                    break;
+                    if (host == item)
+                    {
+                        userHosts.Remove(host);
+                        this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                        drawingHostConfig();
+                        break;
+                    }
                 }
             }
-        }
-
-        private void AddImage_MouseEnter(object sender, MouseEventArgs e)
-        {
-            Image addImage = sender as Image;
-            addImage.Source = global::OdyHostNginx.Resources.img_add_blue;
-        }
-
-        private void AddImage_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Image addImage = sender as Image;
-            addImage.Source = global::OdyHostNginx.Resources.img_add_grey;
-        }
-
-        private void AddImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            CommonMouseLeftButtonUp(null, null);
-            Image addImage = sender as Image;
-            HostConfig host = addImage.DataContext as HostConfig;
-            userHosts.Add(new HostConfig()
+            else if (data is EnvConfig)
             {
-                Use = false,
-                Ip = host.Ip,
-                PingIp = host.PingIp,
-                Domain = host.Domain
-            });
-            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
-            drawingHostConfig();
+                EnvConfig env = data as EnvConfig;
+                int count = env.Project.Envs.Count;
+                string title = "该环境" + (count <= 1 ? "和项目" : "") + "将会被删除，是否继续？";
+                MessageBoxResult result = MessageBox.Show(title, "警告", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    OdyConfigHelper.deleteEnv(env);
+                    if (count <= 1)
+                    {
+                        OdyConfigHelper.deleteProject(env.Project);
+                    }
+                    initData();
+                }
+            }
         }
         #endregion
 
@@ -1226,7 +1304,8 @@ namespace OdyHostNginx
         private void SearchBut_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             this.searchText.Visibility = Visibility.Visible;
-            this.searchText.Select(0, 1);
+            this.searchText.Focus();
+            this.searchText.Select(0, this.searchText.Text.Length);
         }
 
         private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
