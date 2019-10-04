@@ -18,5 +18,7 @@ namespace OdyHostNginx
 
         public static bool success;
 
+        public static HttpPacketClient httpPacketClient = new HttpPacketClient();
+
     }
 }

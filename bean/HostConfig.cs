@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OdyHostNginx
 {
-    class HostConfig
+    public class HostConfig
     {
 
         private bool use;

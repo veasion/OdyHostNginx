@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OdyHostNginx
 {
-    class NginxUpstream
+    public class NginxUpstream
     {
 
         private string serverName;

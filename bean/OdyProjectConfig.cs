@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OdyHostNginx
 {
-    class OdyProjectConfig
+    public class OdyProjectConfig
     {
 
         private bool use;

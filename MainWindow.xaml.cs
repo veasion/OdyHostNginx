@@ -21,10 +21,10 @@ namespace OdyHostNginx
         bool isHostConfig;
         string hostSearch;
         string configSearch;
-        EnvConfig currentEnv;
-        List<HostConfig> userHosts;
-        OdyProjectConfig odyProjectConfig;
-        Dictionary<string, UpstreamDetails> upstreamDetailsMap;
+        static EnvConfig currentEnv;
+        static List<HostConfig> userHosts;
+        static OdyProjectConfig odyProjectConfig;
+        static Dictionary<string, UpstreamDetails> upstreamDetailsMap;
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
         Dictionary<string, CheckBox> envSwitchUI = new Dictionary<string, CheckBox>();
 
@@ -280,7 +280,8 @@ namespace OdyHostNginx
 
         private void HttpPacket_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("功能待开发，敬请期待！");
+            HttpPacketWindow httpPacket = new HttpPacketWindow();
+            httpPacket.Show();
         }
         #endregion
 
@@ -536,7 +537,7 @@ namespace OdyHostNginx
             return env.Project.Name + env.EnvName;
         }
 
-        private EnvConfig getFirstEnv()
+        private static EnvConfig getFirstEnv()
         {
             foreach (var p in odyProjectConfig.Projects)
             {
@@ -1349,6 +1350,48 @@ namespace OdyHostNginx
         {
             apply();
         }
+        #endregion
+
+        #region 对外函数
+
+        /// <summary>
+        /// 抓包域名白名单
+        /// </summary>
+        public static HashSet<string> domainWhiteList()
+        {
+            HashSet<string> domains = new HashSet<string>();
+            if (userHosts != null && userHosts.Count > 0)
+            {
+                userHosts.ForEach(h => domains.Add(h.Domain));
+            }
+            odyProjectConfig.Projects.ForEach(p => p.Envs.ForEach(e => e.Hosts.ForEach(h => domains.Add(h.Domain))));
+            return domains;
+        }
+
+        /// <summary>
+        /// 根据uri获取pool
+        /// </summary>
+        public static string queryPoolByUri(string uri)
+        {
+            if (upstreamDetailsMap != null)
+            {
+                foreach (var item in upstreamDetailsMap.Values)
+                {
+                    if (item.Uris != null && item.ContextPaths != null)
+                    {
+                        foreach (var str in item.Uris)
+                        {
+                            if (uri.StartsWith(str) && item.ContextPaths.Count > 0)
+                            {
+                                return item.ContextPaths[0];
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         #endregion
 
     }

@@ -19,6 +19,7 @@ namespace OdyHostNginx
             {
                 nginx.stop();
                 switchHost.switchHost((List<HostConfig>)null, false);
+                ConfigDialogData.httpPacketClient.Shutdown();
             }
             catch (Exception e)
             {

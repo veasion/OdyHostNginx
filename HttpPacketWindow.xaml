@@ -1,0 +1,78 @@
+﻿<Window x:Class="OdyHostNginx.HttpPacketWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OdyHostNginx"
+        mc:Ignorable="d"
+        Title="HttpPacket"
+        Height="600" Width="1000"
+        Closing="Window_Closing"
+        WindowStartupLocation="CenterScreen" Icon="favicon.ico">
+    <Grid>
+        <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Height="30" Background="#FFF0F0F0">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Right" Width="190">
+                        <Label x:Name="ipLabel" FontSize="12">IP: 127.0.0.1</Label>
+                        <Label x:Name="portLabel" FontSize="12">Port: 8888</Label>
+                    </DockPanel>
+                    <DockPanel DockPanel.Dock="Left">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Left">
+                                <Image Margin="10,0,10,0" Width="24" MouseLeftButtonUp="Clear_MouseLeftButtonUp" MouseEnter="DelImage_MouseEnter" MouseLeave="DelImage_MouseLeave" ToolTip="clear" Source="pack://siteoforigin:,,,/bin/images/del_grey.png"/>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Right" />
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Left" Width="500" Background="#FFF0F0F0">
+                <DataGrid x:Name="httpDataGrid" ItemsSource="{Binding}"
+                          LoadingRow="HttpDataGrid_LoadingRow"
+                          SelectionChanged="HttpDataGrid_SelectionChanged"
+                          Background="#FFF0F0F0" AutoGenerateColumns="False" 
+                          Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" SelectionMode="Single">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Height" Value="22" />
+                            <Setter Property="Background" Value="#FFF0F0F0" />
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="28" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="125" IsReadOnly="True" />
+                        <DataGridTextColumn Header="URI" Binding="{Binding Uri}" Width="*" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Pool" Binding="{Binding Pool}" Width="75" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Result" Binding="{Binding ResponseCode}" Width="50" IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Right" Background="#FFF0F0F0">
+                <TabControl Background="#FFF0F0F0">
+                    <TabItem Header="Info">
+                        <Grid/>
+                    </TabItem>
+                    <TabItem Header="Request">
+                        <Grid/>
+                    </TabItem>
+                    <TabItem Header="Response">
+                        <Grid/>
+                    </TabItem>
+                    <TabItem Header="Json">
+                        <Grid/>
+                    </TabItem>
+                    <TabItem Header="Trace">
+                        <Grid/>
+                    </TabItem>
+                </TabControl>
+
+            </DockPanel>
+        </DockPanel>
+    </Grid>
+</Window>

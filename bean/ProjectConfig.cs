@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OdyHostNginx
 {
-    class ProjectConfig
+    public class ProjectConfig
     {
 
         private string name;

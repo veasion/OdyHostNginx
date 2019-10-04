@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OdyHostNginx
 {
-    class EnvConfig
+    public class EnvConfig
     {
 
         private bool use;

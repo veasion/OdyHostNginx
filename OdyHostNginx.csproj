@@ -40,6 +40,10 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FiddlerCore4, Version=4.6.20191.7809, Culture=neutral, PublicKeyToken=67cb91587178ac5a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\FiddlerCore4.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Newtonsoft.Json.dll</HintPath>
@@ -53,6 +57,10 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Telerik.NetworkConnections, Version=0.1.1.0, Culture=neutral, PublicKeyToken=67cb91587178ac5a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Telerik.NetworkConnections.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -74,12 +82,18 @@
     <Compile Include="HostConfigWindows.Designer.cs">
       <DependentUpon>HostConfigWindows.cs</DependentUpon>
     </Compile>
+    <Compile Include="HttpPacketWindow.xaml.cs">
+      <DependentUpon>HttpPacketWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="NginxConfigWindows.Designer.cs">
       <DependentUpon>NginxConfigWindows.cs</DependentUpon>
     </Compile>
+    <Compile Include="packet\HttpPacketClient.cs" />
+    <Compile Include="helper\HttpPacketHelper.cs" />
+    <Compile Include="packet\HttpPacketInfo.cs" />
     <Compile Include="service\Nginx.cs" />
     <Compile Include="bean\NginxConfig.cs" />
     <Compile Include="bean\NginxUpstream.cs" />
@@ -94,6 +108,10 @@
     <Compile Include="bean\UpstreamDetails.cs" />
     <Compile Include="service\WindowsLocalHostImpl.cs" />
     <Compile Include="service\WindowsNginxImpl.cs" />
+    <Page Include="HttpPacketWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
