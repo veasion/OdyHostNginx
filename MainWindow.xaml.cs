@@ -1373,6 +1373,23 @@ namespace OdyHostNginx
         /// </summary>
         public static string queryPoolByUri(string uri)
         {
+            string pool = null;
+            if (uri.StartsWith("/api/"))
+            {
+                pool = queryPool(uri.Substring(4));
+            }
+            if (pool != null)
+            {
+                return pool;
+            }
+            else
+            {
+                return queryPool(uri);
+            }
+        }
+
+        private static string queryPool(string uri)
+        {
             if (upstreamDetailsMap != null)
             {
                 foreach (var item in upstreamDetailsMap.Values)

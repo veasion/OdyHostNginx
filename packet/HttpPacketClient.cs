@@ -86,7 +86,6 @@ namespace OdyHostNginx
 
             info.ReqCookies = cookies(info.ReqHeaders);
             info.RespCookies = cookies(info.RespHeaders);
-            info.Pool = MainWindow.queryPoolByUri(info.Uri);
 
             new HttpPacketHandler(handler)(info);
 
@@ -115,18 +114,19 @@ namespace OdyHostNginx
                         if (item.IndexOf("=") > 0)
                         {
                             string[] kv = item.Split('=');
-                            if (cookies.TryGetValue(kv[0], out List<string> value))
+                            string key = kv[0].Trim(), val = kv[1].Trim();
+                            if (cookies.TryGetValue(key, out List<string> value))
                             {
-                                value.Add(kv[1]);
-                                cookies[kv[0]] = value;
+                                value.Add(val);
+                                cookies[key] = value;
                             }
                             else
                             {
                                 value = new List<string>
                                 {
-                                    kv[1]
+                                    val
                                 };
-                                cookies[kv[0]] = value;
+                                cookies[key] = value;
                             }
                         }
                     }

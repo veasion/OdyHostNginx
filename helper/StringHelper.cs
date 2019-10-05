@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -85,6 +87,38 @@ namespace OdyHostNginx
                 }
             }
             return null;
+        }
+
+        public static string jsonFormat(string json)
+        {
+            if (isBlank(json)) return null;
+            try
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                TextReader tr = new StringReader(json);
+                JsonTextReader jtr = new JsonTextReader(tr);
+                object obj = serializer.Deserialize(jtr);
+                if (obj != null)
+                {
+                    StringWriter textWriter = new StringWriter();
+                    JsonTextWriter jsonWriter = new JsonTextWriter(textWriter)
+                    {
+                        Formatting = Formatting.Indented,
+                        Indentation = 4,
+                        IndentChar = ' '
+                    };
+                    serializer.Serialize(jsonWriter, obj);
+                    return textWriter.ToString();
+                }
+                else
+                {
+                    return json;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
     }

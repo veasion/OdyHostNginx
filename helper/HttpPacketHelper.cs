@@ -32,8 +32,12 @@ namespace OdyHostNginx
         /// </summary>
         public static string proxyIp()
         {
-            // TODO
-            return hostIps()[0];
+            List<string> ips = hostIps();
+            if (ips != null && ips.Count > 0)
+            {
+                return ips.LastOrDefault();
+            }
+            return "127.0.0.1";
         }
 
     }

@@ -9,6 +9,7 @@ namespace OdyHostNginx
     public class HttpPacketInfo
     {
 
+        private int number;
         private int id;
         private int pid;
         private string uri;
@@ -25,6 +26,7 @@ namespace OdyHostNginx
         private Dictionary<string, string> respHeaders;
         private Dictionary<string, List<string>> respCookies;
 
+        public int Number { get => number; set => number = value; }
         public int Id { get => id; set => id = value; }
         public int Pid { get => pid; set => pid = value; }
         public string Uri { get => uri; set => uri = value; }
@@ -77,6 +79,73 @@ namespace OdyHostNginx
                 return value != null && value.Count > 0 ? value[0] : null;
             }
             return null;
+        }
+
+        public List<string> queryParams()
+        {
+            int s = fullUrl.IndexOf("?");
+            if (s != -1)
+            {
+                List<string> paramList = new List<string>();
+                string[] paramArr = fullUrl.Substring(s + 1).Split('&');
+                foreach (var item in paramArr)
+                {
+                    paramList.Add(item);
+                }
+                return paramList;
+            }
+            return null;
+        }
+
+        public Dictionary<string, string> queryParamMap()
+        {
+            List<string> paramList = queryParams();
+            if (paramList != null)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                foreach (var item in paramList)
+                {
+                    string[] eq = item.Split('=');
+                    if (eq.Length > 1)
+                    {
+                        dic[eq[0]] = eq[1];
+                    }
+                }
+                return dic;
+            }
+            return null;
+        }
+
+        public string ut()
+        {
+            return reqCookie("ut");
+        }
+
+        public string trace()
+        {
+            if (respHeaders.ContainsKey("Trace-Full-Info"))
+            {
+                string trace = respHeaders["Trace-Full-Info"];
+                int index = trace.IndexOf("http://");
+                if (index != -1)
+                {
+                    return trace.Substring(index);
+                }
+            }
+            return null;
+        }
+
+        public bool show()
+        {
+            if (respHeaders.ContainsKey("Content-Type"))
+            {
+                string type = respHeaders["Content-Type"];
+                if (response != null && type != null)
+                {
+                    return type.Contains("application/json") || type.Contains("text/plain");
+                }
+            }
+            return false;
         }
 
     }

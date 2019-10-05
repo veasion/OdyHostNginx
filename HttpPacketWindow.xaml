@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:OdyHostNginx"
         mc:Ignorable="d"
         Title="HttpPacket"
-        Height="600" Width="1000"
+        Height="720" Width="1280"
         Closing="Window_Closing"
         WindowStartupLocation="CenterScreen" Icon="favicon.ico">
     <Grid>
@@ -22,12 +22,15 @@
                             <DockPanel DockPanel.Dock="Left">
                                 <Image Margin="10,0,10,0" Width="24" MouseLeftButtonUp="Clear_MouseLeftButtonUp" MouseEnter="DelImage_MouseEnter" MouseLeave="DelImage_MouseLeave" ToolTip="clear" Source="pack://siteoforigin:,,,/bin/images/del_grey.png"/>
                             </DockPanel>
+                            <DockPanel DockPanel.Dock="Left">
+                                <CheckBox x:Name="domainFilter" VerticalAlignment="Center" ToolTip="Ody Domain Filter" />
+                            </DockPanel>
                             <DockPanel DockPanel.Dock="Right" />
                         </DockPanel>
                     </DockPanel>
                 </DockPanel>
             </DockPanel>
-            <DockPanel DockPanel.Dock="Left" Width="500" Background="#FFF0F0F0">
+            <DockPanel DockPanel.Dock="Left" Width="530" Background="#FFF0F0F0">
                 <DataGrid x:Name="httpDataGrid" ItemsSource="{Binding}"
                           LoadingRow="HttpDataGrid_LoadingRow"
                           SelectionChanged="HttpDataGrid_SelectionChanged"
@@ -38,6 +41,15 @@
                             <Setter Property="Height" Value="22" />
                             <Setter Property="Background" Value="#FFF0F0F0" />
                         </Style>
+                        <Style TargetType="DataGridCell">
+                            <Style.Triggers >
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#0078D7" />
+                                    <Setter Property="Foreground" Value="#FFFFFF" />
+                                    <Setter Property="BorderBrush" Value="#0078D7" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
                     </DataGrid.Resources>
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
@@ -45,33 +57,51 @@
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="28" IsReadOnly="True" />
-                        <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="125" IsReadOnly="True" />
+                        <DataGridTextColumn Header="#" Binding="{Binding Number}" Width="26" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="138" IsReadOnly="True" />
                         <DataGridTextColumn Header="URI" Binding="{Binding Uri}" Width="*" IsReadOnly="True" />
-                        <DataGridTextColumn Header="Pool" Binding="{Binding Pool}" Width="75" IsReadOnly="True" />
-                        <DataGridTextColumn Header="Result" Binding="{Binding ResponseCode}" Width="50" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Pool" Binding="{Binding Pool}" Width="90" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Code" Binding="{Binding ResponseCode}" Width="50" IsReadOnly="True" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
             <DockPanel DockPanel.Dock="Right" Background="#FFF0F0F0">
                 <TabControl Background="#FFF0F0F0">
                     <TabItem Header="Info">
-                        <Grid/>
-                    </TabItem>
-                    <TabItem Header="Request">
-                        <Grid/>
-                    </TabItem>
-                    <TabItem Header="Response">
-                        <Grid/>
+                        <UniformGrid Rows="2">
+                            <GroupBox Header="Request">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <DockPanel>
+                                        <DockPanel DockPanel.Dock="Top">
+                                            <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoRequestText" Background="#FFF0F0F0" />
+                                        </DockPanel>
+                                        <DockPanel DockPanel.Dock="Bottom" />
+                                    </DockPanel>
+                                </ScrollViewer>
+                            </GroupBox>
+                            <GroupBox Header="Response">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <DockPanel>
+                                        <DockPanel DockPanel.Dock="Top">
+                                            <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoResponseText" Background="#FFF0F0F0" />
+                                        </DockPanel>
+                                        <DockPanel DockPanel.Dock="Bottom" />
+                                    </DockPanel>
+                                </ScrollViewer>
+                            </GroupBox>
+                        </UniformGrid>
                     </TabItem>
                     <TabItem Header="Json">
-                        <Grid/>
+                        <GroupBox Header="Response">
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoResponseJson" Background="#FFF0F0F0" />
+                            </ScrollViewer>
+                        </GroupBox>
                     </TabItem>
                     <TabItem Header="Trace">
                         <Grid/>
                     </TabItem>
                 </TabControl>
-
             </DockPanel>
         </DockPanel>
     </Grid>
