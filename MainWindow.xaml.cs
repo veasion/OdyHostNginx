@@ -23,6 +23,7 @@ namespace OdyHostNginx
         string configSearch;
         static EnvConfig currentEnv;
         static List<HostConfig> userHosts;
+        static HttpPacketWindow httpPacket;
         static OdyProjectConfig odyProjectConfig;
         static Dictionary<string, UpstreamDetails> upstreamDetailsMap;
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
@@ -64,7 +65,7 @@ namespace OdyHostNginx
             ApplicationHelper.applyNginx(odyProjectConfig);
             ApplicationHelper.applySwitch(getCurrentHost());
             OdyConfigHelper.writeUserHosts(userHosts);
-            this.applyBut.Source = global::OdyHostNginx.Resources.img_not_apply;
+            this.applyBut.Source = OdyResources.img_not_apply;
         }
 
         private void OdyHostNginx_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -209,7 +210,8 @@ namespace OdyHostNginx
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(" 非常感谢使用这个小工具").AppendLine();
             sb.AppendLine(" 该工具专门为欧电云开发小伙伴打造").AppendLine();
-            sb.AppendLine(" 业余开发，如有漏洞或建议请在非工作时间钉我~");
+            sb.AppendLine(" 业余开发，如有漏洞或建议请在非工作时间钉我~").AppendLine();
+            sb.AppendLine().AppendLine("\t\t\t-- luozhuowei");
             MessageBox.Show(sb.ToString(), "关于", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
@@ -275,13 +277,30 @@ namespace OdyHostNginx
 
         private void Trace_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("功能待开发，敬请期待！");
+            new TraceWindows().Show();
+        }
+
+        private void Json_Click(object sender, RoutedEventArgs e)
+        {
+            new JsonWindows().Show();
         }
 
         private void HttpPacket_Click(object sender, RoutedEventArgs e)
         {
-            HttpPacketWindow httpPacket = new HttpPacketWindow();
-            httpPacket.Show();
+            if (httpPacket == null)
+            {
+                httpPacket = new HttpPacketWindow();
+                httpPacket.Show();
+            }
+            else
+            {
+                httpPacket.Show();
+                if (httpPacket.WindowState == WindowState.Minimized)
+                {
+                    httpPacket.WindowState = WindowState.Normal;
+                }
+                httpPacket.Activate();
+            }
         }
         #endregion
 
@@ -413,7 +432,7 @@ namespace OdyHostNginx
                 Border border = new Border
                 {
                     BorderThickness = new Thickness(0, 1, 0, 0),
-                    BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.switchBorderColor)
+                    BorderBrush = new SolidColorBrush(OdyResources.switchBorderColor)
                 };
                 UniformGrid uniformGrid = new UniformGrid
                 {
@@ -429,7 +448,7 @@ namespace OdyHostNginx
                     Margin = new Thickness(6, 0, 0, 0),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Left,
-                    Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.switchColor)
+                    Foreground = new SolidColorBrush(OdyResources.switchColor)
                 };
 
                 // project name
@@ -460,7 +479,7 @@ namespace OdyHostNginx
                 Height = 45,
                 DataContext = key,
                 Cursor = Cursors.Hand,
-                Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchBackgroundColor)
+                Background = new SolidColorBrush(OdyResources.switchBackgroundColor)
             };
 
             dockRoot.MouseRightButtonUp += DockRoot_MouseRightButtonUp;
@@ -475,7 +494,7 @@ namespace OdyHostNginx
             Image docImg = new Image
             {
                 Width = 16,
-                Source = global::OdyHostNginx.Resources.img_doc
+                Source = OdyResources.img_doc
             };
             dockLeftDoc.Children.Add(docImg);
 
@@ -491,7 +510,7 @@ namespace OdyHostNginx
                 Cursor = Cursors.Hand,
                 Visibility = Visibility.Hidden,
                 Margin = new Thickness(5, 0, 5, 0),
-                Source = global::OdyHostNginx.Resources.img_del_grey
+                Source = OdyResources.img_del_grey
             };
             delImage.DataContext = env;
             delImage.MouseEnter += DelImage_MouseEnter;
@@ -503,7 +522,7 @@ namespace OdyHostNginx
                 Cursor = Cursors.Hand,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Style = global::OdyHostNginx.Resources.switchButStyle
+                Style = OdyResources.switchButStyle
             };
             envSwitch.DataContext = key;
             envSwitch.Click += EnvSwitchClickEventHandler;
@@ -523,7 +542,7 @@ namespace OdyHostNginx
                 ToolTip = env.EnvName,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.switchColor)
+                Foreground = new SolidColorBrush(OdyResources.switchColor)
             };
             dockLeftLabel.Children.Add(envLabel);
             dockRoot.Children.Add(dockLeftDoc);
@@ -576,13 +595,13 @@ namespace OdyHostNginx
             }
             if (isHostConfig)
             {
-                this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
-                this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.hostBut.Background = new SolidColorBrush(OdyResources.butClickColor);
+                this.configBut.Background = new SolidColorBrush(OdyResources.butInitColor);
             }
             else
             {
-                this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
-                this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.configBut.Background = new SolidColorBrush(OdyResources.butClickColor);
+                this.hostBut.Background = new SolidColorBrush(OdyResources.butInitColor);
             }
             // env switch dock color
             changeEnv(currentEnv, true);
@@ -605,8 +624,8 @@ namespace OdyHostNginx
                 isHostConfig = true;
                 this.resetBut.ToolTip = "reset host";
                 this.addBut.Visibility = Visibility.Visible;
-                this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
-                this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.hostBut.Background = new SolidColorBrush(OdyResources.butClickColor);
+                this.configBut.Background = new SolidColorBrush(OdyResources.butInitColor);
                 if (hostViewer.Children.Count == 0 && StringHelper.isBlank(hostSearch))
                 {
                     drawingHostConfig();
@@ -624,8 +643,8 @@ namespace OdyHostNginx
                 isHostConfig = false;
                 this.resetBut.ToolTip = "reset config";
                 this.addBut.Visibility = Visibility.Hidden;
-                this.configBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butClickColor);
-                this.hostBut.Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor);
+                this.configBut.Background = new SolidColorBrush(OdyResources.butClickColor);
+                this.hostBut.Background = new SolidColorBrush(OdyResources.butInitColor);
                 if (configViewer.Children.Count == 0 && StringHelper.isBlank(configSearch))
                 {
                     drawingNginxConfig();
@@ -735,7 +754,7 @@ namespace OdyHostNginx
 
         private Border drawingConfig(NginxUpstream u, UpstreamDetails ud, string contextPath)
         {
-            Color borderColor = global::OdyHostNginx.Resources.configBorderColor;
+            Color borderColor = OdyResources.configBorderColor;
             Border border = new Border
             {
                 Margin = new Thickness(5, 10, 5, 0),
@@ -773,7 +792,7 @@ namespace OdyHostNginx
                 ToolTip = tip.ToString(),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                Foreground = new SolidColorBrush(OdyResources.configFontColor)
             };
             dockServer.Children.Add(serverNameLabel);
 
@@ -791,8 +810,8 @@ namespace OdyHostNginx
                 BorderBrush = new SolidColorBrush(borderColor),
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
-                Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                Background = new SolidColorBrush(OdyResources.configBgColor),
+                Foreground = new SolidColorBrush(OdyResources.configFontColor)
             };
             ipText.DataContext = u;
             ipText.TextChanged += ConfigIpText_TextChanged;
@@ -812,8 +831,8 @@ namespace OdyHostNginx
                 BorderBrush = new SolidColorBrush(borderColor),
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
-                Background = new SolidColorBrush(global::OdyHostNginx.Resources.configBgColor),
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                Background = new SolidColorBrush(OdyResources.configBgColor),
+                Foreground = new SolidColorBrush(OdyResources.configFontColor)
             };
             portText.DataContext = u;
             portText.KeyDown += PortText_KeyDown;
@@ -836,8 +855,8 @@ namespace OdyHostNginx
                 Cursor = Cursors.Hand,
                 ToolTip = "Set to local IP",
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Background = new SolidColorBrush(global::OdyHostNginx.Resources.butInitColor),
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.configFontColor)
+                Background = new SolidColorBrush(OdyResources.butInitColor),
+                Foreground = new SolidColorBrush(OdyResources.configFontColor)
             };
             localBut.DataContext = u;
             localBut.Click += LocalBut_Click;
@@ -908,11 +927,11 @@ namespace OdyHostNginx
                 DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(switchBox));
                 if (isCurrent)
                 {
-                    dockRoot.Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchCurrentBackgroundColor);
+                    dockRoot.Background = new SolidColorBrush(OdyResources.switchCurrentBackgroundColor);
                 }
                 else
                 {
-                    dockRoot.Background = new SolidColorBrush(global::OdyHostNginx.Resources.switchBackgroundColor);
+                    dockRoot.Background = new SolidColorBrush(OdyResources.switchBackgroundColor);
                 }
             }
         }
@@ -935,7 +954,7 @@ namespace OdyHostNginx
             DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(but));
             ((dockRoot.Children[1] as DockPanel).Children[0] as TextBox).Text = u.Ip;
             ((dockRoot.Children[2] as DockPanel).Children[0] as TextBox).Text = u.Port + "";
-            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            this.applyBut.Source = OdyResources.img_can_apply;
         }
 
         private void PortText_KeyDown(object sender, KeyEventArgs e)
@@ -956,9 +975,9 @@ namespace OdyHostNginx
             if (StringHelper.isInt(port.Text.Trim()))
             {
                 u.Port = Convert.ToInt32(port.Text.Trim());
-                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                this.applyBut.Source = OdyResources.img_can_apply;
             }
-            port.Foreground = new SolidColorBrush(StringHelper.isPort(port.Text) ? global::OdyHostNginx.Resources.configFontColor : Colors.Red);
+            port.Foreground = new SolidColorBrush(StringHelper.isPort(port.Text) ? OdyResources.configFontColor : Colors.Red);
         }
 
         private void ConfigIpText_TextChanged(object sender, TextChangedEventArgs e)
@@ -970,9 +989,9 @@ namespace OdyHostNginx
             {
                 NginxUpstream u = ip.DataContext as NginxUpstream;
                 u.Ip = ip.Text.Trim();
-                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                this.applyBut.Source = OdyResources.img_can_apply;
             }
-            ip.Foreground = new SolidColorBrush(isIp ? global::OdyHostNginx.Resources.configFontColor : Colors.Red);
+            ip.Foreground = new SolidColorBrush(isIp ? OdyResources.configFontColor : Colors.Red);
         }
         #endregion
 
@@ -1018,7 +1037,7 @@ namespace OdyHostNginx
             {
                 Header = header,
                 Margin = new Thickness(5, 10, 5, 0),
-                Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.hostFontColor)
+                Foreground = new SolidColorBrush(OdyResources.hostFontColor)
             };
             StackPanel panel = new StackPanel
             {
@@ -1034,7 +1053,7 @@ namespace OdyHostNginx
                 {
                     Margin = new Thickness(5, 5, 5, 0),
                     BorderThickness = new Thickness(1, 1, 1, 1),
-                    BorderBrush = new SolidColorBrush(global::OdyHostNginx.Resources.selectBorderColor)
+                    BorderBrush = new SolidColorBrush(OdyResources.selectBorderColor)
                 };
                 DockPanel rootDock = new DockPanel
                 {
@@ -1055,8 +1074,8 @@ namespace OdyHostNginx
                     BorderThickness = new Thickness(0, 0, 0, 0),
                     VerticalContentAlignment = VerticalAlignment.Center,
                     HorizontalContentAlignment = HorizontalAlignment.Right,
-                    Background = new SolidColorBrush(global::OdyHostNginx.Resources.hostBgColor),
-                    Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.hostFontColor)
+                    Background = new SolidColorBrush(OdyResources.hostBgColor),
+                    Foreground = new SolidColorBrush(OdyResources.hostFontColor)
                 };
                 domainText.DataContext = host;
                 domainText.TextChanged += DomainText_TextChanged;
@@ -1075,7 +1094,7 @@ namespace OdyHostNginx
                     BorderThickness = new Thickness(0, 0, 0, 0),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.hostFontColor)
+                    Foreground = new SolidColorBrush(OdyResources.hostFontColor)
                 };
                 labelDock.Children.Add(label);
                 // ip
@@ -1092,8 +1111,8 @@ namespace OdyHostNginx
                     BorderThickness = new Thickness(0, 0, 0, 0),
                     VerticalContentAlignment = VerticalAlignment.Center,
                     HorizontalContentAlignment = HorizontalAlignment.Left,
-                    Background = new SolidColorBrush(global::OdyHostNginx.Resources.hostBgColor),
-                    Foreground = new SolidColorBrush(global::OdyHostNginx.Resources.hostFontColor)
+                    Background = new SolidColorBrush(OdyResources.hostBgColor),
+                    Foreground = new SolidColorBrush(OdyResources.hostFontColor)
                 };
                 ipText.DataContext = host;
                 ipText.TextChanged += HostIpText_TextChanged;
@@ -1112,7 +1131,7 @@ namespace OdyHostNginx
                         Cursor = Cursors.Hand,
                         ToolTip = "delete user host",
                         Margin = new Thickness(5, 0, 5, 0),
-                        Source = global::OdyHostNginx.Resources.img_del_grey
+                        Source = OdyResources.img_del_grey
                     };
                     delImage.DataContext = host;
                     delImage.MouseEnter += DelImage_MouseEnter;
@@ -1128,7 +1147,7 @@ namespace OdyHostNginx
                         Cursor = Cursors.Hand,
                         ToolTip = "add to user host",
                         Margin = new Thickness(5, 0, 5, 0),
-                        Source = global::OdyHostNginx.Resources.img_add_grey
+                        Source = OdyResources.img_add_grey
                     };
                     addImage.DataContext = host;
                     addImage.MouseEnter += AddImage_MouseEnter;
@@ -1142,7 +1161,7 @@ namespace OdyHostNginx
                     Cursor = Cursors.Hand,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Style = global::OdyHostNginx.Resources.switchButStyle
+                    Style = OdyResources.switchButStyle
                 };
                 hostSwitch.DataContext = host;
                 hostSwitch.Click += HostSwitch_Click;
@@ -1173,7 +1192,7 @@ namespace OdyHostNginx
             CheckBox envSwitch = sender as CheckBox;
             HostConfig host = envSwitch.DataContext as HostConfig;
             host.Use = envSwitch.IsChecked == true ? true : false;
-            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            this.applyBut.Source = OdyResources.img_can_apply;
         }
 
         private void HostIpText_TextChanged(object sender, TextChangedEventArgs e)
@@ -1185,9 +1204,9 @@ namespace OdyHostNginx
             {
                 HostConfig host = ip.DataContext as HostConfig;
                 host.Ip = ip.Text.Trim();
-                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                this.applyBut.Source = OdyResources.img_can_apply;
             }
-            ip.Foreground = new SolidColorBrush(isIp ? global::OdyHostNginx.Resources.hostFontColor : Colors.Red);
+            ip.Foreground = new SolidColorBrush(isIp ? OdyResources.hostFontColor : Colors.Red);
         }
 
         private void DomainText_TextChanged(object sender, TextChangedEventArgs e)
@@ -1199,9 +1218,9 @@ namespace OdyHostNginx
             {
                 HostConfig host = domain.DataContext as HostConfig;
                 host.Domain = domain.Text.Trim();
-                this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                this.applyBut.Source = OdyResources.img_can_apply;
             }
-            domain.Foreground = new SolidColorBrush(isDomain ? global::OdyHostNginx.Resources.hostFontColor : Colors.Red);
+            domain.Foreground = new SolidColorBrush(isDomain ? OdyResources.hostFontColor : Colors.Red);
         }
 
         private void AddImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -1216,7 +1235,7 @@ namespace OdyHostNginx
                 PingIp = host.PingIp,
                 Domain = host.Domain
             });
-            this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+            this.applyBut.Source = OdyResources.img_can_apply;
             drawingHostConfig();
         }
         #endregion
@@ -1226,25 +1245,25 @@ namespace OdyHostNginx
         private void AddImage_MouseEnter(object sender, MouseEventArgs e)
         {
             Image addImage = sender as Image;
-            addImage.Source = global::OdyHostNginx.Resources.img_add_blue;
+            addImage.Source = OdyResources.img_add_blue;
         }
 
         private void AddImage_MouseLeave(object sender, MouseEventArgs e)
         {
             Image addImage = sender as Image;
-            addImage.Source = global::OdyHostNginx.Resources.img_add_grey;
+            addImage.Source = OdyResources.img_add_grey;
         }
 
         private void DelImage_MouseEnter(object sender, MouseEventArgs e)
         {
             Image delImage = sender as Image;
-            delImage.Source = global::OdyHostNginx.Resources.img_del_red;
+            delImage.Source = OdyResources.img_del_red;
         }
 
         private void DelImage_MouseLeave(object sender, MouseEventArgs e)
         {
             Image delImage = sender as Image;
-            delImage.Source = global::OdyHostNginx.Resources.img_del_grey;
+            delImage.Source = OdyResources.img_del_grey;
         }
 
         private void DelImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -1260,7 +1279,7 @@ namespace OdyHostNginx
                     if (host == item)
                     {
                         userHosts.Remove(host);
-                        this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                        this.applyBut.Source = OdyResources.img_can_apply;
                         drawingHostConfig();
                         break;
                     }
@@ -1302,7 +1321,7 @@ namespace OdyHostNginx
                     };
                     userHosts.Add(host);
                     drawingHostConfig();
-                    this.applyBut.Source = global::OdyHostNginx.Resources.img_can_apply;
+                    this.applyBut.Source = OdyResources.img_can_apply;
                 }
             }
         }
@@ -1386,6 +1405,11 @@ namespace OdyHostNginx
             {
                 return queryPool(uri);
             }
+        }
+
+        public static void HttpPacketWindowClose()
+        {
+            httpPacket = null;
         }
 
         private static string queryPool(string uri)

@@ -22,9 +22,10 @@ namespace OdyHostNginx
     public partial class HttpPacketWindow : Window
     {
 
-        static HttpPacketInfo currentPacket;
-
         static int number = 1;
+
+        bool currentTraceTab = false;
+        HttpPacketInfo currentPacket;
         HashSet<int> ids = new HashSet<int>();
         HashSet<string> domains = new HashSet<string>();
 
@@ -34,6 +35,7 @@ namespace OdyHostNginx
             InitializeComponent();
         }
 
+        #region packet
         private void init()
         {
             number = 1;
@@ -84,15 +86,26 @@ namespace OdyHostNginx
             currentPacket = info;
             drawing();
         }
+        #endregion
 
+        #region request/response
         private void drawing()
         {
+            if (currentTraceTab)
+            {
+                drawingTrace();
+            }
             drawingInfoReq();
             drawingInfoResp();
         }
 
         private void drawingInfoReq()
         {
+            if (currentPacket == null)
+            {
+                this.infoRequestText.Text = "";
+                return;
+            }
             string ut = currentPacket.ut();
             List<string> paramList = currentPacket.queryParams();
             StringBuilder sb = new StringBuilder();
@@ -141,6 +154,12 @@ namespace OdyHostNginx
 
         private void drawingInfoResp()
         {
+            if (currentPacket == null)
+            {
+                this.infoResponseText.Text = "";
+                this.infoResponseJson.Text = "";
+                return;
+            }
             StringBuilder sb = new StringBuilder();
             sb.AppendLine().AppendLine(currentPacket.Response);
             string trace = currentPacket.trace();
@@ -185,6 +204,110 @@ namespace OdyHostNginx
                 this.infoResponseJson.Text = "The response is not json:\r\n" + currentPacket.Response;
             }
         }
+        #endregion
+
+        #region trace
+        private void drawingTrace()
+        {
+            this.traceTreeInfoText.Text = "";
+            this.traceTreeGroup.Visibility = Visibility.Hidden;
+            this.traceDataGrid.Visibility = Visibility.Hidden;
+            if (currentPacket == null) return;
+            string url = currentPacket.trace();
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (StringHelper.isEmpty(url)) return;
+                    TracesInfo trace = TraceClient.traces(url);
+                    if (trace == null) return;
+                    TreeView tree = new TreeView();
+                    tree.SelectedItemChanged += Trace_SelectedItemChanged;
+                    tree.Margin = new Thickness(10, 10, 10, 10);
+                    tree.BorderThickness = new Thickness(0);
+                    tree.Background = new SolidColorBrush(OdyResources.butInitColor);
+                    traceTreeChildren(tree, trace);
+                    this.traceTreeGroup.Content = tree;
+                    this.traceTreeGroup.Visibility = Visibility.Visible;
+                });
+            });
+        }
+
+        private void Trace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            this.traceScroll.ScrollToTop();
+            this.traceScroll.ScrollToHome();
+            ItemsControl item = e.NewValue as ItemsControl;
+            if (item != null)
+            {
+                TracesInfo trace = item.DataContext as TracesInfo;
+                if (trace != null)
+                {
+                    drawingTraceDetails(trace);
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("\tid: ").Append(trace.Id);
+                    if (trace.Timestamp != null && trace.Timestamp > 0)
+                    {
+                        sb.Append("\tdate: ").Append(StringHelper.timeStampFormat(trace.Timestamp.Value / 1000, null));
+                    }
+                    if (trace.Duration != null)
+                    {
+                        sb.Append("\ttime: ").Append(trace.Duration.Value / 1000).Append("ms");
+                    }
+                    if (trace.ServiceName != null)
+                    {
+                        sb.Append("\tservice: ").Append(trace.ServiceName);
+                    }
+                    if (trace.ClientName != null)
+                    {
+                        sb.Append("\tclient: ").Append(trace.ClientName);
+                    }
+                    this.traceTreeInfoText.Text = sb.ToString();
+                }
+            }
+        }
+
+        private void traceTreeChildren(ItemsControl parent, TracesInfo trace)
+        {
+            if ("handlegetcompanyid".Equals(trace.Name) || "handleputcompanyid".Equals(trace.Name)) return;
+            TreeViewItem item = new TreeViewItem();
+            item.DataContext = trace;
+            item.Header = "【" + trace.Pool() + "】" + trace.Name;
+            parent.Items.Add(item);
+            if (trace.Children != null)
+            {
+                foreach (var t in trace.Children)
+                {
+                    traceTreeChildren(item, t);
+                }
+            }
+        }
+
+        private void drawingTraceDetails(TracesInfo trace)
+        {
+            this.traceDataGrid.Visibility = Visibility.Visible;
+            DataGrid traceDataGrid = this.traceDataGrid;
+            traceDataGrid.DataContext = KeyValue.list(trace.Details);
+        }
+        #endregion
+
+        #region other
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems != null && e.AddedItems.Count > 0)
+            {
+                TabItem item = e.AddedItems[0] as TabItem;
+                if (item != null && "Trace".Equals(item.Header))
+                {
+                    currentTraceTab = true;
+                    drawingTrace();
+                }
+                else
+                {
+                    currentTraceTab = false;
+                }
+            }
+        }
 
         private void HttpDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
         {
@@ -205,6 +328,25 @@ namespace OdyHostNginx
             }
         }
 
+        private void HttpPacketSwitchBut_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox check = (CheckBox)sender;
+            bool isChecked = check.IsChecked != null && check.IsChecked == true ? true : false;
+            if (isChecked)
+            {
+                init();
+                check.ToolTip = "Close Http Packet";
+            }
+            else
+            {
+                number = 1;
+                ids.Clear();
+                currentPacket = null;
+                check.ToolTip = "Open Http Packet";
+                ConfigDialogData.httpPacketClient.Shutdown();
+            }
+        }
+
         private void Clear_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             number = 1;
@@ -215,22 +357,24 @@ namespace OdyHostNginx
         private void DelImage_MouseEnter(object sender, MouseEventArgs e)
         {
             Image delImage = sender as Image;
-            delImage.Source = global::OdyHostNginx.Resources.img_del_red;
+            delImage.Source = OdyResources.img_del_red;
         }
 
         private void DelImage_MouseLeave(object sender, MouseEventArgs e)
         {
             Image delImage = sender as Image;
-            delImage.Source = global::OdyHostNginx.Resources.img_del_grey;
+            delImage.Source = OdyResources.img_del_grey;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             number = 1;
             ids.Clear();
+            MainWindow.HttpPacketWindowClose();
             ConfigDialogData.httpPacketClient.Shutdown();
             (httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>).Clear();
         }
+        #endregion
 
     }
 }

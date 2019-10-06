@@ -40,9 +40,9 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FiddlerCore4, Version=4.6.20191.7809, Culture=neutral, PublicKeyToken=67cb91587178ac5a, processorArchitecture=MSIL">
+    <Reference Include="FiddlerCore, Version=2.6.3.4865, Culture=neutral, PublicKeyToken=67cb91587178ac5a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\FiddlerCore4.dll</HintPath>
+      <HintPath>bin\FiddlerCore.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -70,6 +70,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="bean\KeyValue.cs" />
+    <Compile Include="bean\TracesInfo.cs" />
     <Compile Include="helper\ApplicationHelper.cs" />
     <Compile Include="helper\CmdHelper.cs" />
     <Compile Include="bean\EnvConfig.cs" />
@@ -84,6 +86,9 @@
     </Compile>
     <Compile Include="HttpPacketWindow.xaml.cs">
       <DependentUpon>HttpPacketWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="JsonWindows.xaml.cs">
+      <DependentUpon>JsonWindows.xaml</DependentUpon>
     </Compile>
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
@@ -100,8 +105,12 @@
     <Compile Include="helper\OdyConfigHelper.cs" />
     <Compile Include="bean\OdyProjectConfig.cs" />
     <Compile Include="bean\ProjectConfig.cs" />
+    <Compile Include="TraceWindows.xaml.cs">
+      <DependentUpon>TraceWindows.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="trace\TraceClient.cs" />
     <Compile Include="ui\ConfigDialogData.cs" />
-    <Compile Include="ui\Resources.cs" />
+    <Compile Include="ui\OdyResources.cs" />
     <Compile Include="exception\ServiceException.cs" />
     <Compile Include="helper\StringHelper.cs" />
     <Compile Include="service\SwitchHost.cs" />
@@ -109,6 +118,10 @@
     <Compile Include="service\WindowsLocalHostImpl.cs" />
     <Compile Include="service\WindowsNginxImpl.cs" />
     <Page Include="HttpPacketWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="JsonWindows.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -124,6 +137,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="TraceWindows.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ui\SwitchButDictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

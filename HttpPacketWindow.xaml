@@ -9,6 +9,13 @@
         Height="720" Width="1280"
         Closing="Window_Closing"
         WindowStartupLocation="CenterScreen" Icon="favicon.ico">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ui/SwitchButDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <DockPanel>
             <DockPanel DockPanel.Dock="Top" Height="30" Background="#FFF0F0F0">
@@ -19,6 +26,9 @@
                     </DockPanel>
                     <DockPanel DockPanel.Dock="Left">
                         <DockPanel>
+                            <DockPanel DockPanel.Dock="Left">
+                                <CheckBox x:Name="httpPacketSwitchBut" IsChecked="true" Margin="10,0,0,0" Click="HttpPacketSwitchBut_Click" Width="Auto" Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip="Close Http Packet" Cursor="Hand" Style="{DynamicResource SliderCheckBox}" />
+                            </DockPanel>
                             <DockPanel DockPanel.Dock="Left">
                                 <Image Margin="10,0,10,0" Width="24" MouseLeftButtonUp="Clear_MouseLeftButtonUp" MouseEnter="DelImage_MouseEnter" MouseLeave="DelImage_MouseLeave" ToolTip="clear" Source="pack://siteoforigin:,,,/bin/images/del_grey.png"/>
                             </DockPanel>
@@ -35,7 +45,8 @@
                           LoadingRow="HttpDataGrid_LoadingRow"
                           SelectionChanged="HttpDataGrid_SelectionChanged"
                           Background="#FFF0F0F0" AutoGenerateColumns="False" 
-                          Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" SelectionMode="Single">
+                          Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"
+                          ClipboardCopyMode="ExcludeHeader" SelectionUnit="FullRow" SelectionMode="Single">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridRow">
                             <Setter Property="Height" Value="22" />
@@ -66,14 +77,14 @@
                 </DataGrid>
             </DockPanel>
             <DockPanel DockPanel.Dock="Right" Background="#FFF0F0F0">
-                <TabControl Background="#FFF0F0F0">
+                <TabControl x:Name="tabControl" Background="#FFF0F0F0" SelectionChanged="TabControl_SelectionChanged">
                     <TabItem Header="Info">
                         <UniformGrid Rows="2">
                             <GroupBox Header="Request">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <DockPanel>
                                         <DockPanel DockPanel.Dock="Top">
-                                            <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoRequestText" Background="#FFF0F0F0" />
+                                            <TextBox Cursor="Arrow" IsReadOnly="True" BorderThickness="0" x:Name="infoRequestText" Background="#FFF0F0F0" />
                                         </DockPanel>
                                         <DockPanel DockPanel.Dock="Bottom" />
                                     </DockPanel>
@@ -83,7 +94,7 @@
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <DockPanel>
                                         <DockPanel DockPanel.Dock="Top">
-                                            <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoResponseText" Background="#FFF0F0F0" />
+                                            <TextBox Cursor="Arrow" IsReadOnly="True" BorderThickness="0" x:Name="infoResponseText" Background="#FFF0F0F0" />
                                         </DockPanel>
                                         <DockPanel DockPanel.Dock="Bottom" />
                                     </DockPanel>
@@ -94,12 +105,59 @@
                     <TabItem Header="Json">
                         <GroupBox Header="Response">
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                                <TextBox IsReadOnly="True" BorderThickness="0" x:Name="infoResponseJson" Background="#FFF0F0F0" />
+                                <TextBox Cursor="Arrow" IsReadOnly="True" BorderThickness="0" x:Name="infoResponseJson" Background="#FFF0F0F0" />
                             </ScrollViewer>
                         </GroupBox>
                     </TabItem>
                     <TabItem Header="Trace">
-                        <Grid/>
+                        <ScrollViewer x:Name="traceScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <DockPanel>
+                                <DockPanel x:Name="traceTreeDock" DockPanel.Dock="Top">
+                                    <GroupBox x:Name="traceTreeGroup" Header="Trace" Visibility="Hidden"/>
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Top">
+                                    <TextBox Margin="0,10,0,10" Cursor="Arrow" IsReadOnly="True" BorderThickness="0" x:Name="traceTreeInfoText" Background="#FFF0F0F0" Foreground="#666" />
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Bottom">
+                                    <DataGrid x:Name="traceDataGrid" ItemsSource="{Binding}"
+                                              Width="Auto" Visibility="Hidden" IsReadOnly="True"
+                                              Margin="0,10,0,20" BorderThickness="0"
+                                              Background="#FFF0F0F0" AutoGenerateColumns="False"
+                                              Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"
+                                              ClipboardCopyMode="ExcludeHeader" SelectionUnit="FullRow" SelectionMode="Single">
+                                        <DataGrid.Resources>
+                                            <Style TargetType="DataGridRow">
+                                                <Setter Property="MinHeight" Value="24" />
+                                                <Setter Property="Background" Value="#FFF0F0F0" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                            </Style>
+                                            <Style TargetType="DataGridCell">
+                                                <Style.Triggers >
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#0078D7" />
+                                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                                        <Setter Property="BorderBrush" Value="#0078D7" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                            <Style x:Key="cellTextStyle" TargetType="TextBlock">
+                                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                            </Style>
+                                        </DataGrid.Resources>
+                                        <DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Copy" Command="{x:Static ApplicationCommands.Copy}"/>
+                                            </ContextMenu>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="140" IsReadOnly="True" />
+                                            <DataGridTextColumn Header="Value" Width="560" ElementStyle="{StaticResource cellTextStyle}" Binding="{Binding Value}" IsReadOnly="True" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </DockPanel>
+                            </DockPanel>
+                        </ScrollViewer>
                     </TabItem>
                 </TabControl>
             </DockPanel>

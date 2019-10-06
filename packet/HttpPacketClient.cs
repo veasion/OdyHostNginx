@@ -32,8 +32,10 @@ namespace OdyHostNginx
                 Shutdown();
             }
 
+            CONFIG.IgnoreServerCertErrors = true;
             FiddlerApplication.SetAppDisplayName(name);
-            FiddlerApplication.Startup(listenPort, true, true, true);
+            FiddlerApplication.Startup(listenPort, true, false, true);
+            // FiddlerApplication.Startup(listenPort, true, true, true);
 
             FiddlerApplication.BeforeRequest += BeforeRequest;
             FiddlerApplication.BeforeResponse += BeforeResponse;

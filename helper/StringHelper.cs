@@ -89,6 +89,31 @@ namespace OdyHostNginx
             return null;
         }
 
+        public static string replaceLine(string str, string replace)
+        {
+            if (str == null) return str;
+            if (str.IndexOf("\r\n") != -1)
+            {
+                str = str.Replace("\r\n", replace);
+            }
+            if (str.IndexOf("\n") != -1)
+            {
+                str = str.Replace("\n", replace);
+            }
+            return str;
+        }
+
+        public static string timeStampFormat(long jsTimeStamp, string format)
+        {
+            if (format == null)
+            {
+                format = "yyyy/MM/dd HH:mm:ss";
+            }
+            DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
+            DateTime dt = startTime.AddMilliseconds(jsTimeStamp);
+            return dt.ToString(format);
+        }
+
         public static string jsonFormat(string json)
         {
             if (isBlank(json)) return null;
