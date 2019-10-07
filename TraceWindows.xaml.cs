@@ -16,13 +16,14 @@ using System.Windows.Shapes;
 namespace OdyHostNginx
 {
     /// <summary>
-    /// TraceWindows.xaml 的交互逻辑
+    /// Trace
     /// </summary>
     public partial class TraceWindows : Window
     {
 
         public TraceWindows()
         {
+            ThreadPool.SetMaxThreads(100, 10);
             InitializeComponent();
         }
 
@@ -57,10 +58,11 @@ namespace OdyHostNginx
                 return;
             }
             TreeView tree = new TreeView();
-            tree.SelectedItemChanged += Trace_SelectedItemChanged;
-            tree.Margin = new Thickness(10, 10, 10, 10);
             tree.BorderThickness = new Thickness(0);
+            tree.Margin = new Thickness(10, 10, 10, 10);
+            tree.SelectedItemChanged += Trace_SelectedItemChanged;
             tree.Background = new SolidColorBrush(OdyResources.butInitColor);
+            tree.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy));
             traceTreeChildren(tree, trace);
             this.traceTreeGroup.Content = tree;
             this.traceTreeGroup.Visibility = Visibility.Visible;
@@ -95,6 +97,10 @@ namespace OdyHostNginx
                     {
                         sb.Append("\tclient: ").Append(trace.ClientName);
                     }
+                    if (trace.Name != null)
+                    {
+                        sb.Append("\tname: ").Append(trace.Name);
+                    }
                     this.traceTreeInfoText.Text = sb.ToString();
                 }
             }
@@ -102,7 +108,7 @@ namespace OdyHostNginx
 
         private void traceTreeChildren(ItemsControl parent, TracesInfo trace)
         {
-            if ("handlegetcompanyid".Equals(trace.Name) || "handleputcompanyid".Equals(trace.Name)) return;
+            if (trace.Name != null && trace.Name.EndsWith("companyid")) return;
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
             item.Header = "【" + trace.Pool() + "】" + trace.Name;

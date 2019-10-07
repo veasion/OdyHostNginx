@@ -31,6 +31,7 @@ namespace OdyHostNginx
 
         public HttpPacketWindow()
         {
+            ThreadPool.SetMaxThreads(100, 10);
             this.ContentRendered += (sender, e) => init();
             InitializeComponent();
         }
@@ -64,11 +65,12 @@ namespace OdyHostNginx
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (domainFilter.IsChecked == true && !domains.Contains(info.Hostname))
+                    bool isOdy = domains.Contains(info.Hostname) || info.Hostname.EndsWith("oudianyun.com");
+                    if (domainFilter.IsChecked == true && !isOdy)
                     {
                         return;
                     }
-                    if (domains.Contains(info.Hostname))
+                    if (isOdy)
                     {
                         info.Pool = MainWindow.queryPoolByUri(info.Uri);
                     }
@@ -222,10 +224,11 @@ namespace OdyHostNginx
                     TracesInfo trace = TraceClient.traces(url);
                     if (trace == null) return;
                     TreeView tree = new TreeView();
-                    tree.SelectedItemChanged += Trace_SelectedItemChanged;
-                    tree.Margin = new Thickness(10, 10, 10, 10);
                     tree.BorderThickness = new Thickness(0);
+                    tree.Margin = new Thickness(10, 10, 10, 10);
+                    tree.SelectedItemChanged += Trace_SelectedItemChanged;
                     tree.Background = new SolidColorBrush(OdyResources.butInitColor);
+                    tree.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy));
                     traceTreeChildren(tree, trace);
                     this.traceTreeGroup.Content = tree;
                     this.traceTreeGroup.Visibility = Visibility.Visible;
@@ -262,6 +265,10 @@ namespace OdyHostNginx
                     {
                         sb.Append("\tclient: ").Append(trace.ClientName);
                     }
+                    if (trace.Name != null)
+                    {
+                        sb.Append("\tname: ").Append(trace.Name);
+                    }
                     this.traceTreeInfoText.Text = sb.ToString();
                 }
             }
@@ -269,7 +276,7 @@ namespace OdyHostNginx
 
         private void traceTreeChildren(ItemsControl parent, TracesInfo trace)
         {
-            if ("handlegetcompanyid".Equals(trace.Name) || "handleputcompanyid".Equals(trace.Name)) return;
+            if (trace.Name != null && trace.Name.EndsWith("companyid")) return;
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
             item.Header = "【" + trace.Pool() + "】" + trace.Name;
@@ -314,17 +321,21 @@ namespace OdyHostNginx
             HttpPacketInfo info = e.Row.Item as HttpPacketInfo;
             if (info == null) return;
             e.Row.ToolTip = info.FullUrl;
-            if (info.ResponseCode == 200)
-            {
-                // e.Row.Foreground = new SolidColorBrush(Colors.Green);
-            }
-            else if (info.ResponseCode == 404)
+            if (info.ResponseCode == 404)
             {
                 e.Row.Foreground = new SolidColorBrush(Colors.Gray);
             }
-            else if (info.ResponseCode == 500)
+            else if (info.isError())
             {
                 e.Row.Foreground = new SolidColorBrush(Colors.Red);
+            }
+            else if (info.ResponseCode == 200)
+            {
+                e.Row.Foreground = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                e.Row.Foreground = new SolidColorBrush(Colors.Gray);
             }
         }
 

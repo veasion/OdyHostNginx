@@ -25,7 +25,7 @@ namespace OdyHostNginx
         {
             get
             {
-                return StringHelper.replaceLine(name, " ");
+                return StringHelper.replaceMultipleBlank(StringHelper.replaceLine(name, " "));
             }
             set => name = value;
         }

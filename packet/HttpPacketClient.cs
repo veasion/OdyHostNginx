@@ -11,7 +11,7 @@ using Fiddler;
 namespace OdyHostNginx
 {
     /// <summary>
-    /// 抓包代理
+    /// Http Packet Client
     /// </summary>
     class HttpPacketClient
     {
@@ -162,7 +162,7 @@ namespace OdyHostNginx
         public void Shutdown()
         {
             FiddlerApplication.Shutdown();
-            Thread.Sleep(500);
+            Thread.Sleep(200);
         }
 
     }

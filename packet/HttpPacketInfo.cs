@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,20 +46,24 @@ namespace OdyHostNginx
 
         public bool reqIsJson()
         {
-            string type = reqHeaders["Content-Type"];
-            if (reqBody != null && type != null && type.Contains("application/json"))
+            if (reqHeaders.TryGetValue("Content-Type", out string type))
             {
-                return true;
+                if (reqBody != null && type != null && type.Contains("application/json"))
+                {
+                    return true;
+                }
             }
             return false;
         }
 
         public bool respIsJson()
         {
-            string type = respHeaders["Content-Type"];
-            if (response != null && type != null && type.Contains("application/json"))
+            if (respHeaders.TryGetValue("Content-Type", out string type))
             {
-                return true;
+                if (response != null && type != null && type.Contains("application/json"))
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -123,9 +128,8 @@ namespace OdyHostNginx
 
         public string trace()
         {
-            if (respHeaders.ContainsKey("Trace-Full-Info"))
+            if (respHeaders.TryGetValue("Trace-Full-Info", out string trace))
             {
-                string trace = respHeaders["Trace-Full-Info"];
                 int index = trace.IndexOf("http://");
                 if (index != -1)
                 {
@@ -137,13 +141,41 @@ namespace OdyHostNginx
 
         public bool show()
         {
-            if (respHeaders.ContainsKey("Content-Type"))
+            if (uri != null && uri.StartsWith("/zipkin/api/v1/trace/"))
             {
-                string type = respHeaders["Content-Type"];
+                return false;
+            }
+            if (respHeaders.TryGetValue("Content-Type", out string type))
+            {
                 if (response != null && type != null)
                 {
                     return type.Contains("application/json") || type.Contains("text/plain");
                 }
+            }
+            return false;
+        }
+
+        public bool isError()
+        {
+            if (responseCode == 500) return true;
+            if (respIsJson())
+            {
+                try
+                {
+                    JToken json = JToken.Parse(response);
+                    if (json != null)
+                    {
+                        if (json["code"] != null && json.Value<long?>("code") == 500)
+                        {
+                            return true;
+                        }
+                        else if (json["success"] != null && !json.Value<bool>("success"))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception) { }
             }
             return false;
         }

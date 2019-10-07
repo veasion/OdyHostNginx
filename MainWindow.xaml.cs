@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -43,6 +44,7 @@ namespace OdyHostNginx
         #region 初始化、退出
         public MainWindow()
         {
+            ThreadPool.SetMaxThreads(100, 10);
             upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
             this.ContentRendered += (sender, e) => initData();
             InitializeComponent();

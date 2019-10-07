@@ -11,6 +11,7 @@ namespace OdyHostNginx
     class StringHelper
     {
 
+        static Regex blankReg = new Regex(@"[\s]+");
         static string ipPattern = @"^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$";
         static string domainPattern = @"^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
 
@@ -101,6 +102,12 @@ namespace OdyHostNginx
                 str = str.Replace("\n", replace);
             }
             return str;
+        }
+
+        public static string replaceMultipleBlank(string str)
+        {
+            if (str == null) return str;
+            return blankReg.Replace(str, " ");
         }
 
         public static string timeStampFormat(long jsTimeStamp, string format)
