@@ -112,6 +112,11 @@ namespace OdyHostNginx
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
             item.Header = "【" + trace.Pool() + "】" + trace.Name;
+            if (trace.isError())
+            {
+                item.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                item.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
+            }
             parent.Items.Add(item);
             if (trace.Children != null)
             {
@@ -127,6 +132,17 @@ namespace OdyHostNginx
             this.traceDataGrid.Visibility = Visibility.Visible;
             DataGrid traceDataGrid = this.traceDataGrid;
             traceDataGrid.DataContext = KeyValue.list(trace.Details);
+        }
+
+        private void TraceDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            KeyValue kv = e.Row.Item as KeyValue;
+            if (kv == null) return;
+            if (kv.Key != null && "error".Equals(kv.Key.Trim()))
+            {
+                e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
+            }
         }
 
     }

@@ -12,12 +12,18 @@ namespace OdyHostNginx
     {
 
         static Regex blankReg = new Regex(@"[\s]+");
+        static string chinesePattern = @"[\u4e00-\u9fa5]+";
         static string ipPattern = @"^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$";
         static string domainPattern = @"^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
 
         public static bool isEmpty(string str)
         {
             return String.IsNullOrEmpty(str);
+        }
+
+        public static bool hasChinese(string str)
+        {
+            return !isEmpty(str) && Regex.IsMatch(str, chinesePattern);
         }
 
         public static bool isBlank(string str)

@@ -302,17 +302,11 @@ namespace OdyHostNginx
                     Env = env
                 };
                 string serverName = StringHelper.substring(context, "upstream", "{", startIndex);
-                if (StringHelper.isBlank(serverName))
-                {
-                    continue;
-                }
+                if (StringHelper.isBlank(serverName)) continue;
                 upstream.ServerName = serverName.Trim();
                 startIndex = context.IndexOf("{", startIndex + 1);
                 string host = StringHelper.substring(context, "server", ";", startIndex);
-                if (StringHelper.isBlank(host))
-                {
-                    continue;
-                }
+                if (StringHelper.isBlank(host)) continue;
                 host = host.Trim();
                 string[] hostArray = host.Split(':');
                 upstream.Ip = hostArray[0].Trim();
@@ -328,7 +322,34 @@ namespace OdyHostNginx
                 upstream.OldPort = upstream.Port;
                 upstreams.Add(upstream);
             }
+            parseUserOldUpstream(env, upstreams);
             return upstreams;
+        }
+
+        private static void parseUserOldUpstream(EnvConfig env, List<NginxUpstream> upstreams)
+        {
+            string oldFile = userNginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName + "\\" + env.UpstreamFileName;
+            string context = FileHelper.readTextFile(oldFile, WindowsNginxImpl.confEncoding);
+            Dictionary<string, NginxUpstream> dic = new Dictionary<string, NginxUpstream>();
+            upstreams.ForEach(up => dic[up.ServerName] = up);
+            int startIndex = 0;
+            NginxUpstream u;
+            while ((startIndex = context.IndexOf("upstream", startIndex)) != -1)
+            {
+                string serverName = StringHelper.substring(context, "upstream", "{", startIndex);
+                if (StringHelper.isBlank(serverName)) continue;
+                if (!dic.TryGetValue(serverName.Trim(), out u)) continue;
+                startIndex = context.IndexOf("{", startIndex + 1);
+                string host = StringHelper.substring(context, "server", ";", startIndex);
+                if (StringHelper.isBlank(host)) continue;
+                host = host.Trim();
+                string[] hostArray = host.Split(':');
+                u.OldIp = hostArray[0].Trim();
+                if (hostArray.Length > 1 && StringHelper.isInt(hostArray[1].Trim()))
+                {
+                    u.OldPort = Convert.ToInt32(hostArray[1].Trim());
+                }
+            }
         }
 
         private static int priorityServerName(string serverName)
@@ -422,23 +443,26 @@ namespace OdyHostNginx
         /// <summary>
         /// /projects/envs/*.conf
         /// </summary>
-        public static void writeConfig(OdyProjectConfig config, string path, bool replace)
+        public static void writeConfig(OdyProjectConfig config, string path, bool writeBody)
         {
             if (path == null)
             {
                 path = nginxConfigDir;
             }
-            // 加载 body
-            config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body)));
+            if (writeBody)
+            {
+                // 加载 body
+                config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body)));
+            }
             foreach (var projectConfig in config.Projects)
             {
                 string projectDir = path + "\\" + projectConfig.Name;
-                FileHelper.mkdirAndDel(projectDir, replace);
+                FileHelper.mkdirAndDel(projectDir, writeBody);
                 List<EnvConfig> envs = projectConfig.Envs;
                 foreach (var env in envs)
                 {
                     string envDir = projectDir + "\\" + env.EnvName;
-                    FileHelper.mkdirAndDel(envDir, replace);
+                    FileHelper.mkdirAndDel(envDir, writeBody);
                     string upstreamFile = envDir + "\\" + env.UpstreamFileName;
                     StringBuilder upstreamBody = new StringBuilder();
                     List<NginxUpstream> upstreams = env.Upstreams;
@@ -458,23 +482,22 @@ namespace OdyHostNginx
                         upstreamBody.AppendLine(";");
                         upstreamBody.AppendLine("}");
                     }
-                    if (replace || !File.Exists(upstreamFile))
+                    FileHelper.writeFile(upstreamFile, WindowsNginxImpl.confEncoding, upstreamBody.ToString());
+                    if (writeBody)
                     {
-                        FileHelper.writeFile(upstreamFile, WindowsNginxImpl.confEncoding, upstreamBody.ToString());
-                    }
-                    List<NginxConfig> confs = env.Configs;
-                    foreach (var conf in confs)
-                    {
-                        string confFile = envDir + "\\" + conf.FileName;
-                        if (replace || !File.Exists(confFile))
+                        List<NginxConfig> confs = env.Configs;
+                        foreach (var conf in confs)
                         {
-                            FileHelper.writeFile(confFile, WindowsNginxImpl.confEncoding, conf.Body);
+                            FileHelper.writeFile(envDir + "\\" + conf.FileName, WindowsNginxImpl.confEncoding, conf.Body);
                         }
                     }
                 }
             }
-            // 清除 body，采用懒加载
-            config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = null)));
+            if (writeBody)
+            {
+                // 清除 body，采用懒加载
+                config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = null)));
+            }
         }
 
         public static void deleteProject(ProjectConfig project)

@@ -16,5 +16,7 @@ namespace OdyHostNginx
 
         void reset();
 
+        bool isRun();
+
     }
 }

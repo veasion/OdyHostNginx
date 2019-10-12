@@ -131,6 +131,10 @@ namespace OdyHostNginx
             if (respHeaders.TryGetValue("Trace-Full-Info", out string trace))
             {
                 int index = trace.IndexOf("http://");
+                if (index == -1)
+                {
+                    index = trace.IndexOf("https://");
+                }
                 if (index != -1)
                 {
                     return trace.Substring(index);
@@ -141,7 +145,7 @@ namespace OdyHostNginx
 
         public bool show()
         {
-            if (uri != null && uri.StartsWith("/zipkin/api/v1/trace/"))
+            if (uri != null && uri.StartsWith("/zipkin/"))
             {
                 return false;
             }
@@ -165,11 +169,11 @@ namespace OdyHostNginx
                     JToken json = JToken.Parse(response);
                     if (json != null)
                     {
-                        if (json["code"] != null && json.Value<long?>("code") == 500)
+                        if (json["success"] != null && !json.Value<bool>("success"))
                         {
                             return true;
                         }
-                        else if (json["success"] != null && !json.Value<bool>("success"))
+                        if (json["success"] == null && json["message"] != null && json["code"] != null && !"0".Equals(json.Value<string>("code")))
                         {
                             return true;
                         }

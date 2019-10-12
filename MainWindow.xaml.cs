@@ -46,7 +46,19 @@ namespace OdyHostNginx
         {
             ThreadPool.SetMaxThreads(100, 10);
             upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
-            this.ContentRendered += (sender, e) => initData();
+            this.ContentRendered += (sender, e) =>
+            {
+                initData();
+                string dir = FileHelper.getCurrentDirectory();
+                if (StringHelper.hasChinese(dir))
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(dir).AppendLine();
+                    sb.AppendLine("软件运行目录中不能含有中文！").AppendLine();
+                    sb.AppendLine("为影响功能使用，请移动到其它非中文位置运行。").AppendLine();
+                    MessageBox.Show(sb.ToString(), "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
             InitializeComponent();
         }
 
@@ -64,7 +76,7 @@ namespace OdyHostNginx
 
         private void apply()
         {
-            ApplicationHelper.applyNginx(odyProjectConfig);
+            ApplicationHelper.applyNginx(odyProjectConfig, false);
             ApplicationHelper.applySwitch(getCurrentHost());
             OdyConfigHelper.writeUserHosts(userHosts);
             this.applyBut.Source = OdyResources.img_not_apply;
@@ -717,6 +729,7 @@ namespace OdyHostNginx
             // 渲染 nginx config
             string prefix = "-prod-";
             configViewer.Children.Clear();
+            this.configHostViewer.ScrollToTop();
             OdyConfigHelper.sortUpstream(currentEnv.Upstreams);
             foreach (var u in currentEnv.Upstreams)
             {
@@ -756,6 +769,7 @@ namespace OdyHostNginx
 
         private Border drawingConfig(NginxUpstream u, UpstreamDetails ud, string contextPath)
         {
+            bool change = !u.Ip.Equals(u.OldIp);
             Color borderColor = OdyResources.configBorderColor;
             Border border = new Border
             {
@@ -794,7 +808,7 @@ namespace OdyHostNginx
                 ToolTip = tip.ToString(),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(OdyResources.configFontColor)
+                Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
             dockServer.Children.Add(serverNameLabel);
 
@@ -813,7 +827,7 @@ namespace OdyHostNginx
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Background = new SolidColorBrush(OdyResources.configBgColor),
-                Foreground = new SolidColorBrush(OdyResources.configFontColor)
+                Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
             ipText.DataContext = u;
             ipText.TextChanged += ConfigIpText_TextChanged;
@@ -834,7 +848,7 @@ namespace OdyHostNginx
                 VerticalContentAlignment = VerticalAlignment.Center,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Background = new SolidColorBrush(OdyResources.configBgColor),
-                Foreground = new SolidColorBrush(OdyResources.configFontColor)
+                Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
             portText.DataContext = u;
             portText.KeyDown += PortText_KeyDown;
@@ -853,12 +867,12 @@ namespace OdyHostNginx
             {
                 Width = 42,
                 Height = 28,
-                Content = "local",
+                Content = change ? "back" : "local",
                 Cursor = Cursors.Hand,
-                ToolTip = "Set to local IP",
+                ToolTip = change ? "Set to old ip" : "Set to local ip",
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Background = new SolidColorBrush(OdyResources.butInitColor),
-                Foreground = new SolidColorBrush(OdyResources.configFontColor)
+                Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
             localBut.DataContext = u;
             localBut.Click += LocalBut_Click;
@@ -946,17 +960,27 @@ namespace OdyHostNginx
             {
                 u.Ip = "127.0.0.1";
                 but.Content = "back";
+                but.ToolTip = "Set to old ip";
             }
             else
             {
                 u.Ip = u.OldIp;
                 u.Port = u.OldPort;
                 but.Content = "local";
+                but.ToolTip = "Set to local ip";
             }
             DockPanel dockRoot = (DockPanel)VisualTreeHelper.GetParent(VisualTreeHelper.GetParent(but));
             ((dockRoot.Children[1] as DockPanel).Children[0] as TextBox).Text = u.Ip;
             ((dockRoot.Children[2] as DockPanel).Children[0] as TextBox).Text = u.Port + "";
             this.applyBut.Source = OdyResources.img_can_apply;
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Thread.Sleep(500);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    drawingNginxConfig(this.searchText.Text);
+                });
+            });
         }
 
         private void PortText_KeyDown(object sender, KeyEventArgs e)
@@ -1008,6 +1032,7 @@ namespace OdyHostNginx
         {
             // 渲染 host config
             hostViewer.Children.Clear();
+            this.configHostViewer.ScrollToTop();
             GroupBox userHost = null, envHost = null;
 
             if (userHosts != null && userHosts.Count > 0)
@@ -1195,6 +1220,14 @@ namespace OdyHostNginx
             HostConfig host = envSwitch.DataContext as HostConfig;
             host.Use = envSwitch.IsChecked == true ? true : false;
             this.applyBut.Source = OdyResources.img_can_apply;
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Thread.Sleep(500);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    drawingHostConfig(this.searchText.Text);
+                });
+            });
         }
 
         private void HostIpText_TextChanged(object sender, TextChangedEventArgs e)

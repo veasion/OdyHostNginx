@@ -9,6 +9,7 @@ namespace OdyHostNginx
     class WindowsNginxImpl : Nginx
     {
 
+        public static string processName = "nginx";
         public static string nginxPath = FileHelper.getCurrentDirectory() + "\\bin\\nginx";
         public static string nginxConfigDir = nginxPath + "\\conf";
         public static string nginxExePath = nginxPath + "\\nginx.exe";
@@ -28,7 +29,7 @@ namespace OdyHostNginx
 
         public void stop()
         {
-            CmdHelper.CloseProcess("nginx");
+            CmdHelper.CloseProcess(processName);
         }
 
         public void include(List<string> list)
@@ -48,6 +49,11 @@ namespace OdyHostNginx
         {
             StringBuilder sb = readConfig(null);
             FileHelper.writeFile(nginxConfigPath, confEncoding, sb.ToString());
+        }
+
+        public bool isRun()
+        {
+            return CmdHelper.ExistProcess(processName);
         }
 
         private StringBuilder readConfig(string include)

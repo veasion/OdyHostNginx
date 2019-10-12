@@ -11,10 +11,21 @@ namespace OdyHostNginx
     public class TraceClient
     {
 
+        static Dictionary<string, TracesInfo> cache = new Dictionary<string, TracesInfo>();
+
         public static TracesInfo traces(string url)
         {
             TracesInfo root = null;
+            if (url.IndexOf("/zipkin//") > 0)
+            {
+                url = url.Replace("/zipkin//", "/zipkin/");
+            }
             url = url.Replace("/zipkin/traces/", "/zipkin/api/v1/trace/");
+            cache.TryGetValue(url, out root);
+            if (root != null)
+            {
+                return root;
+            }
             string jsonStr = HttpPacketHelper.get(url);
             if (StringHelper.isEmpty(jsonStr)) return null;
             TracesInfo traces;
@@ -77,6 +88,11 @@ namespace OdyHostNginx
                 }
             }
             children(root, dic);
+            if (cache.Count > 20)
+            {
+                cache.Clear();
+            }
+            cache[url] = root;
             return root;
         }
 

@@ -74,9 +74,16 @@ namespace OdyHostNginx
                     {
                         info.Pool = MainWindow.queryPoolByUri(info.Uri);
                     }
-                    Monitor.Enter(httpDataGrid.DataContext);
-                    (httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>).Add(info);
-                    Monitor.Exit(httpDataGrid.DataContext);
+                    ObservableCollection<HttpPacketInfo> list = httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>;
+                    Monitor.Enter(list);
+                    if (list.Count > 200)
+                    {
+                        list.Clear();
+                        number = 0;
+                        info.Number = number++;
+                    }
+                    list.Add(info);
+                    Monitor.Exit(list);
                 });
             });
         }
@@ -216,13 +223,36 @@ namespace OdyHostNginx
             this.traceDataGrid.Visibility = Visibility.Hidden;
             if (currentPacket == null) return;
             string url = currentPacket.trace();
+            if (StringHelper.isEmpty(url))
+            {
+                this.traceTreeGroup.Content = new Label
+                {
+                    Content = "None",
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center
+                };
+                this.traceTreeGroup.Visibility = Visibility.Visible;
+                return;
+            }
+            else
+            {
+                this.traceTreeGroup.Content = new Image
+                {
+                    Width = 50,
+                    Source = OdyResources.img_load
+                };
+                this.traceTreeGroup.Visibility = Visibility.Visible;
+            }
             ThreadPool.QueueUserWorkItem(o =>
             {
+                TracesInfo trace = TraceClient.traces(url);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (StringHelper.isEmpty(url)) return;
-                    TracesInfo trace = TraceClient.traces(url);
-                    if (trace == null) return;
+                    if (trace == null)
+                    {
+                        this.traceTreeGroup.Visibility = Visibility.Hidden;
+                        return;
+                    }
                     TreeView tree = new TreeView();
                     tree.BorderThickness = new Thickness(0);
                     tree.Margin = new Thickness(10, 10, 10, 10);
@@ -280,6 +310,11 @@ namespace OdyHostNginx
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
             item.Header = "【" + trace.Pool() + "】" + trace.Name;
+            if (trace.isError())
+            {
+                item.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                item.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
+            }
             parent.Items.Add(item);
             if (trace.Children != null)
             {
@@ -295,6 +330,17 @@ namespace OdyHostNginx
             this.traceDataGrid.Visibility = Visibility.Visible;
             DataGrid traceDataGrid = this.traceDataGrid;
             traceDataGrid.DataContext = KeyValue.list(trace.Details);
+        }
+
+        private void TraceDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            KeyValue kv = e.Row.Item as KeyValue;
+            if (kv == null) return;
+            if (kv.Key != null && "error".Equals(kv.Key.Trim()))
+            {
+                e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
+            }
         }
         #endregion
 
@@ -327,7 +373,8 @@ namespace OdyHostNginx
             }
             else if (info.isError())
             {
-                e.Row.Foreground = new SolidColorBrush(Colors.Red);
+                e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
             }
             else if (info.ResponseCode == 200)
             {

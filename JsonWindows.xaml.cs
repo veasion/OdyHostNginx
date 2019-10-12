@@ -73,9 +73,9 @@ namespace OdyHostNginx
             {
                 ThreadPool.QueueUserWorkItem(o =>
                 {
+                    Thread.Sleep(200);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        Thread.Sleep(200);
                         format();
                     });
                 });

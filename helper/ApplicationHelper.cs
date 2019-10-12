@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace OdyHostNginx
 {
@@ -32,16 +35,17 @@ namespace OdyHostNginx
             switchHost.switchHost(hosts.Where(host => host.Use).ToList(), true);
         }
 
-        public static void applyNginx(OdyProjectConfig config)
+        public static void applyNginx(OdyProjectConfig config, bool writeBody)
         {
             string configDir = WindowsNginxImpl.nginxConfigDir;
-            OdyConfigHelper.writeConfig(config, configDir, true);
+            OdyConfigHelper.writeConfig(config, configDir, writeBody);
             List<string> confs = new List<string>();
             getUseConfig(config, confs);
             nginx.include(confs);
-            if (config.Use)
+            if (config.Use && confs.Count > 0)
             {
                 nginx.restart();
+                checkRunStatus(config, confs);
             }
             else
             {
@@ -71,6 +75,39 @@ namespace OdyHostNginx
                     }
                 }
             }
+        }
+
+        private static void checkRunStatus(OdyProjectConfig config, List<string> confs)
+        {
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                Thread.Sleep(500);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (config.Use && !nginx.isRun())
+                    {
+                        bool hasChinese = StringHelper.hasChinese(FileHelper.getCurrentDirectory());
+                        if (hasChinese)
+                        {
+                            MessageBox.Show("启动 nginx 失败，运行目录中不能含有中文！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        foreach (var item in confs)
+                        {
+                            if (StringHelper.hasChinese(item))
+                            {
+                                MessageBox.Show("启动 nginx 失败，项目环境名称中不能含有中文！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+                        }
+                        MessageBoxResult result = MessageBox.Show("启动 nginx 失败！是否查看日志？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            Process.Start("notepad.exe", WindowsNginxImpl.nginxLogPath);
+                        }
+                    }
+                });
+            });
         }
 
     }

@@ -41,13 +41,13 @@ namespace OdyHostNginx
                 MessageBox.Show("名称不能为空");
                 return;
             }
-            /*
-            else if (!Regex.IsMatch(this.projectName.Text + this.envName.Text, "^[0-9a-zA-Z_]{1,}$"))
+            this.envName.Text = this.envName.Text.Trim();
+            this.projectName.Text = this.projectName.Text.Trim();
+            if (!Regex.IsMatch(this.projectName.Text + this.envName.Text, "^[0-9a-zA-Z_]{1,}$"))
             {
                 MessageBox.Show("名称只能由数字、字母、下划线组成");
                 return;
             }
-            */
             ConfigDialogData.projectName = this.projectName.Text;
             ConfigDialogData.envName = this.envName.Text;
             ConfigDialogData.success = true;

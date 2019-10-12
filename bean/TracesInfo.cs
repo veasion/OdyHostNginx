@@ -41,5 +41,10 @@ namespace OdyHostNginx
             return serviceName != null ? serviceName : clientName;
         }
 
+        public bool isError()
+        {
+            return details != null && details.ContainsKey("error");
+        }
+
     }
 }

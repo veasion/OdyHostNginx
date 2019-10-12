@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Text;
 
@@ -66,6 +67,33 @@ namespace OdyHostNginx
         {
             File.WriteAllText(path, context, encoding);
             return true;
+        }
+
+        public static T readJsonFile<T>(string path)
+        {
+            string json = readTextFile(path);
+            if (!StringHelper.isEmpty(json))
+            {
+                try
+                {
+                    return JsonConvert.DeserializeObject<T>(json);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+            return default(T);
+        }
+
+        public static bool writeJsonFile(object obj, string path)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            string json = JsonConvert.SerializeObject(obj);
+            return writeFile(path, json);
         }
 
         public static bool appendFile(string path, string line)

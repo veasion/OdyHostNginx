@@ -54,6 +54,22 @@ namespace OdyHostNginx
             return suc;
         }
 
+        public static bool ExistProcess(string procName)
+        {
+            Process[] processes = Process.GetProcessesByName(procName);
+            if (processes != null && processes.Length > 0)
+            {
+                foreach (Process p in processes)
+                {
+                    if (!p.CloseMainWindow())
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         [DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
         [DllImport("user32.dll")]
