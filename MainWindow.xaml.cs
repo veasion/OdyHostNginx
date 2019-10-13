@@ -60,7 +60,12 @@ namespace OdyHostNginx
                 }
                 try
                 {
-                    FileHelper.delDir(UpgradeHelper.upgradeDir, true);
+                    if (System.IO.Directory.Exists(UpgradeHelper.upgradeDir))
+                    {
+                        odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+                        drawingSwitchUI();
+                        FileHelper.delDir(UpgradeHelper.upgradeDir, true);
+                    }
                 }
                 catch (Exception) { }
                 checkUpgrade(true);
