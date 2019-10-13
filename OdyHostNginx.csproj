@@ -79,14 +79,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AboutWindows.xaml.cs">
+      <DependentUpon>AboutWindows.xaml</DependentUpon>
+    </Compile>
     <Compile Include="bean\KeyValue.cs" />
     <Compile Include="bean\TracesInfo.cs" />
+    <Compile Include="bean\UpgradeDetails.cs" />
+    <Compile Include="bean\UpgradeVo.cs" />
     <Compile Include="helper\ApplicationHelper.cs" />
     <Compile Include="helper\CmdHelper.cs" />
     <Compile Include="bean\EnvConfig.cs" />
     <Compile Include="helper\FileHelper.cs" />
     <Compile Include="bean\Flag.cs" />
     <Compile Include="bean\HostConfig.cs" />
+    <Compile Include="helper\HttpHelper.cs" />
+    <Compile Include="helper\Logger.cs" />
+    <Compile Include="helper\UpgradeHelper.cs" />
     <Compile Include="HostConfigWindows.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,6 +135,10 @@
     <Compile Include="bean\UpstreamDetails.cs" />
     <Compile Include="service\WindowsLocalHostImpl.cs" />
     <Compile Include="service\WindowsNginxImpl.cs" />
+    <Page Include="AboutWindows.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HttpPacketWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

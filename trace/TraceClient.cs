@@ -26,7 +26,7 @@ namespace OdyHostNginx
             {
                 return root;
             }
-            string jsonStr = HttpPacketHelper.get(url);
+            string jsonStr = HttpHelper.get(url);
             if (StringHelper.isEmpty(jsonStr)) return null;
             TracesInfo traces;
             Dictionary<string, TracesInfo> dic = new Dictionary<string, TracesInfo>();

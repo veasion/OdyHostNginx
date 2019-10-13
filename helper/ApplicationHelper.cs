@@ -13,10 +13,11 @@ namespace OdyHostNginx
     class ApplicationHelper
     {
 
+        public static bool autoExit = false;
         private static Nginx nginx = new WindowsNginxImpl();
         private static SwitchHost switchHost = new WindowsLocalHostImpl();
 
-        public static void exit()
+        public static void exit(bool auto)
         {
             try
             {
@@ -26,7 +27,15 @@ namespace OdyHostNginx
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.error("退出程序", e);
+            }
+            finally
+            {
+                autoExit = auto;
+                if (auto)
+                {
+                    Application.Current.Shutdown();
+                }
             }
         }
 

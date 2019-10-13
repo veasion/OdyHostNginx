@@ -82,7 +82,7 @@ namespace OdyHostNginx
             {
                 return;
             }
-            Console.WriteLine("req => " + session.fullUrl);
+            Logger.info("抓包，req => " + session.fullUrl);
             if (whiteList != null && !whiteList.Contains(session.hostname))
             {
                 return;

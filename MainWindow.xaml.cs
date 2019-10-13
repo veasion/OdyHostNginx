@@ -58,6 +58,12 @@ namespace OdyHostNginx
                     sb.AppendLine("为影响功能使用，请移动到其它非中文位置运行。").AppendLine();
                     MessageBox.Show(sb.ToString(), "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                try
+                {
+                    FileHelper.delDir(UpgradeHelper.upgradeDir, true);
+                }
+                catch (Exception) { }
+                checkUpgrade(true);
             };
             InitializeComponent();
         }
@@ -84,14 +90,17 @@ namespace OdyHostNginx
 
         private void OdyHostNginx_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("您确定要退出吗？", "提示", MessageBoxButton.OKCancel, MessageBoxImage.None, MessageBoxResult.Cancel);
-            if (result == MessageBoxResult.Cancel)
+            if (!ApplicationHelper.autoExit)
             {
-                e.Cancel = true;
-            }
-            else
-            {
-                ApplicationHelper.exit();
+                MessageBoxResult result = MessageBox.Show("您确定要退出吗？", "提示", MessageBoxButton.OKCancel, MessageBoxImage.None, MessageBoxResult.Cancel);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+                else
+                {
+                    ApplicationHelper.exit(false);
+                }
             }
         }
 
@@ -221,12 +230,15 @@ namespace OdyHostNginx
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
+            /*
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(" 非常感谢使用这个小工具").AppendLine();
             sb.AppendLine(" 该工具专门为欧电云开发小伙伴打造").AppendLine();
             sb.AppendLine(" 业余开发，如有漏洞或建议请在非工作时间钉我~").AppendLine();
             sb.AppendLine().AppendLine("\t\t\t-- luozhuowei");
             MessageBox.Show(sb.ToString(), "关于", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            */
+            new AboutWindows().ShowDialog();
         }
 
         private void HostConfig_Click(object sender, RoutedEventArgs e)
@@ -314,6 +326,71 @@ namespace OdyHostNginx
                     httpPacket.WindowState = WindowState.Normal;
                 }
                 httpPacket.Activate();
+            }
+        }
+
+        private void CheckUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            checkUpgrade(false);
+        }
+
+        private void checkUpgrade(bool auto)
+        {
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                UpgradeVo u = UpgradeHelper.getUpgrade(true);
+                if (u != null && UpgradeHelper.isNeedUpdate(u))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        doUpgrade(u);
+                    });
+                }
+                else if (!auto)
+                {
+                    if (u == null)
+                    {
+                        MessageBox.Show("检查更新失败！", "提示");
+                    }
+                    else
+                    {
+                        MessageBox.Show("当前已是最新版本：" + UpgradeHelper.version + "\r\n\r\n暂时没有发现新版本！", "提示");
+                    }
+                }
+            });
+        }
+
+        private void doUpgrade(UpgradeVo u)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("检测到最新版本：" + u.Version).AppendLine();
+            if (!StringHelper.isEmpty(u.Desc))
+            {
+                sb.AppendLine("版本描述：" + u.Desc).AppendLine();
+            }
+            if (!u.Force)
+            {
+                sb.AppendLine("是否现在更新？").AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("本次更新为强制更新，不可跳过！").AppendLine();
+            }
+            MessageBoxResult r = MessageBox.Show(sb.ToString(), "版本更新提示", u.Force ? MessageBoxButton.OK : MessageBoxButton.YesNo, u.Force ? MessageBoxImage.Asterisk : MessageBoxImage.Question);
+            if (u.Force || r == MessageBoxResult.Yes)
+            {
+                bool suc = UpgradeHelper.preUpgrade(u);
+                if (suc)
+                {
+                    // 启动更新程序
+                    UpgradeHelper.doUpdate();
+                    Thread.Sleep(100);
+                    ApplicationHelper.exit(true);
+                }
+                else
+                {
+                    MessageBox.Show("更新失败，请检查网络环境！", "错误");
+                }
             }
         }
         #endregion

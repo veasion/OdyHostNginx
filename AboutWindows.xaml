@@ -1,0 +1,29 @@
+﻿<Window x:Class="OdyHostNginx.AboutWindows"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OdyHostNginx"
+        mc:Ignorable="d"
+        Title="关于"
+        Height="680" Width="560"
+        WindowStartupLocation="CenterScreen"
+        Icon="favicon.ico" ResizeMode="NoResize">
+    <Grid>
+        <StackPanel Orientation="Vertical" Background="#019FE8">
+            <TextBox Cursor="Arrow" FontSize="20" Margin="0,15,0,0" Foreground="White" Background="#019FE8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsReadOnly="True" BorderThickness="0">
+                非常感谢使用这个小工具！
+            </TextBox>
+            <TextBox Cursor="Arrow" FontSize="20" Margin="0,15,0,0" Foreground="White" Background="#019FE8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsReadOnly="True" BorderThickness="0">
+                该工具专门为欧电云开发小伙伴打造。
+            </TextBox>
+            <TextBox Cursor="Arrow" FontSize="20" Margin="0,15,0,0" Foreground="White" Background="#019FE8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsReadOnly="True" BorderThickness="0">
+                业余开发，如有漏洞或建议请在非工作时间钉我~
+            </TextBox>
+            <TextBox Cursor="Arrow" FontSize="20" Margin="0,20,0,0" Foreground="Yellow" Background="#019FE8" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsReadOnly="True" BorderThickness="0">
+                【如果觉得好用可以打赏作者一块钱】
+            </TextBox>
+            <Image Margin="0,0,0,0" Width="480" Source="pack://siteoforigin:,,,/bin/upgrade/alipay.png"/>
+        </StackPanel>
+    </Grid>
+</Window>

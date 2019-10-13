@@ -41,36 +41,5 @@ namespace OdyHostNginx
             return "127.0.0.1";
         }
 
-        /// <summary>
-        /// get请求
-        /// </summary>
-        public static string get(string url)
-        {
-            return get(url, Encoding.UTF8);
-        }
-
-        public static string get(string url, Encoding encoding)
-        {
-            try
-            {
-                WebRequest request = WebRequest.Create(url);
-                WebResponse response = request.GetResponse();
-                Stream ReceiveStream = response.GetResponseStream();
-                string responseStr = null;
-                if (ReceiveStream != null)
-                {
-                    StreamReader reader = new StreamReader(ReceiveStream, encoding);
-                    responseStr = reader.ReadToEnd();
-                    reader.Close();
-                }
-                response.Close();
-                return responseStr;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
     }
 }

@@ -47,7 +47,7 @@ namespace OdyHostNginx
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.error("读取文件", e);
             }
             finally
             {
@@ -80,7 +80,7 @@ namespace OdyHostNginx
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Logger.error("读取json文件", e);
                 }
             }
             return default(T);
@@ -113,7 +113,7 @@ namespace OdyHostNginx
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.error("追加文件", e);
             }
             finally
             {
@@ -183,6 +183,7 @@ namespace OdyHostNginx
                             delDir(path, true);
                         }
                     }
+                    Directory.Delete(dirPath);
                 }
                 else
                 {
