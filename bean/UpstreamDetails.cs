@@ -10,12 +10,12 @@ namespace OdyHostNginx
     {
 
         private string serverName;
-        private List<string> uris;
-        private List<string> contextPaths;
+        private HashSet<string> uris;
+        private HashSet<string> contextPaths;
 
         public string ServerName { get => serverName; set => serverName = value; }
-        public List<string> Uris { get => uris; set => uris = value; }
-        public List<string> ContextPaths { get => contextPaths; set => contextPaths = value; }
+        public HashSet<string> Uris { get => uris; set => uris = value; }
+        public HashSet<string> ContextPaths { get => contextPaths; set => contextPaths = value; }
 
     }
 }

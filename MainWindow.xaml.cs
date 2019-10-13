@@ -742,7 +742,10 @@ namespace OdyHostNginx
                 HashSet<string> contextPaths = new HashSet<string>();
                 if (ud != null)
                 {
-                    ud.ContextPaths.ForEach(name => contextPaths.Add(name));
+                    foreach (var item in ud.ContextPaths)
+                    {
+                        contextPaths.Add(item);
+                    }
                 }
                 if (contextPaths.Count == 0)
                 {
@@ -799,7 +802,10 @@ namespace OdyHostNginx
             if (ud != null)
             {
                 tip.AppendLine();
-                ud.Uris.ForEach(uri => tip.AppendLine(uri));
+                foreach (var uri in ud.Uris)
+                {
+                    tip.AppendLine(uri);
+                }
             }
             Label serverNameLabel = new Label
             {
@@ -1459,7 +1465,10 @@ namespace OdyHostNginx
                         {
                             if (uri.StartsWith(str) && item.ContextPaths.Count > 0)
                             {
-                                return item.ContextPaths[0];
+                                foreach (var contextPath in item.ContextPaths)
+                                {
+                                    return contextPath;
+                                }
                             }
                         }
                     }

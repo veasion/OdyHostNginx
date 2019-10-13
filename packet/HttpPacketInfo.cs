@@ -11,7 +11,7 @@ namespace OdyHostNginx
     {
 
         private int number;
-        private int id;
+        private string id;
         private int pid;
         private string uri;
         private string pool;
@@ -21,14 +21,15 @@ namespace OdyHostNginx
         private string hostname;
         private string reqBody;
         private string response;
-        private int responseCode;
+        private int status;
+        private JToken respJson;
         private Dictionary<string, string> reqHeaders;
         private Dictionary<string, List<string>> reqCookies;
         private Dictionary<string, string> respHeaders;
         private Dictionary<string, List<string>> respCookies;
 
         public int Number { get => number; set => number = value; }
-        public int Id { get => id; set => id = value; }
+        public string Id { get => id; set => id = value; }
         public int Pid { get => pid; set => pid = value; }
         public string Uri { get => uri; set => uri = value; }
         public string Pool { get => pool; set => pool = value; }
@@ -38,7 +39,7 @@ namespace OdyHostNginx
         public string Hostname { get => hostname; set => hostname = value; }
         public string ReqBody { get => reqBody; set => reqBody = value; }
         public string Response { get => response; set => response = value; }
-        public int ResponseCode { get => responseCode; set => responseCode = value; }
+        public int Status { get => status; set => status = value; }
         public Dictionary<string, string> ReqHeaders { get => reqHeaders; set => reqHeaders = value; }
         public Dictionary<string, List<string>> ReqCookies { get => reqCookies; set => reqCookies = value; }
         public Dictionary<string, string> RespHeaders { get => respHeaders; set => respHeaders = value; }
@@ -58,10 +59,19 @@ namespace OdyHostNginx
 
         public bool respIsJson()
         {
+            if (respJson != null)
+            {
+                return true;
+            }
             if (respHeaders.TryGetValue("Content-Type", out string type))
             {
                 if (response != null && type != null && type.Contains("application/json"))
                 {
+                    try
+                    {
+                        respJson = JToken.Parse(response);
+                    }
+                    catch (Exception) { }
                     return true;
                 }
             }
@@ -143,11 +153,15 @@ namespace OdyHostNginx
             return null;
         }
 
-        public bool show()
+        public bool show(bool https)
         {
             if (uri != null && uri.StartsWith("/zipkin/"))
             {
                 return false;
+            }
+            if (respJson != null)
+            {
+                return true;
             }
             if (respHeaders.TryGetValue("Content-Type", out string type))
             {
@@ -156,30 +170,46 @@ namespace OdyHostNginx
                     return type.Contains("application/json") || type.Contains("text/plain");
                 }
             }
+            else if (https && "CONNECT".Equals(reqMethod))
+            {
+                return true;
+            }
             return false;
+        }
+
+        public string Code
+        {
+            get
+            {
+                if (respIsJson() && respJson != null && respJson["code"] != null)
+                {
+                    return respJson.Value<string>("code");
+                }
+                return "";
+            }
         }
 
         public bool isError()
         {
-            if (responseCode == 500) return true;
-            if (respIsJson())
+            if (status == 500) return true;
+            if (respIsJson() && respJson != null)
             {
-                try
+                if (respJson["success"] != null)
                 {
-                    JToken json = JToken.Parse(response);
-                    if (json != null)
+                    string success = respJson["success"].ToString().ToLower();
+                    if ("true".Equals(success) || "成功".Equals(success) || "ok".Equals(success))
                     {
-                        if (json["success"] != null && !json.Value<bool>("success"))
-                        {
-                            return true;
-                        }
-                        if (json["success"] == null && json["message"] != null && json["code"] != null && !"0".Equals(json.Value<string>("code")))
-                        {
-                            return true;
-                        }
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
-                catch (Exception) { }
+                if (respJson["success"] == null && respJson["message"] != null && respJson["code"] != null && !"0".Equals(respJson.Value<string>("code")))
+                {
+                    return true;
+                }
             }
             return false;
         }

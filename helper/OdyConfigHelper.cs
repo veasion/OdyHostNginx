@@ -165,8 +165,8 @@ namespace OdyHostNginx
         {
             int index, start;
             string uri, contextPath;
-            List<string> uris;
-            List<string> contextPaths;
+            HashSet<string> uris;
+            HashSet<string> contextPaths;
             foreach (var conf in env.Configs)
             {
                 string context = conf.Body;
@@ -174,8 +174,8 @@ namespace OdyHostNginx
                 foreach (var item in env.Upstreams)
                 {
                     index = 0;
-                    uris = new List<string>();
-                    contextPaths = new List<string>();
+                    uris = new HashSet<string>();
+                    contextPaths = new HashSet<string>();
                     while ((index = context.IndexOf(item.ServerName, index)) > 0)
                     {
                         start = context.LastIndexOf("location", index);
@@ -203,12 +203,26 @@ namespace OdyHostNginx
                             }
                         }
                     }
-                    upstreamDetailsMap[item.ServerName] = new UpstreamDetails
+                    if (upstreamDetailsMap.ContainsKey(item.ServerName))
                     {
-                        Uris = uris,
-                        ContextPaths = contextPaths,
-                        ServerName = item.ServerName
-                    };
+                        foreach (var str in uris)
+                        {
+                            upstreamDetailsMap[item.ServerName].Uris.Add(str);
+                        }
+                        foreach (var str in contextPaths)
+                        {
+                            upstreamDetailsMap[item.ServerName].ContextPaths.Add(str);
+                        }
+                    }
+                    else
+                    {
+                        upstreamDetailsMap[item.ServerName] = new UpstreamDetails
+                        {
+                            ServerName = item.ServerName,
+                            Uris = uris ?? new HashSet<string>(),
+                            ContextPaths = contextPaths ?? new HashSet<string>()
+                        };
+                    }
                 }
             }
         }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -15,6 +17,8 @@ namespace OdyHostNginx
     /// </summary>
     class HttpPacketClient
     {
+
+        public static bool ssl = false;
         public static int listenPort = 8888;
         public static string name = "OdyHtppPacketClient";
 
@@ -23,8 +27,9 @@ namespace OdyHostNginx
 
         public delegate void HttpPacketHandler(HttpPacketInfo info);
 
-        public void Start(HttpPacketHandler handler, HashSet<string> whiteList)
+        public void Start(HttpPacketHandler handler, bool https, HashSet<string> whiteList)
         {
+            ssl = https;
             this.handler = handler;
             this.whiteList = whiteList;
             if (IsStarted())
@@ -32,14 +37,43 @@ namespace OdyHostNginx
                 Shutdown();
             }
 
-            CONFIG.IgnoreServerCertErrors = true;
             FiddlerApplication.SetAppDisplayName(name);
-            FiddlerApplication.Startup(listenPort, true, false, true);
-            // FiddlerApplication.Startup(listenPort, true, true, true);
-
+            if (ssl)
+            {
+                openSSL();
+            }
+            FiddlerApplication.Startup(listenPort, true, ssl, true);
             FiddlerApplication.BeforeRequest += BeforeRequest;
             FiddlerApplication.BeforeResponse += BeforeResponse;
             FiddlerApplication.AfterSessionComplete += AfterSessionComplete;
+        }
+
+        private void openSSL()
+        {
+            try
+            {
+                X509Certificate2 oRootCert = CertMaker.GetRootCertificate();
+                X509Store certStore = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+                certStore.Open(OpenFlags.ReadWrite);
+                try
+                {
+                    certStore.Add(oRootCert);
+                }
+                finally
+                {
+                    certStore.Close();
+                }
+                FiddlerApplication.oDefaultClientCertificate = oRootCert;
+            }
+            catch (CryptographicException e)
+            {
+                MessageBox.Show("加载本地证书失败，请退出程序，右键以管理员身份运行！", "错误：" + e.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("证书ssl操作失败！", "错误：" + e.Message, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            CONFIG.IgnoreServerCertErrors = true;
         }
 
         private void AfterSessionComplete(Session session)
@@ -54,17 +88,20 @@ namespace OdyHostNginx
                 return;
             }
             Encoding encoding;
-            HttpPacketInfo info = new HttpPacketInfo();
-            info.Id = session.id;
-            info.Uri = session.PathAndQuery;
-            info.Pid = session.LocalProcessID;
-            info.ClientIp = session.clientIP;
-            info.FullUrl = session.fullUrl;
-            info.Hostname = session.hostname;
+            HttpPacketInfo info = new HttpPacketInfo
+            {
+                Id = session.id + "",
+                FullUrl = session.fullUrl,
+                Uri = session.PathAndQuery,
+                Hostname = session.hostname,
+                ClientIp = session.clientIP,
+                Pid = session.LocalProcessID,
+                Status = session.responseCode,
+                ReqMethod = session.RequestMethod
+            };
             session.utilDecodeRequest();
-            info.ReqMethod = session.RequestMethod;
             encoding = session.GetRequestBodyEncoding();
-            if (encoding != null)
+            if (encoding != null && session.RequestBody != null)
             {
                 info.ReqBody = encoding.GetString(session.RequestBody);
             }
@@ -72,11 +109,10 @@ namespace OdyHostNginx
             {
                 info.ReqBody = session.GetRequestBodyAsString();
             }
-            info.ReqHeaders = header(session.RequestHeaders.ToArray());
+            info.ReqHeaders = header(session.RequestHeaders);
             session.utilDecodeResponse();
-            info.ResponseCode = session.responseCode;
             encoding = session.GetResponseBodyEncoding();
-            if (encoding != null)
+            if (encoding != null && session.ResponseBody != null)
             {
                 info.Response = encoding.GetString(session.ResponseBody);
             }
@@ -84,21 +120,26 @@ namespace OdyHostNginx
             {
                 info.Response = session.GetResponseBodyAsString();
             }
-            info.RespHeaders = header(session.ResponseHeaders.ToArray());
+            info.RespHeaders = header(session.ResponseHeaders);
 
             info.ReqCookies = cookies(info.ReqHeaders);
             info.RespCookies = cookies(info.RespHeaders);
+
+            // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
 
             new HttpPacketHandler(handler)(info);
 
         }
 
-        private Dictionary<string, string> header(HTTPHeaderItem[] array)
+        private Dictionary<string, string> header(HTTPHeaders header)
         {
             Dictionary<string, string> headers = new Dictionary<string, string>();
-            foreach (var item in array)
+            if (header != null)
             {
-                headers[item.Name] = item.Value;
+                foreach (var item in header.ToArray())
+                {
+                    headers[item.Name] = item.Value;
+                }
             }
             return headers;
         }

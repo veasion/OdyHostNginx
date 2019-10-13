@@ -48,24 +48,54 @@ namespace OdyHostNginx
         private void drawingTrace(string url)
         {
             this.traceTreeInfoText.Text = "";
-            this.traceTreeGroup.Visibility = Visibility.Hidden;
+            this.traceScroll.ScrollToTop();
+            this.traceScroll.ScrollToLeftEnd();
             this.traceDataGrid.Visibility = Visibility.Hidden;
-            if (StringHelper.isEmpty(url)) return;
-            TracesInfo trace = TraceClient.traces(url);
-            if (trace == null)
+            this.traceTreeGroup.Visibility = Visibility.Visible;
+            if (StringHelper.isEmpty(url))
             {
-                MessageBox.Show("加载失败！", "提示");
+                this.traceTreeGroup.Content = new Label
+                {
+                    Content = "None",
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    HorizontalContentAlignment = HorizontalAlignment.Center
+                };
                 return;
             }
-            TreeView tree = new TreeView();
-            tree.BorderThickness = new Thickness(0);
-            tree.Margin = new Thickness(10, 10, 10, 10);
-            tree.SelectedItemChanged += Trace_SelectedItemChanged;
-            tree.Background = new SolidColorBrush(OdyResources.butInitColor);
-            tree.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy));
-            traceTreeChildren(tree, trace);
-            this.traceTreeGroup.Content = tree;
-            this.traceTreeGroup.Visibility = Visibility.Visible;
+            else
+            {
+                this.traceTreeGroup.Content = new Image
+                {
+                    Width = 50,
+                    Source = OdyResources.img_load
+                };
+            }
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                TracesInfo trace = TraceClient.traces(url);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (trace == null)
+                    {
+                        this.traceTreeGroup.Content = new Label
+                        {
+                            Content = "Load failed !",
+                            VerticalContentAlignment = VerticalAlignment.Center,
+                            HorizontalContentAlignment = HorizontalAlignment.Center
+                        };
+                        return;
+                    }
+                    TreeView tree = new TreeView();
+                    tree.BorderThickness = new Thickness(0);
+                    tree.Margin = new Thickness(10, 10, 10, 10);
+                    tree.SelectedItemChanged += Trace_SelectedItemChanged;
+                    tree.Background = new SolidColorBrush(OdyResources.butInitColor);
+                    tree.CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy));
+                    traceTreeChildren(tree, trace);
+                    this.traceTreeGroup.Content = tree;
+                    this.traceTreeGroup.Visibility = Visibility.Visible;
+                });
+            });
         }
 
         private void Trace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -138,11 +168,21 @@ namespace OdyHostNginx
         {
             KeyValue kv = e.Row.Item as KeyValue;
             if (kv == null) return;
-            if (kv.Key != null && "error".Equals(kv.Key.Trim()))
+            if (kv.Key != null && "error".Equals(kv.Key.Trim().ToLower()))
             {
                 e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
                 e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
             }
+        }
+
+        private void TraceDataGrid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.traceScroll.ScrollToLeftEnd();
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            OdyEvents.ScrollViewer_PreviewMouseWheel(sender, e);
         }
 
     }

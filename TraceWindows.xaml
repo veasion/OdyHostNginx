@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterScreen"
         Icon="favicon.ico" ResizeMode="CanMinimize">
     <Grid>
-        <ScrollViewer x:Name="traceScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="traceScroll" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <DockPanel Background="#FFF0F0F0">
                 <DockPanel DockPanel.Dock="Top">
                     <DockPanel Margin="10,10,10,10">
@@ -32,11 +32,24 @@
                     <DataGrid x:Name="traceDataGrid" ItemsSource="{Binding}"
                               Width="Auto" Visibility="Hidden" IsReadOnly="True"
                               Margin="0,10,0,20" BorderThickness="0"
+                              MouseDown="TraceDataGrid_MouseDown"
                               LoadingRow="TraceDataGrid_LoadingRow"
                               Background="#FFF0F0F0" AutoGenerateColumns="False"
                               Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"
                               ClipboardCopyMode="ExcludeHeader" SelectionUnit="FullRow" SelectionMode="Single">
                         <DataGrid.Resources>
+                            <Style TargetType="DataGrid">
+                                <Setter Property="HorizontalGridLinesBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#FFABADB3"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="VerticalGridLinesBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#FFABADB3"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="MinHeight" Value="24" />
                                 <Setter Property="Background" Value="#FFF0F0F0" />
@@ -44,7 +57,7 @@
                                 <Setter Property="VerticalContentAlignment" Value="Center" />
                             </Style>
                             <Style TargetType="DataGridCell">
-                                <Style.Triggers >
+                                <Style.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background" Value="#0078D7" />
                                         <Setter Property="Foreground" Value="#FFFFFF" />
@@ -62,8 +75,8 @@
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="140" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Value" Width="700" ElementStyle="{StaticResource cellTextStyle}" Binding="{Binding Value}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Key" Binding="{Binding Key}" ClipboardContentBinding="{Binding Empty}" Width="140" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Value" Binding="{Binding Value}" ClipboardContentBinding="{Binding Value}" Width="700" ElementStyle="{StaticResource cellTextStyle}" IsReadOnly="True" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

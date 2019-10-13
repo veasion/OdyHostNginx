@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OdyHostNginx
 {
-    class StringHelper
+    public class StringHelper
     {
 
         static Regex blankReg = new Regex(@"[\s]+");
@@ -120,11 +121,27 @@ namespace OdyHostNginx
         {
             if (format == null)
             {
-                format = "yyyy/MM/dd HH:mm:ss";
+                format = "yyyy/MM/dd HH:mm:ss.fff";
             }
             DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             DateTime dt = startTime.AddMilliseconds(jsTimeStamp);
             return dt.ToString(format);
+        }
+
+        public static string hash(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length < 1)
+            {
+                return "";
+            }
+            MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(buffer);
+            StringBuilder sb = new StringBuilder();
+            foreach (var b in hash)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
         }
 
         public static string jsonFormat(string json)

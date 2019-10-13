@@ -24,10 +24,12 @@ namespace OdyHostNginx
 
         static int number = 1;
 
+        static bool https = false;
         bool currentTraceTab = false;
         HttpPacketInfo currentPacket;
-        HashSet<int> ids = new HashSet<int>();
+        HashSet<string> ids = new HashSet<string>();
         HashSet<string> domains = new HashSet<string>();
+        ObservableCollection<HttpPacketInfo> list = new ObservableCollection<HttpPacketInfo>();
 
         public HttpPacketWindow()
         {
@@ -39,32 +41,39 @@ namespace OdyHostNginx
         #region packet
         private void init()
         {
-            number = 1;
-            ids = new HashSet<int>();
-            string ip = HttpPacketHelper.proxyIp();
+            clear();
             int port = HttpPacketClient.listenPort;
-            this.ipLabel.Content = "IP: " + ip;
             StringBuilder tip = new StringBuilder();
             HttpPacketHelper.hostIps().ForEach(str => tip.AppendLine(str));
-            this.ipLabel.ToolTip = tip.ToString();
+            this.computerImage.ToolTip = tip.ToString();
             this.portLabel.Content = "Port: " + port;
             httpDataGrid.DataContext = null;
             domains = MainWindow.domainWhiteList();
-            httpDataGrid.DataContext = new ObservableCollection<HttpPacketInfo>();
-            ConfigDialogData.httpPacketClient.Start(httpPacketHandler, null);
+            https = this.httpsFilter.IsChecked == true;
+            ConfigDialogData.httpPacketClient.Start(httpPacketHandler, https, null);
+        }
+
+        private void clear()
+        {
+            Monitor.Enter(list);
+            number = 1;
+            ids.Clear();
+            list.Clear();
+            httpDataGrid.DataContext = null;
+            Monitor.Exit(list);
         }
 
         private void httpPacketHandler(HttpPacketInfo info)
         {
-            if (ids.Contains(info.Id) || !info.show())
-            {
-                return;
-            }
-            info.Number = number++;
             ThreadPool.QueueUserWorkItem(o =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
+                    if (ids.Contains(info.Id) || !info.show(https))
+                    {
+                        return;
+                    }
+                    info.Number = number++;
                     bool isOdy = domains.Contains(info.Hostname) || info.Hostname.EndsWith("oudianyun.com");
                     if (domainFilter.IsChecked == true && !isOdy)
                     {
@@ -74,18 +83,58 @@ namespace OdyHostNginx
                     {
                         info.Pool = MainWindow.queryPoolByUri(info.Uri);
                     }
-                    ObservableCollection<HttpPacketInfo> list = httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>;
-                    Monitor.Enter(list);
+                    ids.Add(info.Id);
                     if (list.Count > 200)
                     {
-                        list.Clear();
-                        number = 0;
-                        info.Number = number++;
+                        clear();
                     }
                     list.Add(info);
-                    Monitor.Exit(list);
+                    httpDataGrid.DataContext = filter(this.searchText.Text);
                 });
             });
+        }
+
+        private ObservableCollection<HttpPacketInfo> filter(string query)
+        {
+            if (query == null || StringHelper.isBlank(query = query.Trim()))
+            {
+                return list;
+            }
+            ObservableCollection<HttpPacketInfo> result = new ObservableCollection<HttpPacketInfo>();
+            foreach (var item in list)
+            {
+                if (item.FullUrl.Contains(query))
+                {
+                    result.Add(item);
+                }
+                else if (item.ReqBody != null && item.ReqBody.Contains(query))
+                {
+                    result.Add(item);
+                }
+                else if (item.Response != null && item.Response.Contains(query))
+                {
+                    result.Add(item);
+                }
+            }
+            return result;
+        }
+
+        private void SearchText_KeyUp(object sender, KeyEventArgs e)
+        {
+            Key k = e.Key;
+            bool search = false;
+            if (k == Key.Enter)
+            {
+                search = true;
+            }
+            else if (StringHelper.isEmpty(this.searchText.Text))
+            {
+                search = true;
+            }
+            if (search)
+            {
+                httpDataGrid.DataContext = filter(this.searchText.Text);
+            }
         }
 
         private void HttpDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -219,9 +268,12 @@ namespace OdyHostNginx
         private void drawingTrace()
         {
             this.traceTreeInfoText.Text = "";
+            this.traceScroll.ScrollToTop();
+            this.traceScroll.ScrollToLeftEnd();
             this.traceTreeGroup.Visibility = Visibility.Hidden;
             this.traceDataGrid.Visibility = Visibility.Hidden;
             if (currentPacket == null) return;
+            this.traceTreeGroup.Visibility = Visibility.Visible;
             string url = currentPacket.trace();
             if (StringHelper.isEmpty(url))
             {
@@ -231,7 +283,6 @@ namespace OdyHostNginx
                     VerticalContentAlignment = VerticalAlignment.Center,
                     HorizontalContentAlignment = HorizontalAlignment.Center
                 };
-                this.traceTreeGroup.Visibility = Visibility.Visible;
                 return;
             }
             else
@@ -241,7 +292,6 @@ namespace OdyHostNginx
                     Width = 50,
                     Source = OdyResources.img_load
                 };
-                this.traceTreeGroup.Visibility = Visibility.Visible;
             }
             ThreadPool.QueueUserWorkItem(o =>
             {
@@ -250,7 +300,12 @@ namespace OdyHostNginx
                 {
                     if (trace == null)
                     {
-                        this.traceTreeGroup.Visibility = Visibility.Hidden;
+                        this.traceTreeGroup.Content = new Label
+                        {
+                            Content = "Load failed !",
+                            VerticalContentAlignment = VerticalAlignment.Center,
+                            HorizontalContentAlignment = HorizontalAlignment.Center
+                        };
                         return;
                     }
                     TreeView tree = new TreeView();
@@ -336,7 +391,7 @@ namespace OdyHostNginx
         {
             KeyValue kv = e.Row.Item as KeyValue;
             if (kv == null) return;
-            if (kv.Key != null && "error".Equals(kv.Key.Trim()))
+            if (kv.Key != null && "error".Equals(kv.Key.Trim().ToLower()))
             {
                 e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
                 e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
@@ -367,7 +422,7 @@ namespace OdyHostNginx
             HttpPacketInfo info = e.Row.Item as HttpPacketInfo;
             if (info == null) return;
             e.Row.ToolTip = info.FullUrl;
-            if (info.ResponseCode == 404)
+            if (info.Status == 404)
             {
                 e.Row.Foreground = new SolidColorBrush(Colors.Gray);
             }
@@ -376,7 +431,7 @@ namespace OdyHostNginx
                 e.Row.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
                 e.Row.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
             }
-            else if (info.ResponseCode == 200)
+            else if (info.Status == 200)
             {
                 e.Row.Foreground = new SolidColorBrush(Colors.Black);
             }
@@ -405,11 +460,36 @@ namespace OdyHostNginx
             }
         }
 
+        private void HttpsFilter_Click(object sender, RoutedEventArgs e)
+        {
+            init();
+        }
+
         private void Clear_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            number = 1;
-            ids.Clear();
-            (httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>).Clear();
+            clear();
+        }
+
+        private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (StringHelper.isEmpty(this.searchText.Text))
+            {
+                this.searchText.BorderBrush = new SolidColorBrush(OdyResources.borderColor);
+            }
+            else
+            {
+                this.searchText.BorderBrush = new SolidColorBrush(OdyResources.selectBorderColor);
+            }
+        }
+
+        private void TraceDataGrid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            this.traceScroll.ScrollToLeftEnd();
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            OdyEvents.ScrollViewer_PreviewMouseWheel(sender, e);
         }
 
         private void DelImage_MouseEnter(object sender, MouseEventArgs e)
@@ -426,11 +506,9 @@ namespace OdyHostNginx
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            number = 1;
-            ids.Clear();
+            clear();
             MainWindow.HttpPacketWindowClose();
             ConfigDialogData.httpPacketClient.Shutdown();
-            (httpDataGrid.DataContext as ObservableCollection<HttpPacketInfo>).Clear();
         }
         #endregion
 

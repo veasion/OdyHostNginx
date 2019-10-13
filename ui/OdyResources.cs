@@ -27,6 +27,7 @@ namespace OdyHostNginx
         public static Color configBgColor = Colors.White;
         public static Color selectBorderColor = Colors.LightBlue;
 
+        public static Color borderColor = (Color)ColorConverter.ConvertFromString("#FFABADB3");
         public static Color errorFontColor = (Color)ColorConverter.ConvertFromString("#a94442");
         public static Color errorBackgroundColor = (Color)ColorConverter.ConvertFromString("#f2dede");
 
