@@ -86,14 +86,41 @@ namespace OdyHostNginx
             }
         }
 
+        public static bool needRunNginx(OdyProjectConfig config)
+        {
+            if (config.Use)
+            {
+                foreach (var project in config.Projects)
+                {
+                    foreach (var env in project.Envs)
+                    {
+                        if (env.Use)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         private static void checkRunStatus(OdyProjectConfig config, List<string> confs)
         {
             ThreadPool.QueueUserWorkItem(o =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(3000);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (config.Use && !nginx.isRun())
+                    if (needRunNginx(config) && !nginx.isRun())
+                    {
+                        nginx.restart();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    Thread.Sleep(2000);
+                    if (needRunNginx(config) && !nginx.isRun())
                     {
                         bool hasChinese = StringHelper.hasChinese(FileHelper.getCurrentDirectory());
                         if (hasChinese)

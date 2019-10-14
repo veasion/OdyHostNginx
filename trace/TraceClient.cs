@@ -15,85 +15,102 @@ namespace OdyHostNginx
 
         public static TracesInfo traces(string url)
         {
-            TracesInfo root = null;
-            if (url.IndexOf("/zipkin//") > 0)
+            try
             {
-                url = url.Replace("/zipkin//", "/zipkin/");
-            }
-            url = url.Replace("/zipkin/traces/", "/zipkin/api/v1/trace/");
-            cache.TryGetValue(url, out root);
-            if (root != null)
-            {
+                TracesInfo root = null;
+                if (url.IndexOf("/zipkin//") > 0)
+                {
+                    url = url.Replace("/zipkin//", "/zipkin/");
+                }
+                url = url.Replace("/zipkin/traces/", "/zipkin/api/v1/trace/");
+                cache.TryGetValue(url, out root);
+                if (root != null)
+                {
+                    return root;
+                }
+                string jsonStr = HttpHelper.get(url);
+                if (StringHelper.isEmpty(jsonStr)) return null;
+                Dictionary<string, TracesInfo> dic = new Dictionary<string, TracesInfo>();
+                JToken jsonArr = JToken.Parse(jsonStr);
+                TracesInfo traces;
+                foreach (var j in jsonArr)
+                {
+                    traces = parse(j, dic);
+                    if (root == null && traces != null && traces.Id.Equals(getStr(j, "traceId")))
+                    {
+                        root = traces;
+                    }
+                }
+                children(root, dic);
+                if (cache.Count > 20)
+                {
+                    cache.Clear();
+                }
+                cache[url] = root;
                 return root;
             }
-            string jsonStr = HttpHelper.get(url);
-            if (StringHelper.isEmpty(jsonStr)) return null;
-            TracesInfo traces;
-            Dictionary<string, TracesInfo> dic = new Dictionary<string, TracesInfo>();
-            JToken jsonArr = JToken.Parse(jsonStr);
-            foreach (var j in jsonArr)
+            catch (Exception e)
             {
-                traces = new TracesInfo();
-                traces.Id = getStr(j, "id");
-                if (traces.Id == null) continue;
-                dic[traces.Id] = traces;
-                if (root == null && traces.Id.Equals(getStr(j, "traceId")))
+                Logger.error("解析trace", e);
+            }
+            return null;
+        }
+
+        private static TracesInfo parse(JToken j, Dictionary<string, TracesInfo> dic)
+        {
+            TracesInfo traces = new TracesInfo();
+            traces.Id = getStr(j, "id");
+            if (traces.Id == null)
+            {
+                return null;
+            }
+            dic[traces.Id] = traces;
+            traces.Name = getStr(j, "name");
+            traces.Pid = getStr(j, "parentId");
+            traces.Timestamp = getLong(j, "timestamp");
+            traces.Duration = getLong(j, "duration");
+            if (j["binaryAnnotations"] != null)
+            {
+                Dictionary<string, string> details = new Dictionary<string, string>();
+                foreach (var dj in j["binaryAnnotations"])
                 {
-                    root = traces;
-                }
-                traces.Name = getStr(j, "name");
-                traces.Pid = getStr(j, "parentId");
-                traces.Timestamp = getLong(j, "timestamp");
-                traces.Duration = getLong(j, "duration");
-                if (j["binaryAnnotations"] != null)
-                {
-                    Dictionary<string, string> details = new Dictionary<string, string>();
-                    foreach (var dj in j["binaryAnnotations"])
+                    string key = getStr(dj, "key");
+                    string value = getStr(dj, "value");
+                    if (key != null)
                     {
-                        string key = getStr(dj, "key");
-                        string value = getStr(dj, "value");
-                        if (key != null)
+                        if ("query.sql".Equals(key) && value != null)
                         {
-                            if ("query.sql".Equals(key) && value != null)
-                            {
-                                value = Regex.Replace(value, @"(\n\s{0,}\n){1,}", "\n");
-                            }
-                            details[key] = value;
+                            value = Regex.Replace(value, @"(\n\s{0,}\n){1,}", "\n");
+                        }
+                        details[key] = value;
+                    }
+                }
+                traces.Details = details;
+            }
+            if (j["annotations"] != null)
+            {
+                string serviceName = null;
+                string clientName = null;
+                foreach (var aj in j["annotations"])
+                {
+                    if (aj["endpoint"] != null)
+                    {
+                        string value = getStr(aj, "value");
+                        string name = getStr(aj["endpoint"], "serviceName");
+                        if ("ss".Equals(value))
+                        {
+                            serviceName = name;
+                        }
+                        else if ("cs".Equals(value))
+                        {
+                            clientName = name;
                         }
                     }
-                    traces.Details = details;
                 }
-                if (j["annotations"] != null)
-                {
-                    string serviceName = null;
-                    string clientName = null;
-                    foreach (var aj in j["annotations"])
-                    {
-                        if (aj["endpoint"] != null)
-                        {
-                            string value = getStr(aj, "value");
-                            string name = getStr(aj["endpoint"], "serviceName");
-                            if ("ss".Equals(value))
-                            {
-                                serviceName = name;
-                            }
-                            else if ("cs".Equals(value))
-                            {
-                                clientName = name;
-                            }
-                        }
-                    }
-                    traces.ClientName = clientName;
-                    traces.ServiceName = serviceName;
-                }
+                traces.ClientName = clientName;
+                traces.ServiceName = serviceName;
             }
-            children(root, dic);
-            if (cache.Count > 20)
-            {
-                cache.Clear();
-            }
-            cache[url] = root;
-            return root;
+            return traces;
         }
 
         private static void children(TracesInfo p, Dictionary<string, TracesInfo> dic)

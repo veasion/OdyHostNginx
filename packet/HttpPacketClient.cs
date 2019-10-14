@@ -82,53 +82,59 @@ namespace OdyHostNginx
             {
                 return;
             }
-            Logger.info("抓包，req => " + session.fullUrl);
-            if (whiteList != null && !whiteList.Contains(session.hostname))
+            try
             {
-                return;
-            }
-            Encoding encoding;
-            HttpPacketInfo info = new HttpPacketInfo
-            {
-                Id = session.id + "",
-                FullUrl = session.fullUrl,
-                Uri = session.PathAndQuery,
-                Hostname = session.hostname,
-                ClientIp = session.clientIP,
-                Pid = session.LocalProcessID,
-                Status = session.responseCode,
-                ReqMethod = session.RequestMethod
-            };
-            session.utilDecodeRequest();
-            encoding = session.GetRequestBodyEncoding();
-            if (encoding != null && session.RequestBody != null)
-            {
-                info.ReqBody = encoding.GetString(session.RequestBody);
-            }
-            else
-            {
-                info.ReqBody = session.GetRequestBodyAsString();
-            }
-            info.ReqHeaders = header(session.RequestHeaders);
-            session.utilDecodeResponse();
-            encoding = session.GetResponseBodyEncoding();
-            if (encoding != null && session.ResponseBody != null)
-            {
-                info.Response = encoding.GetString(session.ResponseBody);
-            }
-            else
-            {
-                info.Response = session.GetResponseBodyAsString();
-            }
-            info.RespHeaders = header(session.ResponseHeaders);
+                Logger.info("抓包，req => " + session.fullUrl);
+                if (whiteList != null && !whiteList.Contains(session.hostname))
+                {
+                    return;
+                }
+                Encoding encoding;
+                HttpPacketInfo info = new HttpPacketInfo
+                {
+                    Id = session.id + "",
+                    FullUrl = session.fullUrl,
+                    Uri = session.PathAndQuery,
+                    Hostname = session.hostname,
+                    ClientIp = session.clientIP,
+                    Pid = session.LocalProcessID,
+                    Status = session.responseCode,
+                    ReqMethod = session.RequestMethod
+                };
+                session.utilDecodeRequest();
+                encoding = session.GetRequestBodyEncoding();
+                if (encoding != null && session.RequestBody != null)
+                {
+                    info.ReqBody = encoding.GetString(session.RequestBody);
+                }
+                else
+                {
+                    info.ReqBody = session.GetRequestBodyAsString();
+                }
+                info.ReqHeaders = header(session.RequestHeaders);
+                session.utilDecodeResponse();
+                encoding = session.GetResponseBodyEncoding();
+                if (encoding != null && session.ResponseBody != null)
+                {
+                    info.Response = encoding.GetString(session.ResponseBody);
+                }
+                else
+                {
+                    info.Response = session.GetResponseBodyAsString();
+                }
+                info.RespHeaders = header(session.ResponseHeaders);
 
-            info.ReqCookies = cookies(info.ReqHeaders);
-            info.RespCookies = cookies(info.RespHeaders);
+                info.ReqCookies = cookies(info.ReqHeaders);
+                info.RespCookies = cookies(info.RespHeaders);
 
-            // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
+                // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
 
-            new HttpPacketHandler(handler)(info);
-
+                new HttpPacketHandler(handler)(info);
+            }
+            catch (Exception e)
+            {
+                Logger.error("解析抓包数据发生错误！", e);
+            }
         }
 
         private Dictionary<string, string> header(HTTPHeaders header)
