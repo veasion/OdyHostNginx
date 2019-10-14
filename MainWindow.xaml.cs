@@ -311,9 +311,9 @@ namespace OdyHostNginx
             new TraceWindows().Show();
         }
 
-        private void Json_Click(object sender, RoutedEventArgs e)
+        private void Format_Click(object sender, RoutedEventArgs e)
         {
-            new JsonWindows().Show();
+            new FormatWindows().Show();
         }
 
         private void HttpPacket_Click(object sender, RoutedEventArgs e)

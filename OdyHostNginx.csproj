@@ -86,6 +86,17 @@
     <Compile Include="bean\TracesInfo.cs" />
     <Compile Include="bean\UpgradeDetails.cs" />
     <Compile Include="bean\UpgradeVo.cs" />
+    <Compile Include="format\Formatter.cs" />
+    <Compile Include="format\FormatterFactory.cs" />
+    <Compile Include="format\HtmlFormatter.cs" />
+    <Compile Include="format\JsFormatter.cs" />
+    <Compile Include="format\JsonFormatter.cs" />
+    <Compile Include="format\sql\IndentType.cs" />
+    <Compile Include="format\sql\Keywords.cs" />
+    <Compile Include="format\sql\SqlFormatter.cs" />
+    <Compile Include="format\sql\Token.cs" />
+    <Compile Include="format\sql\TokenType.cs" />
+    <Compile Include="format\XmlFormatter.cs" />
     <Compile Include="helper\ApplicationHelper.cs" />
     <Compile Include="helper\CmdHelper.cs" />
     <Compile Include="bean\EnvConfig.cs" />
@@ -104,8 +115,8 @@
     <Compile Include="HttpPacketWindow.xaml.cs">
       <DependentUpon>HttpPacketWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="JsonWindows.xaml.cs">
-      <DependentUpon>JsonWindows.xaml</DependentUpon>
+    <Compile Include="FormatWindows.xaml.cs">
+      <DependentUpon>FormatWindows.xaml</DependentUpon>
     </Compile>
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
@@ -143,7 +154,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="JsonWindows.xaml">
+    <Page Include="FormatWindows.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -206,5 +217,6 @@
   <ItemGroup>
     <Resource Include="favicon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

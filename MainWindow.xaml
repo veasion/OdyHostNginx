@@ -43,8 +43,8 @@
                         <MenuItem Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Tools" FontSize="14">
+                        <MenuItem Click="Format_Click" Header="Format" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Trace_Click" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem Click="Json_Click" Header="Json Format" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Help" FontSize="14">

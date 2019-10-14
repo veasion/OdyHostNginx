@@ -16,12 +16,18 @@ using System.Windows.Shapes;
 namespace OdyHostNginx
 {
     /// <summary>
-    /// Json Format
+    /// Format
     /// </summary>
-    public partial class JsonWindows : Window
+    public partial class FormatWindows : Window
     {
-        public JsonWindows()
+
+        private string type;
+        private Formatter formatter;
+
+        public FormatWindows()
         {
+            type = "json";
+            formatter = FormatterFactory.GetFormatter(type);
             InitializeComponent();
         }
 
@@ -32,28 +38,28 @@ namespace OdyHostNginx
 
         private void format()
         {
-            string str = this.jsonText.Text;
-            string json = StringHelper.jsonFormat(str);
-            if (json != null)
+            string text = this.formatText.Text;
+            string format = formatter.Format(text);
+            if (format != null)
             {
-                this.jsonText.Text = json;
-                this.checkLabel.Content = "json √";
+                this.formatText.Text = format;
+                this.checkLabel.Content = "Complete";
                 this.checkLabel.Foreground = new SolidColorBrush(Colors.Green);
                 this.formatBut.Source = OdyResources.img_not_apply;
             }
             else
             {
-                this.checkLabel.Content = "json ×";
+                this.checkLabel.Content = type + " ×";
                 this.checkLabel.Foreground = new SolidColorBrush(Colors.Red);
             }
         }
 
-        private void JsonText_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        private void Format_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             showLine();
         }
 
-        private void JsonText_TextChanged(object sender, TextChangedEventArgs e)
+        private void Format_TextChanged(object sender, TextChangedEventArgs e)
         {
             showLine();
             this.checkLabel.Content = "format =>";
@@ -63,13 +69,13 @@ namespace OdyHostNginx
 
         private void showLine()
         {
-            int line = this.jsonText.GetLineIndexFromCharacterIndex(this.jsonText.CaretIndex) + 1;
+            int line = this.formatText.GetLineIndexFromCharacterIndex(this.formatText.CaretIndex) + 1;
             this.lineLabel.Content = "line:  " + line;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            DataObject.AddPastingHandler(this.jsonText, (arg1, arg2) =>
+            DataObject.AddPastingHandler(this.formatText, (arg1, arg2) =>
             {
                 ThreadPool.QueueUserWorkItem(o =>
                 {
@@ -80,6 +86,23 @@ namespace OdyHostNginx
                     });
                 });
             });
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButton radio = sender as RadioButton;
+            type = radio.Content as string;
+            if (radio.DataContext != null)
+            {
+                this.Title = radio.DataContext as string;
+            }
+            else
+            {
+                this.Title = type + " format";
+            }
+            this.groupBox.Header = type;
+            formatter = FormatterFactory.GetFormatter(type);
+            format();
         }
 
     }
