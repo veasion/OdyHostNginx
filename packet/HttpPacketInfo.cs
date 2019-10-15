@@ -45,16 +45,29 @@ namespace OdyHostNginx
         public Dictionary<string, string> RespHeaders { get => respHeaders; set => respHeaders = value; }
         public Dictionary<string, List<string>> RespCookies { get => respCookies; set => respCookies = value; }
 
-        public bool reqIsJson()
+        private static string contentType(Dictionary<string, string> header)
         {
-            if (reqHeaders.TryGetValue("Content-Type", out string type))
+            header.TryGetValue("Content-Type", out string type);
+            if (type == null)
             {
-                if (reqBody != null && type != null && type.Contains("application/json"))
-                {
-                    return true;
-                }
+                header.TryGetValue("content-type", out type);
+            }
+            return type;
+        }
+
+        private static bool isJson(Dictionary<string, string> header, string body)
+        {
+            string type = contentType(header);
+            if (type != null && body != null && type.ToLower().Contains("application/json"))
+            {
+                return true;
             }
             return false;
+        }
+
+        public bool reqIsJson()
+        {
+            return isJson(reqHeaders, reqBody);
         }
 
         public bool respIsJson()
@@ -63,17 +76,14 @@ namespace OdyHostNginx
             {
                 return true;
             }
-            if (respHeaders.TryGetValue("Content-Type", out string type))
+            if (isJson(respHeaders, response))
             {
-                if (response != null && type != null && type.Contains("application/json"))
+                try
                 {
-                    try
-                    {
-                        respJson = JToken.Parse(response);
-                    }
-                    catch (Exception) { }
-                    return true;
+                    respJson = JToken.Parse(response);
                 }
+                catch (Exception) { }
+                return true;
             }
             return false;
         }
@@ -163,12 +173,11 @@ namespace OdyHostNginx
             {
                 return true;
             }
-            if (respHeaders.TryGetValue("Content-Type", out string type))
+            string type = contentType(respHeaders);
+            if (response != null && type != null)
             {
-                if (response != null && type != null)
-                {
-                    return type.Contains("application/json") || type.Contains("text/plain");
-                }
+                type = type.ToLower();
+                return type.Contains("application/json") || type.Contains("text/plain");
             }
             else if (https && "CONNECT".Equals(reqMethod))
             {
@@ -181,7 +190,7 @@ namespace OdyHostNginx
         {
             get
             {
-                if (respIsJson() && respJson != null && respJson["code"] != null)
+                if (respIsJson() && respJson != null && respJson.Type == JTokenType.Object && respJson["code"] != null)
                 {
                     return respJson.Value<string>("code");
                 }
@@ -194,6 +203,10 @@ namespace OdyHostNginx
             if (status == 500) return true;
             if (respIsJson() && respJson != null)
             {
+                if (respJson.Type != JTokenType.Object)
+                {
+                    return false;
+                }
                 if (respJson["success"] != null)
                 {
                     string success = respJson["success"].ToString().ToLower();

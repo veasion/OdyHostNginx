@@ -43,7 +43,7 @@ namespace OdyHostNginx
             if (format != null)
             {
                 this.formatText.Text = format;
-                this.checkLabel.Content = "Complete";
+                this.checkLabel.Content = "complete";
                 this.checkLabel.Foreground = new SolidColorBrush(Colors.Green);
                 this.formatBut.Source = OdyResources.img_not_apply;
             }
@@ -102,7 +102,9 @@ namespace OdyHostNginx
             }
             this.groupBox.Header = type;
             formatter = FormatterFactory.GetFormatter(type);
-            format();
+            this.checkLabel.Content = "format =>";
+            this.checkLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5B203"));
+            this.formatBut.Source = OdyResources.img_can_apply;
         }
 
     }
