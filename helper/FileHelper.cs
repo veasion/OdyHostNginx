@@ -92,6 +92,7 @@ namespace OdyHostNginx
             {
                 return false;
             }
+            mkdir(new FileInfo(path).DirectoryName);
             string json = JsonConvert.SerializeObject(obj);
             return writeFile(path, json);
         }

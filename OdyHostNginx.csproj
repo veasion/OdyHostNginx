@@ -53,6 +53,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\FiddlerCore.dll</HintPath>
     </Reference>
+    <Reference Include="MySql.Data, Version=6.7.4.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Newtonsoft.Json.dll</HintPath>
@@ -118,6 +122,20 @@
     <Compile Include="FormatWindows.xaml.cs">
       <DependentUpon>FormatWindows.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MybatisGenerateWindows.xaml.cs">
+      <DependentUpon>MybatisGenerateWindows.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="mybatis\ConnectionParams.cs" />
+    <Compile Include="mybatis\DbCombox.cs" />
+    <Compile Include="mybatis\DBUtils.cs" />
+    <Compile Include="mybatis\FieldHelper.cs" />
+    <Compile Include="mybatis\FieldVo.cs" />
+    <Compile Include="mybatis\FileVO.cs" />
+    <Compile Include="mybatis\Generate.cs" />
+    <Compile Include="mybatis\Mapper.cs" />
+    <Compile Include="mybatis\MybtaisGenerate.cs" />
+    <Compile Include="mybatis\Result.cs" />
+    <Compile Include="mybatis\TableVo.cs" />
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -170,6 +188,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MybatisGenerateWindows.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TraceWindows.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -176,5 +176,46 @@ namespace OdyHostNginx
             }
         }
 
+        public static string upFirst(string str)
+        {
+            if (isEmpty(str))
+            {
+                return str;
+            }
+            str = str.Trim();
+            return str.Substring(0, 1).ToUpper() + str.Substring(1);
+        }
+
+        public static string toVar(string str)
+        {
+            if (isEmpty(str))
+            {
+                return str;
+            }
+            str = str.Trim().ToLower();
+            bool has_ = str.Contains("_");
+            StringBuilder result = new StringBuilder();
+            string[] chars = str.Split('_');
+            foreach (string _char in chars)
+            {
+                if (_char == null || "".Equals(_char.Trim())) continue;
+                if (!has_)
+                {
+                    result.Append(_char);
+                    continue;
+                }
+                if (result.Length == 0)
+                {
+                    result.Append(_char.ToLower());
+                }
+                else
+                {
+                    result.Append(_char.Substring(0, 1).ToUpper());
+                    result.Append(_char.Substring(1).ToLower());
+                }
+            }
+            return result.ToString();
+        }
+
     }
 }

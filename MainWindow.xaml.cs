@@ -334,6 +334,11 @@ namespace OdyHostNginx
             }
         }
 
+        private void MybatisGenerate_Click(object sender, RoutedEventArgs e)
+        {
+            new MybatisGenerateWindows().Show();
+        }
+
         private void CheckUpdate_Click(object sender, RoutedEventArgs e)
         {
             checkUpgrade(false);
