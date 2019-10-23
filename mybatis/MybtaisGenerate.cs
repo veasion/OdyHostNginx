@@ -313,7 +313,7 @@ namespace OdyHostNginx
             // queryList
             sb.Append(space4).Append("<select id=\"queryList\" resultType=\"");
             sb.Append(poClassFullName).AppendLine("\">");
-            sb.Append(space8).Append("select * from ").Append(table.TableName);
+            sb.Append(space8).Append("select * from ").AppendLine(table.TableName);
             sb.Append(space4).AppendLine("</select>");
             sb.AppendLine();
             sb.Append(space4).AppendLine("<!-- 分页查询代码 -->");

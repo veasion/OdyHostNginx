@@ -41,7 +41,7 @@ namespace OdyHostNginx
             {
                 foreach (var file in files)
                 {
-                    FileHelper.writeFile(dir + "\\" + file.FileName, file.Body);
+                    FileHelper.writeFile(dir + "\\" + file.FileName, new UTF8Encoding(false), file.Body);
                 }
             }
         }
