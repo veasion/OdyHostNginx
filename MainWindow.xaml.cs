@@ -419,13 +419,13 @@ namespace OdyHostNginx
             foreach (var key in envMap.Keys)
             {
                 env = envMap[key];
-                if (env != null && env.Use)
+                if (env != null)
                 {
                     CheckBox box;
                     envSwitchUI.TryGetValue(key, out box);
                     if (box != null)
                     {
-                        box.IsEnabled = odyProjectConfig.Use;
+                        box.IsEnabled = odyProjectConfig.Use || env.Use;
                     }
                 }
             }
@@ -489,7 +489,7 @@ namespace OdyHostNginx
             string key = (string)envSwitch.DataContext;
             EnvConfig env;
             envMap.TryGetValue(key, out env);
-            if (env != null && odyProjectConfig.Use)
+            if (env != null && (odyProjectConfig.Use || env.Use))
             {
                 env.Use = !env.Use;
                 if (env.Use)

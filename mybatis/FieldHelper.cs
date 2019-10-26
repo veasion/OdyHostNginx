@@ -30,6 +30,8 @@ namespace OdyHostNginx
             javaPackageDic["integer"] = "java.lang.Long";
             javaTypeDic["id"] = "Long";
             javaPackageDic["id"] = "java.lang.Long";
+            javaTypeDic["int"] = "Integer";
+            javaPackageDic["int"] = "java.lang.Integer";
             javaTypeDic["tinyint"] = "Integer";
             javaPackageDic["tinyint"] = "java.lang.Integer";
             javaTypeDic["boolean"] = "Integer";
