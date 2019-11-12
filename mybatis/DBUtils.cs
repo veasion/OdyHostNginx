@@ -155,7 +155,11 @@ namespace OdyHostNginx
                 field.ColumnKey = reader.GetString("column_key");
                 field.ColumnType = reader.GetString("column_type");
                 field.ColumnName = reader.GetString("column_name");
-                field.ColumnComment = reader.GetString("column_comment");
+                string comment = reader.GetString("column_comment");
+                if (comment != null)
+                {
+                    field.ColumnComment = comment.Replace("\r\n", "").Replace("\n", "");
+                }
                 field.FieldName = StringHelper.toVar(field.ColumnName);
                 list.Add(field);
             }

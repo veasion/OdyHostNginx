@@ -223,10 +223,11 @@ namespace OdyHostNginx
         {
             FieldVo pri = table.getMainField();
             string poClassFullName = poPackage + "." + poClassName;
+            string mapperClassFullName = mapperPackage + "." + mapperClassName;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             sb.AppendLine("<!DOCTYPE mapper PUBLIC \" -//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">");
-            sb.Append("<mapper namespace=\"").Append(mapperPackage).AppendLine("\">");
+            sb.Append("<mapper namespace=\"").Append(mapperClassFullName).AppendLine("\">");
             sb.AppendLine();
             // insert
             sb.Append(space4).AppendLine("<insert id=\"insert\">");
