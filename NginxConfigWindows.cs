@@ -43,9 +43,9 @@ namespace OdyHostNginx
             }
             this.envName.Text = this.envName.Text.Trim();
             this.projectName.Text = this.projectName.Text.Trim();
-            if (!Regex.IsMatch(this.projectName.Text + this.envName.Text, "^[0-9a-zA-Z_]{1,}$"))
+            if (!Regex.IsMatch(this.projectName.Text + this.envName.Text, "^[0-9a-zA-Z_.]{1,}$"))
             {
-                MessageBox.Show("名称只能由数字、字母、下划线组成");
+                MessageBox.Show("名称只能由数字、字母、下划线、点组成");
                 return;
             }
             ConfigDialogData.projectName = this.projectName.Text;

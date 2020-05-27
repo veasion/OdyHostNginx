@@ -19,6 +19,8 @@ namespace OdyHostNginx
         private string desc;
         // 打赏
         private string payImageUrl;
+        // trace version
+        private string traceVersion;
         // 新增
         private List<UpgradeDetails> adds;
         // 删除
@@ -33,6 +35,7 @@ namespace OdyHostNginx
         public bool Force { get => force; set => force = value; }
         public string Desc { get => desc; set => desc = value; }
         public string PayImageUrl { get => payImageUrl; set => payImageUrl = value; }
+        public string TraceVersion { get => traceVersion; set => traceVersion = value; }
         internal List<UpgradeDetails> Adds { get => adds; set => adds = value; }
         internal List<UpgradeDetails> Deletes { get => deletes; set => deletes = value; }
         public string OdyHostNginxDownload { get => odyHostNginxDownload; set => odyHostNginxDownload = value; }

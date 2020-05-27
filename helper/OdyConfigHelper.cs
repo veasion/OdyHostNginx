@@ -15,7 +15,8 @@ namespace OdyHostNginx
         public static string nginxConfigDir = WindowsNginxImpl.nginxConfigDir;
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
         public static string userHostsDir = FileHelper.getCurrentDirectory() + "\\bin\\hosts";
-        public static string userHostsPath = FileHelper.getCurrentDirectory() + "\\bin\\hosts\\hosts.config";
+        public static string userHostsFileName = "hosts.config";
+        public static string modifyResponse = FileHelper.getCurrentDirectory() + "\\ModifyResponse.txt";
 
         private static Dictionary<string, int> priority = new Dictionary<string, int>();
 
@@ -230,15 +231,68 @@ namespace OdyHostNginx
         public static List<HostConfig> loadUserHosts()
         {
             // 读取用户 hosts 配置
+            return loadHosts(userHostsDir + "\\" + userHostsFileName);
+        }
+
+        public static Dictionary<string, List<HostConfig>> loadHostGroup()
+        {
+            Dictionary<string, List<HostConfig>> dir = new Dictionary<string, List<HostConfig>>();
+            string[] files = Directory.GetFiles(userHostsDir);
+            foreach (string file in files)
+            {
+                string fileName = Path.GetFileName(file);
+                if (userHostsFileName.Equals(fileName)) continue;
+                List<HostConfig> list = loadHosts(file);
+                dir[fileName] = list;
+            }
+            return dir;
+        }
+
+        public static bool createHostGroup(string name)
+        {
+            try
+            {
+                return FileHelper.writeFile(userHostsDir + "\\" + name, Encoding.UTF8, "");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static void delHostGroup(string name)
+        {
+            string path = userHostsDir + "\\" + name;
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public static bool modifyHostGroup(string oldName, string newName)
+        {
+            string oldPath = userHostsDir + "\\" + oldName;
+            string newPath = userHostsDir + "\\" + newName;
+            if (File.Exists(oldPath) && !File.Exists(newPath))
+            {
+                File.Copy(oldPath, newPath);
+                File.Delete(oldPath);
+                return true;
+            }
+            return false;
+        }
+
+        private static List<HostConfig> loadHosts(string path)
+        {
             List<HostConfig> list = new List<HostConfig>();
-            FileHelper.readTextFile(userHostsPath, Encoding.UTF8, (index, line) =>
+            FileHelper.readTextFile(path, Encoding.UTF8, (index, line) =>
             {
                 if (!StringHelper.isBlank(line))
                 {
                     line = line.Trim();
                     if (line.StartsWith("#"))
                     {
-                        return;
+                        return true;
                     }
                     string[] hosts = line.Split('=');
                     if (hosts != null && hosts.Length > 1)
@@ -249,11 +303,12 @@ namespace OdyHostNginx
                         list.Add(config);
                     }
                 }
+                return true;
             });
             return list;
         }
 
-        public static void writeUserHosts(List<HostConfig> userHostConfigs)
+        private static void writeHosts(string path, List<HostConfig> userHostConfigs)
         {
             StringBuilder sb = new StringBuilder();
             if (userHostConfigs != null && userHostConfigs.Count > 0)
@@ -263,7 +318,17 @@ namespace OdyHostNginx
                     sb.Append(item.Domain).Append("=").AppendLine(item.Ip);
                 }
             }
-            FileHelper.writeFile(userHostsPath, Encoding.UTF8, sb.ToString());
+            FileHelper.writeFile(path, Encoding.UTF8, sb.ToString());
+        }
+
+        public static void writeHostGroup(string groupName, List<HostConfig> userHostConfigs)
+        {
+            writeHosts(userHostsDir + "\\" + groupName, userHostConfigs);
+        }
+
+        public static void writeUserHosts(List<HostConfig> userHostConfigs)
+        {
+            writeHosts(userHostsDir + "\\" + userHostsFileName, userHostConfigs);
         }
 
         private static List<HostConfig> getHosts(EnvConfig env)
@@ -449,7 +514,12 @@ namespace OdyHostNginx
             string server_name = StringHelper.substring(context, "server_name", ";");
             if (!StringHelper.isBlank(server_name))
             {
-                conf.ServerName = server_name.Trim();
+                server_name = server_name.Trim();
+                if (server_name.IndexOf(" ") > 0)
+                {
+                    server_name = server_name.Split(' ')[0].Trim();
+                }
+                conf.ServerName = server_name;
             }
             return conf;
         }
@@ -466,10 +536,14 @@ namespace OdyHostNginx
             if (writeBody)
             {
                 // 加载 body
-                config.Projects.ForEach(p => p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body)));
+                config.Projects.ForEach(p => {
+                    if (p.HostGroup) return;
+                    p.Envs.ForEach(e => e.Configs.ForEach(c => c.Body = c.Body));
+                });
             }
             foreach (var projectConfig in config.Projects)
             {
+                if (projectConfig.HostGroup) continue;
                 string projectDir = path + "\\" + projectConfig.Name;
                 FileHelper.mkdirAndDel(projectDir, writeBody);
                 List<EnvConfig> envs = projectConfig.Envs;
@@ -532,6 +606,22 @@ namespace OdyHostNginx
             {
                 envDir.MoveTo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + deleteStartsWith + env.EnvName);
             }
+        }
+
+        public static bool renameEnv(EnvConfig env, string newName)
+        {
+            string oldPath = userNginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName;
+            string newPath = userNginxConfigDir + "\\" + env.Project.Name + "\\" + newName;
+            DirectoryInfo oldDir = new DirectoryInfo(oldPath);
+            DirectoryInfo newDir = new DirectoryInfo(newPath);
+            if (oldDir.Exists && !newDir.Exists)
+            {
+                oldDir.MoveTo(newPath);
+                FileHelper.delDir(nginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName, true);
+                FileHelper.copyDirectory(newPath, nginxConfigDir + "\\" + env.Project.Name + "\\" + newName, true);
+                return true;
+            }
+            return false;
         }
 
         public static string[] projectEnvName(string[] names)

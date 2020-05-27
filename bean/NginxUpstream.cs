@@ -17,11 +17,14 @@ namespace OdyHostNginx
 
         private EnvConfig env;
 
+        private string contextPath;
+
         public string ServerName { get => serverName; set => serverName = value; }
         public string Ip { get => ip; set => ip = value; }
         public int Port { get => port; set => port = value; }
         public string OldIp { get => oldIp; set => oldIp = value; }
         public int OldPort { get => oldPort; set => oldPort = value; }
+        public string ContextPath { get => contextPath; set => contextPath = value; }
         internal EnvConfig Env { get => env; set => env = value; }
 
     }

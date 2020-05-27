@@ -46,6 +46,12 @@
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Left" Margin="10,0,0,0">
                                 <StackPanel Orientation="Horizontal">
+                                    <Label VerticalAlignment="Center">modify</Label>
+                                    <CheckBox x:Name="modifyResponse" Click="ModifyResponse_Click" VerticalAlignment="Center" ToolTip="Modify Http Response" />
+                                </StackPanel>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Left" Margin="10,0,0,0">
+                                <StackPanel Orientation="Horizontal">
                                     <Label VerticalAlignment="Center">filter：</Label>
                                     <TextBox x:Name="searchText" TextChanged="SearchText_TextChanged" KeyUp="SearchText_KeyUp" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="150" Height="22" FontSize="12" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" TabIndex="0"/>
                                 </StackPanel>

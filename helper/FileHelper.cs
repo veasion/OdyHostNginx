@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OdyHostNginx
 {
-    public delegate void LineHandle(int line, string text);
+    public delegate bool LineHandle(int line, string text);
 
     /// <summary>
     /// 文件工具类
@@ -23,6 +23,7 @@ namespace OdyHostNginx
             readTextFile(path, encoding, (line, text) =>
             {
                 sb.AppendLine(text);
+                return true;
             });
             return sb.ToString();
         }
@@ -42,7 +43,8 @@ namespace OdyHostNginx
                 sr = new StreamReader(path, encoding);
                 while ((line = sr.ReadLine()) != null)
                 {
-                    lineHandle(++count, line);
+                    bool r = lineHandle(++count, line);
+                    if (!r) break;
                 }
             }
             catch (Exception e)
@@ -65,6 +67,7 @@ namespace OdyHostNginx
 
         public static bool writeFile(string path, Encoding encoding, string context)
         {
+            Logger.info("正在写文件: " + path);
             File.WriteAllText(path, context, encoding);
             return true;
         }
@@ -195,6 +198,11 @@ namespace OdyHostNginx
 
         public static void copyDirectory(string sourceDir, string targetDir, bool replace)
         {
+            copyDirectory(sourceDir, targetDir, replace, false);
+        }
+
+        public static void copyDirectory(string sourceDir, string targetDir, bool replace, bool ignoreDeleted)
+        {
             try
             {
                 if (!Directory.Exists(targetDir))
@@ -204,7 +212,8 @@ namespace OdyHostNginx
                 string[] files = Directory.GetFiles(sourceDir);
                 foreach (string file in files)
                 {
-                    string pFilePath = targetDir + "\\" + Path.GetFileName(file);
+                    string fileName = Path.GetFileName(file);
+                    string pFilePath = targetDir + "\\" + fileName;
                     if (File.Exists(pFilePath))
                     {
                         if (replace)
@@ -216,11 +225,19 @@ namespace OdyHostNginx
                             continue;
                         }
                     }
+                    if (ignoreDeleted && fileName.StartsWith(OdyConfigHelper.deleteStartsWith))
+                    {
+                        continue;
+                    }
                     File.Copy(file, pFilePath, replace);
                 }
                 string[] dirs = Directory.GetDirectories(sourceDir);
                 foreach (string dir in dirs)
                 {
+                    if (ignoreDeleted && dir.StartsWith(OdyConfigHelper.deleteStartsWith))
+                    {
+                        continue;
+                    }
                     copyDirectory(dir, targetDir + "\\" + Path.GetFileName(dir), replace);
                 }
             }

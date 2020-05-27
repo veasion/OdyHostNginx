@@ -1,10 +1,22 @@
 ﻿{
-	"version": "v1.2",
-	"updateType": 3,
+	"version": "v1.6",
+	"updateType": 1,
 	"force": false,
-	"desc": "软件更新描述",
-	"adds": [],
-	"deletes": [],
+	"desc": "\r\n\r\n  > host支持分组",
+	"adds": [
+		{
+			"dir": "",
+			"fileName": "OdyHostNginx.exe",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.6/OdyHostNginx.exe"
+		}
+	],
+	"deletes": [
+		{
+			"dir": "",
+			"fileName": "OdyHostNginx.exe"
+		}
+	],
+	"traceVersion": "v2",
 	"payImageUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/alipay.png",
 	"odyHostNginxDownload": "https://veasion-oss.oss-cn-shanghai.aliyuncs.com/soft/OdyHostNginx.rar",
 	"odyHostNginxProjectDownload": "https://veasion-oss.oss-cn-shanghai.aliyuncs.com/soft/OdyHostNginxProject.rar"

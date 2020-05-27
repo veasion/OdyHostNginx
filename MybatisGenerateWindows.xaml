@@ -15,7 +15,7 @@
             <GroupBox Header="db" Margin="2,0,2,0">
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                     <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Label>Server：</Label>
+                        <Label>Host：</Label>
                         <TextBox x:Name="serverText" Text="" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="120" Height="22" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" TabIndex="0"/>
                         <Label Margin="20,0,0,0">Port：</Label>
                         <TextBox x:Name="portText" Text="3306" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="50" Height="22" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
@@ -23,13 +23,13 @@
                         <TextBox x:Name="userText" Text="" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="100" Height="22" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         <Label Margin="20,0,0,0">Pwd：</Label>
                         <TextBox x:Name="pwdText" Text="" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="100" Height="22" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Button Content="Load" Click="Load_Click" Cursor="Hand" Margin="30,0,0,0" Padding="12,6,12,6" Background="#FFF0F0F0" />
                     </StackPanel>
                     <StackPanel Margin="0,10,0,5" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label>Database：</Label>
                         <ComboBox x:Name="dbComboBox" SelectionChanged="DbComboBox_SelectionChanged" Height="23" HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="100" />
                         <Label Margin="20,0,0,0">Table Filter：</Label>
                         <TextBox x:Name="filterText" TextChanged="FilterText_TextChanged" IsEnabled="False" Text="" Foreground="Black" Background="White" BorderThickness="1,1,1,1" Width="120" Height="22" FontSize="14" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Button Content="Load" Click="Load_Click" Cursor="Hand" Margin="50,0,0,0" Padding="12,6,12,6" Background="#FFF0F0F0" />
                     </StackPanel>
                 </StackPanel>
             </GroupBox>

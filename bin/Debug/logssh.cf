@@ -1,0 +1,20 @@
+{
+    "open": false,
+    "ssh": {
+        "common": {
+            "user": "ody",
+            "password": "ody,123",
+            "port": 22
+        },
+        "127.0.0.1": {
+            "user": "ody",
+            "password": "ody,123",
+            "port": 22
+        }
+    },
+    "serverLogCommand": {
+        "oms-web": "tail -50f /data/logdir/oms/oms-web/info.log",
+        "oms-api": "tail -50f /data/logdir/oms-api/oms-business/info.log",
+        "ouser-web": "tail -50f /data/logdir/ouser/ouser-service/info.log"
+    }
+}

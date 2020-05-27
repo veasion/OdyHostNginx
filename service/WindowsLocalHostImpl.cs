@@ -73,17 +73,18 @@ namespace OdyHostNginx
                     if (line.StartsWith(startConfig))
                     {
                         f.flag = true;
-                        return;
+                        return true;
                     }
                     else if (line.EndsWith(endConfig))
                     {
                         f.flag = false;
-                        return;
+                        return true;
                     }
                     if (!f.flag && (isAnnotation(line) || !exists(line, hosts)))
                     {
                         sb.AppendLine(line);
                     }
+                    return true;
                 });
             }
             catch (UnauthorizedAccessException)

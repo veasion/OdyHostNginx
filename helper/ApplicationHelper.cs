@@ -24,6 +24,7 @@ namespace OdyHostNginx
                 nginx.stop();
                 switchHost.switchHost((List<HostConfig>)null, false);
                 ConfigDialogData.httpPacketClient.Shutdown();
+                SSHClientHelper.closeAll();
             }
             catch (Exception e)
             {
@@ -44,7 +45,7 @@ namespace OdyHostNginx
             switchHost.switchHost(hosts.Where(host => host.Use).ToList(), true);
         }
 
-        public static void applyNginx(OdyProjectConfig config, bool writeBody)
+        public static void applyNginx(OdyProjectConfig config, bool writeBody, bool checkStatus)
         {
             string configDir = WindowsNginxImpl.nginxConfigDir;
             OdyConfigHelper.writeConfig(config, configDir, writeBody);
@@ -64,8 +65,69 @@ namespace OdyHostNginx
 
         public static OdyProjectConfig copyUserConfigToNginx(Dictionary<string, UpstreamDetails> upstreamDetailsMap, bool replace)
         {
-            FileHelper.copyDirectory(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace);
+            FileHelper.copyDirectory(OdyConfigHelper.userNginxConfigDir, WindowsNginxImpl.nginxConfigDir, replace, true);
             return OdyConfigHelper.loadConfig(WindowsNginxImpl.nginxConfigDir, upstreamDetailsMap);
+        }
+
+        public static void hostGroupToProjectConfig(OdyProjectConfig p, Dictionary<string, List<HostConfig>> hostGroup)
+        {
+            if (hostGroup == null || hostGroup.Count <= 0)
+            {
+                foreach (var item in p.Projects)
+                {
+                    if (item.HostGroup)
+                    {
+                        p.Projects.Remove(item);
+                        break;
+                    }
+                }
+                return;
+            }
+            ProjectConfig hostPro = null;
+            Dictionary<string, bool> envUseMap = new Dictionary<string, bool>();
+            foreach (var item in p.Projects)
+            {
+                if (item.HostGroup)
+                {
+                    hostPro = item;
+                    if (hostPro != null && hostPro.Envs != null && hostPro.Envs.Count > 0)
+                    {
+                        hostPro.Envs.ForEach(e => envUseMap[e.EnvName] = e.Use);
+                    }
+                    break;
+                }
+            }
+            if (hostPro == null)
+            {
+                hostPro = new ProjectConfig();
+                hostPro.HostGroup = true;
+                hostPro.Name = "Host Group";
+                p.Projects.Add(hostPro);
+            }
+            List<EnvConfig> envs = new List<EnvConfig>();
+            foreach (var groupName in hostGroup.Keys)
+            {
+                EnvConfig env = new EnvConfig();
+                env.Use = false;
+                env.HostGroup = true;
+                env.EnvName = groupName;
+                env.Hosts = hostGroup[groupName];
+                env.Project = hostPro;
+                if (envUseMap.ContainsKey(groupName) && envUseMap[groupName])
+                {
+                    env.Use = true;
+                    if (env.Hosts != null)
+                    {
+                        env.Hosts.ForEach(h => h.Use = true);
+                    }
+                }
+                envs.Add(env);
+            }
+            hostPro.Envs = envs;
+            if (envs.Count <= 0)
+            {
+                p.Projects.Remove(hostPro);
+            }
         }
 
         private static void getUseConfig(OdyProjectConfig config, List<string> confs)
@@ -74,6 +136,7 @@ namespace OdyHostNginx
             {
                 foreach (var p in config.Projects)
                 {
+                    if (p.HostGroup) continue;
                     foreach (var e in p.Envs)
                     {
                         if (!e.Use)
@@ -92,6 +155,7 @@ namespace OdyHostNginx
             {
                 foreach (var project in config.Projects)
                 {
+                    if (project.HostGroup) continue;
                     foreach (var env in project.Envs)
                     {
                         if (env.Use)

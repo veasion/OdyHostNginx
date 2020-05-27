@@ -69,12 +69,12 @@ namespace OdyHostNginx
                 if (line.StartsWith(startConfig))
                 {
                     f.flag = true;
-                    return;
+                    return true;
                 }
                 else if (line.EndsWith(endConfig))
                 {
                     f.flag = false;
-                    return;
+                    return true;
                 }
                 if (!f.flag)
                 {
@@ -84,6 +84,7 @@ namespace OdyHostNginx
                         f.count = list.Count - 1;
                     }
                 }
+                return true;
             });
             if (include != null && f.count > 0)
             {

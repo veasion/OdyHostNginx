@@ -30,6 +30,7 @@ namespace OdyHostNginx
             p.Start();
             for (int i = 0; i < cmd.Length; i++)
             {
+                Logger.info("cmd: " + cmd[i].ToString());
                 p.StandardInput.WriteLine(cmd[i].ToString());
             }
             p.StandardInput.WriteLine("exit");
@@ -48,6 +49,7 @@ namespace OdyHostNginx
                     {
                         p.Kill();
                         suc = true;
+                        Logger.info("kill process: " + procName + ", id = " + p.Id);
                     }
                 }
             }

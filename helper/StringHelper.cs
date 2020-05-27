@@ -170,8 +170,9 @@ namespace OdyHostNginx
                     return json;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.error("json格式化异常", e);
                 return null;
             }
         }

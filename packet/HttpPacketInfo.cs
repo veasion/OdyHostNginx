@@ -22,6 +22,7 @@ namespace OdyHostNginx
         private string reqBody;
         private string response;
         private int status;
+        private bool isModify;
         private JToken respJson;
         private Dictionary<string, string> reqHeaders;
         private Dictionary<string, List<string>> reqCookies;
@@ -169,7 +170,7 @@ namespace OdyHostNginx
             {
                 return false;
             }
-            if (respJson != null)
+            if (isModify || respJson != null)
             {
                 return true;
             }
@@ -197,6 +198,8 @@ namespace OdyHostNginx
                 return "";
             }
         }
+
+        public bool IsModify { get => isModify; set => isModify = value; }
 
         public bool isError()
         {

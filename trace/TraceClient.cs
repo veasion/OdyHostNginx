@@ -22,7 +22,13 @@ namespace OdyHostNginx
                 {
                     url = url.Replace("/zipkin//", "/zipkin/");
                 }
-                url = url.Replace("/zipkin/traces/", "/zipkin/api/v1/trace/");
+                UpgradeVo u = UpgradeHelper.getUpgrade(false);
+                string v = u.TraceVersion;
+                if (v == null || "".Equals(v.Trim()))
+                {
+                    v = "v1";
+                }
+                url = url.Replace("/zipkin/traces/", "/zipkin/api/" + v + "/trace/");
                 cache.TryGetValue(url, out root);
                 if (root != null)
                 {
@@ -35,7 +41,14 @@ namespace OdyHostNginx
                 TracesInfo traces;
                 foreach (var j in jsonArr)
                 {
-                    traces = parse(j, dic);
+                    if ("v1".Equals(v))
+                    {
+                        traces = parseV1(j, dic);
+                    }
+                    else
+                    {
+                        traces = parseV2(j, dic);
+                    }
                     if (root == null && traces != null && traces.Id.Equals(getStr(j, "traceId")))
                     {
                         root = traces;
@@ -56,7 +69,7 @@ namespace OdyHostNginx
             return null;
         }
 
-        private static TracesInfo parse(JToken j, Dictionary<string, TracesInfo> dic)
+        private static TracesInfo parseV1(JToken j, Dictionary<string, TracesInfo> dic)
         {
             TracesInfo traces = new TracesInfo();
             traces.Id = getStr(j, "id");
@@ -110,6 +123,35 @@ namespace OdyHostNginx
                 traces.ClientName = clientName;
                 traces.ServiceName = serviceName;
             }
+            return traces;
+        }
+
+        private static TracesInfo parseV2(JToken j, Dictionary<string, TracesInfo> dic)
+        {
+            TracesInfo traces = new TracesInfo();
+            traces.Id = getStr(j, "id");
+            if (traces.Id == null)
+            {
+                return null;
+            }
+            dic[traces.Id] = traces;
+            traces.Name = getStr(j, "name");
+            traces.Pid = getStr(j, "parentId");
+            traces.Timestamp = getLong(j, "timestamp");
+            traces.Duration = getLong(j, "duration");
+            if (j["tags"] != null)
+            {
+                Dictionary<string, string> details = j["tags"].ToObject<Dictionary<string, string>>();
+                if (details.ContainsKey("query.sql"))
+                {
+                    details["query.sql"] = Regex.Replace(details["query.sql"], @"(\n\s{0,}\n){1,}", "\n");
+                }
+                traces.Details = details;
+            }
+            JToken local = j["localEndpoint"];
+            traces.ClientName = getStr(local, "serviceName");
+            JToken remote = j["remoteEndpoint"];
+            traces.ServiceName = getStr(remote, "serviceName");
             return traces;
         }
 

@@ -19,6 +19,7 @@ namespace OdyHostNginx
     {
 
         #region 变量
+        bool isOpenSshLog;
         bool isHostConfig;
         string hostSearch;
         string configSearch;
@@ -26,6 +27,7 @@ namespace OdyHostNginx
         static List<HostConfig> userHosts;
         static HttpPacketWindow httpPacket;
         static OdyProjectConfig odyProjectConfig;
+        static Dictionary<string, List<HostConfig>> hostGroup;
         static Dictionary<string, UpstreamDetails> upstreamDetailsMap;
         Dictionary<string, EnvConfig> envMap = new Dictionary<string, EnvConfig>();
         Dictionary<string, CheckBox> envSwitchUI = new Dictionary<string, CheckBox>();
@@ -63,6 +65,10 @@ namespace OdyHostNginx
                     if (System.IO.Directory.Exists(UpgradeHelper.upgradeDir))
                     {
                         odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+                        if (hostGroup != null && hostGroup.Count > 0)
+                        {
+                            ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                        }
                         drawingSwitchUI();
                         FileHelper.delDir(UpgradeHelper.upgradeDir, true);
                     }
@@ -71,26 +77,55 @@ namespace OdyHostNginx
                 checkUpgrade(true);
             };
             InitializeComponent();
+            try
+            {
+                // 加载扩展工具
+                ExtHelper.loadExtTools(this.Tools);
+            }
+            catch (Exception) { }
         }
 
         private void initData()
         {
+            if (odyProjectConfig != null && odyProjectConfig.Use)
+            {
+                OdyHostNginxSwitch(false);
+            }
             upstreamDetailsMap.Clear();
+            isOpenSshLog = SSHClientHelper.isOpenSshLog(true);
             odyProjectConfig = OdyConfigHelper.loadConfig(null, upstreamDetailsMap);
             if (odyProjectConfig == null || odyProjectConfig.Projects == null || odyProjectConfig.Projects.Count == 0)
             {
                 odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
             }
             userHosts = OdyConfigHelper.loadUserHosts();
+            hostGroup = OdyConfigHelper.loadHostGroup();
+            UserCacheHelper.loadCache(odyProjectConfig, userHosts);
+            if (hostGroup != null && hostGroup.Count > 0)
+            {
+                ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+            }
             drawingSwitchUI();
         }
 
         private void apply()
         {
-            ApplicationHelper.applyNginx(odyProjectConfig, false);
+            bool isGroup = currentEnv != null && currentEnv.HostGroup;
+            ApplicationHelper.applyNginx(odyProjectConfig, false, !isGroup);
             ApplicationHelper.applySwitch(getCurrentHost());
             OdyConfigHelper.writeUserHosts(userHosts);
+            if (hostGroup.Count > 0)
+            {
+                foreach (var groupName in hostGroup.Keys)
+                {
+                    OdyConfigHelper.writeHostGroup(groupName, hostGroup[groupName]);
+                }
+            }
             this.applyBut.Source = OdyResources.img_not_apply;
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                UserCacheHelper.saveCache(odyProjectConfig, userHosts);
+            });
         }
 
         private void OdyHostNginx_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -115,19 +150,28 @@ namespace OdyHostNginx
             // 总开关控制所有 host
             if (odyProjectConfig.Use)
             {
-                // env 开关控制 env host
-                if (currentEnv != null && currentEnv.Use && currentEnv.Hosts != null)
+                bool openEnv = false;
+                foreach (var p in odyProjectConfig.Projects)
                 {
-                    foreach (var host in currentEnv.Hosts)
+                    // env 开关控制 env host
+                    foreach (var env in p.Envs)
                     {
-                        if (host.Use)
+                        if (!env.Use) continue;
+                        foreach (var host in env.Hosts)
                         {
-                            hostDic[host.Domain] = host;
+                            if (host.Use)
+                            {
+                                hostDic[host.Domain] = host;
+                            }
+                        }
+                        if (!env.HostGroup)
+                        {
+                            openEnv = true;
                         }
                     }
                 }
                 // user host 不受 env 开关影响
-                if (userHosts != null)
+                if (userHosts != null && !(currentEnv != null && currentEnv.HostGroup && !openEnv))
                 {
                     foreach (var host in userHosts)
                     {
@@ -187,6 +231,10 @@ namespace OdyHostNginx
                 FileHelper.copyFiles(fileNames, ConfigDialogData.path, true);
                 MessageBox.Show("导入成功！");
                 odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
+                if (hostGroup != null && hostGroup.Count > 0)
+                {
+                    ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                }
                 initData();
             }
         }
@@ -231,6 +279,29 @@ namespace OdyHostNginx
         private void Explorer_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("explorer.exe", FileHelper.getCurrentDirectory());
+        }
+
+        private void AddHostGroup_Click(object sender, RoutedEventArgs e)
+        {
+            Confirm f = new Confirm();
+            f.title = "Add Host Group";
+            f.name = "Group Name: ";
+            f.value = "";
+            f.but = "OK";
+            string groupName = f.showAndGetResult();
+            if (groupName == null) return;
+            bool b = OdyConfigHelper.createHostGroup(groupName);
+            if (b)
+            {
+                hostGroup = OdyConfigHelper.loadHostGroup();
+                ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                drawingSwitchUI();
+                ApplicationHelper.applySwitch(getCurrentHost());
+            }
+            else
+            {
+                MessageBox.Show("创建失败，请注意名称不能含有特殊字符！");
+            }
         }
 
         private void About_Click(object sender, RoutedEventArgs e)
@@ -280,6 +351,7 @@ namespace OdyHostNginx
                         sb.AppendLine(line);
                     }
                 }
+                return true;
             });
             MessageBox.Show(sb.ToString(), "hosts");
         }
@@ -287,12 +359,20 @@ namespace OdyHostNginx
         private void Reload_Click(object sender, RoutedEventArgs e)
         {
             odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+            if (hostGroup != null && hostGroup.Count > 0)
+            {
+                ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+            }
             drawingSwitchUI();
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
+            if (hostGroup != null && hostGroup.Count > 0)
+            {
+                ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+            }
             drawingSwitchUI();
         }
 
@@ -301,9 +381,23 @@ namespace OdyHostNginx
             CmdHelper.openDingTalk();
         }
 
-        private void Flushdns_Click(object sender, RoutedEventArgs e)
+        private void Flush_Click(object sender, RoutedEventArgs e)
         {
-            CmdHelper.Cmd(WindowsLocalHostImpl.flushdnsCmd);
+            try
+            {
+                // 刷新 dns
+                CmdHelper.Cmd(WindowsLocalHostImpl.flushdnsCmd);
+                // 刷新 Ext Tools
+                ExtHelper.loadExtTools(this.Tools);
+                // 刷新 SSH Config
+                isOpenSshLog = SSHClientHelper.isOpenSshLog(true);
+            }
+            catch (Exception) { }
+        }
+
+        private void ShowLogs_Click(object sender, RoutedEventArgs e)
+        {
+            new LogsWindows((Logger.LoggerHandler)null);
         }
 
         private void Trace_Click(object sender, RoutedEventArgs e)
@@ -386,7 +480,7 @@ namespace OdyHostNginx
             {
                 sb.AppendLine("本次更新为强制更新，不可跳过！").AppendLine();
             }
-            MessageBoxResult r = MessageBox.Show(sb.ToString(), "版本更新提示", u.Force ? MessageBoxButton.OK : MessageBoxButton.YesNo, u.Force ? MessageBoxImage.Asterisk : MessageBoxImage.Question);
+            MessageBoxResult r = MessageBox.Show(sb.ToString(), "版本更新提示 --" + UpgradeHelper.version, u.Force ? MessageBoxButton.OK : MessageBoxButton.YesNo, u.Force ? MessageBoxImage.Asterisk : MessageBoxImage.Question);
             if (u.Force || r == MessageBoxResult.Yes)
             {
                 bool suc = UpgradeHelper.preUpgrade(u);
@@ -412,9 +506,15 @@ namespace OdyHostNginx
         private void OdyHostNginxBut_Click(object sender, RoutedEventArgs e)
         {
             CheckBox check = (CheckBox)sender;
-            odyProjectConfig.Use = check.IsChecked != null && check.IsChecked == true ? true : false;
+            OdyHostNginxSwitch(check.IsChecked != null && check.IsChecked == true);
+        }
+
+        private void OdyHostNginxSwitch(bool isOpen)
+        {
+            odyProjectConfig.Use = isOpen;
             apply();
-            check.ToolTip = odyProjectConfig.Use ? "Close OdyHostNginx" : "Open OdyHostNginx";
+            this.odyHostNginxBut.IsChecked = isOpen;
+            this.odyHostNginxBut.ToolTip = odyProjectConfig.Use ? "Close OdyHostNginx" : "Open OdyHostNginx";
             EnvConfig env;
             foreach (var key in envMap.Keys)
             {
@@ -477,8 +577,53 @@ namespace OdyHostNginx
                         else
                         {
                             delImage.Visibility = Visibility.Hidden;
+                            // 右击两下为编辑
+                            this.EnvEditName(env);
                         }
                     }
+                }
+            }
+        }
+
+        private void EnvEditName(EnvConfig env)
+        {
+            Confirm f = new Confirm();
+            f.title = env.HostGroup ? "Modify Group Name" : "Modify Env Name";
+            f.name = env.HostGroup ? "Group Name: " : "Env Name: ";
+            f.value = env.EnvName;
+            f.but = "OK";
+            string name = f.showAndGetResult();
+            if (name == null || env.EnvName.Equals(name)) return;
+            env.Use = false;
+            if (env.HostGroup)
+            {
+                // host group
+                bool suc = OdyConfigHelper.modifyHostGroup(env.EnvName, name);
+                if (suc)
+                {
+                    hostGroup[name] = hostGroup[env.EnvName];
+                    hostGroup.Remove(env.EnvName);
+                }
+                else
+                {
+                    MessageBox.Show("修改失败！");
+                }
+                hostGroup = OdyConfigHelper.loadHostGroup();
+                ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                drawingSwitchUI();
+                ApplicationHelper.applySwitch(getCurrentHost());
+            }
+            else
+            {
+                // env
+                bool suc = OdyConfigHelper.renameEnv(env, name);
+                if (suc)
+                {
+                    initData();
+                }
+                else
+                {
+                    MessageBox.Show("修改失败！");
                 }
             }
         }
@@ -489,10 +634,11 @@ namespace OdyHostNginx
             string key = (string)envSwitch.DataContext;
             EnvConfig env;
             envMap.TryGetValue(key, out env);
+            bool isGroup = env != null && env.HostGroup;
             if (env != null && (odyProjectConfig.Use || env.Use))
             {
                 env.Use = !env.Use;
-                if (env.Use)
+                if (env.Use && !isGroup)
                 {
                     foreach (var envConfig in env.Project.Envs)
                     {
@@ -509,12 +655,20 @@ namespace OdyHostNginx
                     }
                 }
                 envSwitch.IsChecked = env.Use;
-                apply();
             }
             else if (env != null)
             {
                 envSwitch.IsChecked = env.Use;
             }
+            if (isGroup)
+            {
+                foreach (var item in hostGroup[env.EnvName])
+                {
+                    item.Use = env.Use;
+                }
+                drawingHostConfig();
+            }
+            apply();
             drawingEnvConfig(env);
         }
         #endregion
@@ -526,7 +680,6 @@ namespace OdyHostNginx
         private void drawingSwitchUI()
         {
             this.ProjectSwitch.Children.Clear();
-            EnvConfig firstEnv = null;
             foreach (var project in odyProjectConfig.Projects)
             {
                 int envCount = project.Envs != null ? project.Envs.Count : 0;
@@ -558,17 +711,13 @@ namespace OdyHostNginx
                 // envs
                 foreach (var env in project.Envs)
                 {
-                    if (firstEnv == null)
-                    {
-                        firstEnv = env;
-                    }
                     uniformGrid.Children.Add(drawingEnvUI(env));
                 }
                 border.Child = uniformGrid;
                 this.ProjectSwitch.Children.Add(border);
             }
             // 绘制 env
-            drawingEnvConfig(firstEnv);
+            drawingEnvConfig(getUseEnv());
         }
 
         private DockPanel drawingEnvUI(EnvConfig env)
@@ -620,6 +769,7 @@ namespace OdyHostNginx
             // switch
             CheckBox envSwitch = new CheckBox
             {
+                IsChecked = env.Use,
                 Cursor = Cursors.Hand,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -657,16 +807,24 @@ namespace OdyHostNginx
             return env.Project.Name + env.EnvName;
         }
 
-        private static EnvConfig getFirstEnv()
+        private static EnvConfig getUseEnv()
         {
+            EnvConfig e = null;
             foreach (var p in odyProjectConfig.Projects)
             {
                 foreach (var env in p.Envs)
                 {
-                    return env;
+                    if (e == null)
+                    {
+                        e = env;
+                    }
+                    if (env.Use)
+                    {
+                        return env;
+                    }
                 }
             }
-            return null;
+            return e;
         }
         #endregion
 
@@ -692,7 +850,11 @@ namespace OdyHostNginx
             currentEnv = env;
             if (currentEnv == null)
             {
-                currentEnv = getFirstEnv();
+                currentEnv = getUseEnv();
+            }
+            if (env.HostGroup)
+            {
+                isHostConfig = true;
             }
             if (isHostConfig)
             {
@@ -706,18 +868,31 @@ namespace OdyHostNginx
             }
             // env switch dock color
             changeEnv(currentEnv, true);
-            // drawing nginx config
-            drawingNginxConfig();
-            // drawing host config
-            drawingHostConfig();
+            if (env.HostGroup)
+            {
+                switchConfigHost(true);
+                drawingHostConfig();
+            }
+            else
+            {
+                // drawing nginx config
+                drawingNginxConfig();
+                // drawing host config
+                drawingHostConfig();
+            }
         }
 
         private void Button_Config_Host_Click(object sender, RoutedEventArgs e)
         {
             var but = sender as ContentControl;
-            if (but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()))
+            switchConfigHost(but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()));
+        }
+
+        private void switchConfigHost(bool currentHost)
+        {
+            if ((currentEnv != null && currentEnv.HostGroup) || currentHost)
             {
-                if (isHostConfig)
+                if (isHostConfig && this.addBut.Visibility == Visibility.Visible)
                 {
                     return;
                 }
@@ -848,6 +1023,7 @@ namespace OdyHostNginx
                 }
                 foreach (var contextPath in contextPaths)
                 {
+                    u.ContextPath = contextPath;
                     configViewer.Children.Add(drawingConfig(u, ud, contextPath));
                 }
             }
@@ -967,10 +1143,33 @@ namespace OdyHostNginx
                 Background = new SolidColorBrush(OdyResources.butInitColor),
                 Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
+            
             localBut.DataContext = u;
             localBut.Click += LocalBut_Click;
             dockLocal.MouseLeftButtonDown += CommonMouseLeftButtonUp;
-            dockLocal.Children.Add(localBut);
+            if (isOpenSshLog)
+            {
+                Label logLabel = new Label
+                {
+                    Width = 22,
+                    Height = 28,
+                    FontSize = 14,
+                    Content = "⊙",
+                    Cursor = Cursors.Hand,
+                    ToolTip = "tail -f log",
+                    Margin = new Thickness(-10, 0, 0, 0)
+                };
+                
+                logLabel.DataContext = u;
+                logLabel.MouseLeftButtonUp += LogsBut_Click;
+                localBut.Margin = new Thickness(40, 0, 0, 0);
+                dockLocal.Children.Add(localBut);
+                dockLocal.Children.Add(logLabel);
+            }
+            else
+            {
+                dockLocal.Children.Add(localBut);
+            }
             // empty
             DockPanel emptyDock = new DockPanel();
             DockPanel.SetDock(emptyDock, Dock.Left);
@@ -1045,6 +1244,31 @@ namespace OdyHostNginx
             }
         }
 
+        private void LogsBut_Click(object sender, RoutedEventArgs e)
+        {
+            NginxUpstream u = (sender as ContentControl).DataContext as NginxUpstream;
+            ThreadPool.QueueUserWorkItem(o =>
+            {
+                try
+                {
+                    LogsWindows logsWindows = new LogsWindows();
+                    string command = logsWindows.openAndGetCommand(u);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        logsWindows.showLogs(command);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.error(ex);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show("异常：" + ex.Message, "tail -f log");
+                    });
+                }
+            });
+        }
+
         private void LocalBut_Click(object sender, RoutedEventArgs e)
         {
             Button but = sender as Button;
@@ -1071,7 +1295,9 @@ namespace OdyHostNginx
                 Thread.Sleep(500);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    drawingNginxConfig(this.searchText.Text);
+                    this.searchText.Text = "";
+                    this.searchText.Visibility = Visibility.Hidden;
+                    drawingNginxConfig(null);
                 });
             });
         }
@@ -1096,7 +1322,7 @@ namespace OdyHostNginx
                 u.Port = Convert.ToInt32(port.Text.Trim());
                 this.applyBut.Source = OdyResources.img_can_apply;
             }
-            port.Foreground = new SolidColorBrush(StringHelper.isPort(port.Text) ? OdyResources.configFontColor : Colors.Red);
+            port.Foreground = new SolidColorBrush(StringHelper.isPort(port.Text) ? Colors.Black : Colors.Red);
         }
 
         private void ConfigIpText_TextChanged(object sender, TextChangedEventArgs e)
@@ -1110,7 +1336,7 @@ namespace OdyHostNginx
                 u.Ip = ip.Text.Trim();
                 this.applyBut.Source = OdyResources.img_can_apply;
             }
-            ip.Foreground = new SolidColorBrush(isIp ? OdyResources.configFontColor : Colors.Red);
+            ip.Foreground = new SolidColorBrush(isIp ? Colors.Black : Colors.Red);
         }
         #endregion
 
@@ -1128,13 +1354,25 @@ namespace OdyHostNginx
             this.configHostViewer.ScrollToTop();
             GroupBox userHost = null, envHost = null;
 
-            if (userHosts != null && userHosts.Count > 0)
+            if ((currentEnv != null && currentEnv.HostGroup) && !currentEnv.Use && !hostGroup.ContainsKey(currentEnv.EnvName))
             {
-                userHost = hostGroupBox(userHosts, "User Host", true, search);
+                currentEnv = null;
+                currentEnv = getUseEnv();
             }
-            if (currentEnv != null && currentEnv.Hosts != null && currentEnv.Hosts.Count > 0)
+            if (currentEnv != null && currentEnv.HostGroup)
             {
-                envHost = hostGroupBox(currentEnv.Hosts, "Env Host", false, search);
+                userHost = hostGroupBox(hostGroup[currentEnv.EnvName], "Group Host", true, search);
+            }
+            else
+            {
+                if (userHosts != null && userHosts.Count > 0)
+                {
+                    userHost = hostGroupBox(userHosts, "User Host", true, search);
+                }
+                if (currentEnv != null && currentEnv.Hosts != null && currentEnv.Hosts.Count > 0)
+                {
+                    envHost = hostGroupBox(currentEnv.Hosts, "Env Host", false, search);
+                }
             }
             if (userHost != null)
             {
@@ -1318,7 +1556,9 @@ namespace OdyHostNginx
                 Thread.Sleep(500);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    drawingHostConfig(this.searchText.Text);
+                    this.searchText.Text = "";
+                    this.searchText.Visibility = Visibility.Hidden;
+                    drawingHostConfig(null);
                 });
             });
         }
@@ -1402,31 +1642,54 @@ namespace OdyHostNginx
             if (data is HostConfig)
             {
                 HostConfig host = data as HostConfig;
-                foreach (var item in userHosts)
+                bool isGroup = currentEnv != null && currentEnv.HostGroup;
+                List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : userHosts;
+                foreach (var item in hostList)
                 {
                     if (host == item)
                     {
-                        userHosts.Remove(host);
+                        hostList.Remove(host);
                         this.applyBut.Source = OdyResources.img_can_apply;
-                        drawingHostConfig();
                         break;
                     }
                 }
+                drawingHostConfig();
             }
             else if (data is EnvConfig)
             {
                 EnvConfig env = data as EnvConfig;
-                int count = env.Project.Envs.Count;
-                string title = "该环境" + (count <= 1 ? "和项目" : "") + "将会被删除，是否继续？";
-                MessageBoxResult result = MessageBox.Show(title, "警告", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                if (env.HostGroup)
                 {
-                    OdyConfigHelper.deleteEnv(env);
-                    if (count <= 1)
+                    string title = "该HostGroup将会被删除，是否继续？";
+                    MessageBoxResult result = MessageBox.Show(title, "警告", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
                     {
-                        OdyConfigHelper.deleteProject(env.Project);
+                        env.Use = false;
+                        currentEnv = null;
+                        hostGroup.Remove(env.EnvName);
+                        OdyConfigHelper.delHostGroup(env.EnvName);
+                        hostGroup = OdyConfigHelper.loadHostGroup();
+                        ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                        drawingSwitchUI();
+                        ApplicationHelper.applySwitch(getCurrentHost());
                     }
-                    initData();
+                }
+                else
+                {
+                    int count = env.Project.Envs.Count;
+                    string title = "该环境" + (count <= 1 ? "和项目" : "") + "将会被删除，是否继续？";
+                    MessageBoxResult result = MessageBox.Show(title, "警告", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        OdyConfigHelper.deleteEnv(env);
+                        env.Use = false;
+                        currentEnv = null;
+                        if (count <= 1)
+                        {
+                            OdyConfigHelper.deleteProject(env.Project);
+                        }
+                        initData();
+                    }
                 }
             }
         }
@@ -1439,15 +1702,26 @@ namespace OdyHostNginx
             {
                 ConfigDialogData.success = false;
                 HostConfigWindows hostConfigWindows = new HostConfigWindows();
+                bool isGroup = currentEnv != null && currentEnv.HostGroup;
+                hostConfigWindows.Text = isGroup ? "Add Group Host" : "Add User Host";
                 hostConfigWindows.ShowDialog();
                 if (ConfigDialogData.success)
                 {
-                    HostConfig host = new HostConfig
+                    List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : userHosts;
+                    ConfigDialogData.hosts.ForEach(host =>
                     {
-                        Ip = ConfigDialogData.ip,
-                        Domain = ConfigDialogData.domain
-                    };
-                    userHosts.Add(host);
+                        foreach (var h in hostList)
+                        {
+                            if (host.Domain.Equals(h.Domain))
+                            {
+                                h.Ip = host.Ip;
+                                h.Use = false;
+                                h.PingIp = null;
+                                return;
+                            }
+                        }
+                        hostList.Add(host);
+                    });
                     drawingHostConfig();
                     this.applyBut.Source = OdyResources.img_can_apply;
                 }
@@ -1459,6 +1733,7 @@ namespace OdyHostNginx
             this.searchText.Visibility = Visibility.Visible;
             this.searchText.Focus();
             this.searchText.Select(0, this.searchText.Text.Length);
+            SearchText_TextChanged(sender, null);
         }
 
         private void SearchText_TextChanged(object sender, TextChangedEventArgs e)
@@ -1510,6 +1785,13 @@ namespace OdyHostNginx
             if (userHosts != null && userHosts.Count > 0)
             {
                 userHosts.ForEach(h => domains.Add(h.Domain));
+            }
+            if (hostGroup != null && hostGroup.Count > 0)
+            {
+                foreach (var g in hostGroup.Values)
+                {
+                    g.ForEach(h => domains.Add(h.Domain));
+                }
             }
             odyProjectConfig.Projects.ForEach(p => p.Envs.ForEach(e => e.Hosts.ForEach(h => domains.Add(h.Domain))));
             return domains;

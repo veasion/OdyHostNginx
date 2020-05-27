@@ -14,6 +14,21 @@
     <WarningLevel>4</WarningLevel>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -23,7 +38,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -61,6 +76,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Renci.SshNet, Version=2016.1.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -87,9 +106,23 @@
       <DependentUpon>AboutWindows.xaml</DependentUpon>
     </Compile>
     <Compile Include="bean\KeyValue.cs" />
+    <Compile Include="bean\SSHConnInfo.cs" />
     <Compile Include="bean\TracesInfo.cs" />
     <Compile Include="bean\UpgradeDetails.cs" />
     <Compile Include="bean\UpgradeVo.cs" />
+    <Compile Include="Confirm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Confirm.Designer.cs">
+      <DependentUpon>Confirm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="helper\UserCacheHelper.cs" />
+    <Compile Include="LogsWindows.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogsWindows.Designer.cs">
+      <DependentUpon>LogsWindows.cs</DependentUpon>
+    </Compile>
     <Compile Include="format\Formatter.cs" />
     <Compile Include="format\FormatterFactory.cs" />
     <Compile Include="format\HtmlFormatter.cs" />
@@ -104,6 +137,7 @@
     <Compile Include="helper\ApplicationHelper.cs" />
     <Compile Include="helper\CmdHelper.cs" />
     <Compile Include="bean\EnvConfig.cs" />
+    <Compile Include="helper\ExtHelper.cs" />
     <Compile Include="helper\FileHelper.cs" />
     <Compile Include="bean\Flag.cs" />
     <Compile Include="bean\HostConfig.cs" />
@@ -151,6 +185,7 @@
     <Compile Include="helper\OdyConfigHelper.cs" />
     <Compile Include="bean\OdyProjectConfig.cs" />
     <Compile Include="bean\ProjectConfig.cs" />
+    <Compile Include="helper\SSHClientHelper.cs" />
     <Compile Include="TraceWindows.xaml.cs">
       <DependentUpon>TraceWindows.xaml</DependentUpon>
     </Compile>
@@ -219,6 +254,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Confirm.resx">
+      <DependentUpon>Confirm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogsWindows.resx">
+      <DependentUpon>LogsWindows.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="HostConfigWindows.resx">
       <DependentUpon>HostConfigWindows.cs</DependentUpon>
     </EmbeddedResource>
@@ -239,6 +280,12 @@
   <ItemGroup>
     <Resource Include="favicon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

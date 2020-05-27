@@ -255,7 +255,15 @@ namespace OdyHostNginx
             }
             if (json != null)
             {
+                if (currentPacket.IsModify)
+                {
+                    json = "The response is modify:\r\n" + json;
+                }
                 this.infoResponseJson.Text = json;
+            }
+            else if (currentPacket.IsModify)
+            {
+                this.infoResponseJson.Text = "The response is modify:\r\n" + currentPacket.Response;
             }
             else
             {
@@ -422,7 +430,7 @@ namespace OdyHostNginx
             HttpPacketInfo info = e.Row.Item as HttpPacketInfo;
             if (info == null) return;
             e.Row.ToolTip = info.FullUrl;
-            if (info.Status == 404)
+            if (info.Status == 404 || info.IsModify)
             {
                 e.Row.Foreground = new SolidColorBrush(Colors.Gray);
             }
@@ -463,6 +471,11 @@ namespace OdyHostNginx
         private void HttpsFilter_Click(object sender, RoutedEventArgs e)
         {
             init();
+        }
+
+        private void ModifyResponse_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigDialogData.modifyResponse = this.modifyResponse.IsChecked == true;
         }
 
         private void Clear_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

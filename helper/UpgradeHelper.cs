@@ -13,7 +13,7 @@ namespace OdyHostNginx
     class UpgradeHelper
     {
 
-        public const string version = "v1.4.3";
+        public const string version = "v1.6";
         public static string reqUrl = "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade.json";
 
         private static UpgradeVo upgrade;
@@ -21,11 +21,12 @@ namespace OdyHostNginx
         private static string updatePath = FileHelper.getCurrentDirectory() + "\\update.exe";
         private static string jsonPath = FileHelper.getCurrentDirectory() + "\\bin\\upgrade\\upgrade.json";
         private static string alipayPath = FileHelper.getCurrentDirectory() + "\\bin\\upgrade\\alipay.png";
+        private static string lockPath = FileHelper.getCurrentDirectory() + "\\bin\\upgrade\\lock";
 
 
         public static UpgradeVo getUpgrade(bool? latest)
         {
-            if (latest == true)
+            if (latest == true && (!File.Exists(lockPath) && File.Exists(jsonPath)))
             {
                 return reqUpgrade();
             }
@@ -51,6 +52,7 @@ namespace OdyHostNginx
         {
             try
             {
+                Logger.info("检查更新...");
                 string json = HttpHelper.get(reqUrl);
                 if (StringHelper.isEmpty(json))
                 {
@@ -123,7 +125,7 @@ namespace OdyHostNginx
         {
             if (upgrade != null && !version.Equals(upgrade.Version))
             {
-                return true;
+                return version.CompareTo(upgrade.Version) < 0;
             }
             return false;
         }
@@ -133,6 +135,7 @@ namespace OdyHostNginx
             FileInfo fileInfo = new FileInfo(updatePath);
             if (!fileInfo.Exists)
             {
+                Logger.info("更新程序缺失！updatePath: " + updatePath);
                 MessageBox.Show("更新程序缺失！", "错误");
                 return;
             }

@@ -20,7 +20,7 @@ namespace OdyHostNginx
 
         public static bool ssl = false;
         public static int listenPort = 8888;
-        public static string name = "OdyHtppPacketClient";
+        public static string name = "OdyHttpPacketClient";
 
         private HashSet<string> whiteList;
         private HttpPacketHandler handler;
@@ -32,12 +32,12 @@ namespace OdyHostNginx
             ssl = https;
             this.handler = handler;
             this.whiteList = whiteList;
+
+            FiddlerApplication.SetAppDisplayName(name);
             if (IsStarted())
             {
                 Shutdown();
             }
-
-            FiddlerApplication.SetAppDisplayName(name);
             if (ssl)
             {
                 openSSL();
@@ -89,52 +89,59 @@ namespace OdyHostNginx
                 {
                     return;
                 }
-                Encoding encoding;
-                HttpPacketInfo info = new HttpPacketInfo
-                {
-                    Id = session.id + "",
-                    FullUrl = session.fullUrl,
-                    Uri = session.PathAndQuery,
-                    Hostname = session.hostname,
-                    ClientIp = session.clientIP,
-                    Pid = session.LocalProcessID,
-                    Status = session.responseCode,
-                    ReqMethod = session.RequestMethod
-                };
-                session.utilDecodeRequest();
-                encoding = session.GetRequestBodyEncoding();
-                if (encoding != null && session.RequestBody != null)
-                {
-                    info.ReqBody = encoding.GetString(session.RequestBody);
-                }
-                else
-                {
-                    info.ReqBody = session.GetRequestBodyAsString();
-                }
-                info.ReqHeaders = header(session.RequestHeaders);
-                session.utilDecodeResponse();
-                encoding = session.GetResponseBodyEncoding();
-                if (encoding != null && session.ResponseBody != null)
-                {
-                    info.Response = encoding.GetString(session.ResponseBody);
-                }
-                else
-                {
-                    info.Response = session.GetResponseBodyAsString();
-                }
-                info.RespHeaders = header(session.ResponseHeaders);
-
-                info.ReqCookies = cookies(info.ReqHeaders);
-                info.RespCookies = cookies(info.RespHeaders);
-
-                // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
-
-                new HttpPacketHandler(handler)(info);
+                // 处理请求&响应
+                this.SessionHandler(session, false);
             }
             catch (Exception e)
             {
                 Logger.error("解析抓包数据发生错误！", e);
             }
+        }
+
+        private void SessionHandler(Session session, bool isModify)
+        {
+            Encoding encoding;
+            HttpPacketInfo info = new HttpPacketInfo
+            {
+                Id = session.id + "",
+                IsModify = isModify,
+                FullUrl = session.fullUrl,
+                Uri = session.PathAndQuery,
+                Hostname = session.hostname,
+                ClientIp = session.clientIP,
+                Pid = session.LocalProcessID,
+                Status = session.responseCode,
+                ReqMethod = session.RequestMethod
+            };
+            session.utilDecodeRequest();
+            encoding = session.GetRequestBodyEncoding();
+            if (encoding != null && session.RequestBody != null)
+            {
+                info.ReqBody = encoding.GetString(session.RequestBody);
+            }
+            else
+            {
+                info.ReqBody = session.GetRequestBodyAsString();
+            }
+            info.ReqHeaders = header(session.RequestHeaders);
+            session.utilDecodeResponse();
+            encoding = session.GetResponseBodyEncoding();
+            if (encoding != null && session.ResponseBody != null)
+            {
+                info.Response = encoding.GetString(session.ResponseBody);
+            }
+            else
+            {
+                info.Response = session.GetResponseBodyAsString();
+            }
+            info.RespHeaders = header(session.ResponseHeaders);
+
+            info.ReqCookies = cookies(info.ReqHeaders);
+            info.RespCookies = cookies(info.RespHeaders);
+
+            // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
+
+            new HttpPacketHandler(handler)(info);
         }
 
         private Dictionary<string, string> header(HTTPHeaders header)
@@ -186,19 +193,37 @@ namespace OdyHostNginx
 
         private void BeforeRequest(Session session)
         {
-            /*
-            session.bBufferResponse = true;
-            session.utilCreateResponseAndBypassServer();  
-            session.oResponse.headers.SetStatus(200, "Ok");  
-            string str = session.GetResponseBodyAsString();
-            session.utilSetResponseBody("修改后的：" + str);
-            */
+            if (ConfigDialogData.modifyResponse)
+            {
+                string resp = HttpPacketHelper.updateResponse(session.fullUrl);
+                if (resp != null)
+                {
+                    // 修改http响应
+                    session.bBufferResponse = true;
+                    session.utilCreateResponseAndBypassServer();
+                    session.oResponse.headers.Add("Content-Type", "application/json;charset=UTF-8");
+                    if (session.RequestHeaders != null)
+                    {
+                        foreach (var item in session.RequestHeaders)
+                        {
+                            if ("accept-encoding".Equals(item.Name.ToLower()) || "content-length".Equals(item.Name.ToLower()))
+                            {
+                                continue;
+                            }
+                            session.oResponse.headers.Add(item.Name, item.Value);
+                        }
+                    }
+                    session.oResponse.headers.SetStatus(200, "Ok");
+                    session.utilSetResponseBody(resp);
+                    // 处理请求&响应
+                    this.SessionHandler(session, true);
+                }
+            }
         }
 
         private void BeforeResponse(Session session)
         {
-            // 修改任何http响应
-            // session.bBufferResponse = true;
+            // BeforeResponse
         }
 
         public bool IsStarted()

@@ -1,0 +1,6 @@
+
+# tools ext, run cmd
+
+# {"name": "Open Notepad Test", "run": "notepad"}
+# {"name": "Open Control Test", "run": "control"}
+# {"name": "贪吃蛇", "run": "%cd%/ext/SnakeGame.exe"}

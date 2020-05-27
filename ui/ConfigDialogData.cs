@@ -13,12 +13,13 @@ namespace OdyHostNginx
         public static string envName;
         public static string path;
 
-        public static string domain;
-        public static string ip;
+        public static List<HostConfig> hosts;
 
         public static bool success;
 
         public static HttpPacketClient httpPacketClient = new HttpPacketClient();
+
+        public static bool modifyResponse = false;
 
     }
 }

@@ -36,21 +36,23 @@
                         <MenuItem Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="AddHostGroup_Click" Header="Add Host Group" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="View" FontSize="14">
                         <MenuItem Click="ShowLog_Click" Header="Show Log" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="ShowHosts_Click" Header="Show Hosts" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
-                    <MenuItem Header="Tools" FontSize="14">
+                    <MenuItem Header="Tools" FontSize="14" x:Name="Tools">
                         <MenuItem Click="Format_Click" Header="Format" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Trace_Click" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="MybatisGenerate_Click" Header="Mybatis Generate" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Help" FontSize="14">
-                        <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem Click="Flushdns_Click" Header="Flush DNS" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Flush_Click" Header="Flush" FontSize="12" Background="White" Foreground="Black"/>
+                        <!-- <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/> -->
+                        <MenuItem Click="ShowLogs_Click" Header="Show Logs" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="CheckUpdate_Click" Header="Check Update" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                 </Menu>
@@ -163,7 +165,8 @@
                                             <TextBox Foreground="#979DA7" BorderThickness="1,0,1,0" Background="White" FontSize="12" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">8080</TextBox>
                                         </DockPanel>
                                         <DockPanel DockPanel.Dock="Left">
-                                            <Button ToolTip="Set to local IP" Width="42" Height="28" Background="#FFF0F0F0" Foreground="#979DA7" Cursor="Hand">local</Button>
+                                            <Button ToolTip="Set to local IP" Width="42" Height="28" Margin="40,0,0,0" Background="#FFF0F0F0" Foreground="#979DA7" Cursor="Hand">local</Button>
+                                            <Label Margin="-10,0,0,0" Width="22" Height="28" FontSize="14" Cursor="Hand" ToolTip="tail -f log">⊙</Label>
                                         </DockPanel>
                                     </DockPanel>
                                 </Border>
