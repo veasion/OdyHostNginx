@@ -57,11 +57,13 @@ namespace OdyHostNginx
                     MessageBox.Show("第" + (i + 1) + "行ip错误");
                     return;
                 }
+                /*
                 else if (!StringHelper.isDomain(domain))
                 {
                     MessageBox.Show("第" + (i + 1) + "行域名错误");
                     return;
                 }
+                */
                 hosts.Add(new HostConfig
                 {
                     Ip = ip,

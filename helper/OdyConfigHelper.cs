@@ -90,7 +90,7 @@ namespace OdyHostNginx
                         EnvName = envDir.Name
                     };
                     parseEnv(env, envDir);
-                    if (!(env.Upstreams == null || env.Upstreams.Count == 0 || env.Configs == null || env.Configs.Count == 0))
+                    if (!(env.Configs == null || env.Configs.Count == 0))
                     {
                         if (upstreamDetailsMap != null)
                         {
@@ -172,6 +172,11 @@ namespace OdyHostNginx
             {
                 string context = conf.Body;
                 int len = context.Length;
+                if (env.Upstreams == null)
+                {
+                    env.ReplaceHost = true;
+                    continue;
+                }
                 foreach (var item in env.Upstreams)
                 {
                     index = 0;
@@ -551,32 +556,44 @@ namespace OdyHostNginx
                 {
                     string envDir = projectDir + "\\" + env.EnvName;
                     FileHelper.mkdirAndDel(envDir, writeBody);
-                    string upstreamFile = envDir + "\\" + env.UpstreamFileName;
-                    StringBuilder upstreamBody = new StringBuilder();
-                    List<NginxUpstream> upstreams = env.Upstreams;
-                    foreach (var upstream in upstreams)
-                    {
-                        if (StringHelper.isBlank(upstream.Ip))
-                        {
-                            continue;
-                        }
-                        upstreamBody.Append("upstream ");
-                        upstreamBody.Append(upstream.ServerName);
-                        upstreamBody.AppendLine(" {");
-                        upstreamBody.Append("server ");
-                        upstreamBody.Append(upstream.Ip);
-                        upstreamBody.Append(":");
-                        upstreamBody.Append(upstream.Port > 0 ? upstream.Port : 80);
-                        upstreamBody.AppendLine(";");
-                        upstreamBody.AppendLine("}");
-                    }
-                    FileHelper.writeFile(upstreamFile, WindowsNginxImpl.confEncoding, upstreamBody.ToString());
-                    if (writeBody)
-                    {
+                    if (env.ReplaceHost) {
                         List<NginxConfig> confs = env.Configs;
                         foreach (var conf in confs)
                         {
-                            FileHelper.writeFile(envDir + "\\" + conf.FileName, WindowsNginxImpl.confEncoding, conf.Body);
+                            List<HostConfig> hosts = env.Hosts;
+                            int sIndex = conf.Body.IndexOf("server_name");
+                            int eIndex = conf.Body.IndexOf(";", sIndex);
+                            string body = conf.Body.Substring(0, sIndex) + "server_name " + hosts[0].Domain + conf.Body.Substring(eIndex);
+                            FileHelper.writeFile(envDir + "\\" + conf.FileName, WindowsNginxImpl.confEncoding, body);
+                        }
+                    } else {
+                        string upstreamFile = envDir + "\\" + env.UpstreamFileName;
+                        StringBuilder upstreamBody = new StringBuilder();
+                        List<NginxUpstream> upstreams = env.Upstreams;
+                        foreach (var upstream in upstreams)
+                        {
+                            if (StringHelper.isBlank(upstream.Ip))
+                            {
+                                continue;
+                            }
+                            upstreamBody.Append("upstream ");
+                            upstreamBody.Append(upstream.ServerName);
+                            upstreamBody.AppendLine(" {");
+                            upstreamBody.Append("server ");
+                            upstreamBody.Append(upstream.Ip);
+                            upstreamBody.Append(":");
+                            upstreamBody.Append(upstream.Port > 0 ? upstream.Port : 80);
+                            upstreamBody.AppendLine(";");
+                            upstreamBody.AppendLine("}");
+                        }
+                        FileHelper.writeFile(upstreamFile, WindowsNginxImpl.confEncoding, upstreamBody.ToString());
+                        if (writeBody)
+                        {
+                            List<NginxConfig> confs = env.Configs;
+                            foreach (var conf in confs)
+                            {
+                                FileHelper.writeFile(envDir + "\\" + conf.FileName, WindowsNginxImpl.confEncoding, conf.Body);
+                            }
                         }
                     }
                 }

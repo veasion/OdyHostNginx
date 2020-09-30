@@ -852,7 +852,7 @@ namespace OdyHostNginx
             {
                 currentEnv = getUseEnv();
             }
-            if (env.HostGroup)
+            if (env.HostGroup || env.ReplaceHost)
             {
                 isHostConfig = true;
             }
@@ -868,7 +868,7 @@ namespace OdyHostNginx
             }
             // env switch dock color
             changeEnv(currentEnv, true);
-            if (env.HostGroup)
+            if (env.HostGroup || env.ReplaceHost)
             {
                 switchConfigHost(true);
                 drawingHostConfig();
@@ -884,6 +884,10 @@ namespace OdyHostNginx
 
         private void Button_Config_Host_Click(object sender, RoutedEventArgs e)
         {
+            if ((currentEnv != null && currentEnv.ReplaceHost)) {
+                switchConfigHost(true);
+                return;
+            }
             var but = sender as ContentControl;
             switchConfigHost(but != null && but.Content != null && "Host".Equals(but.Content.ToString().Trim()));
         }
@@ -992,6 +996,10 @@ namespace OdyHostNginx
             string prefix = "-prod-";
             configViewer.Children.Clear();
             this.configHostViewer.ScrollToTop();
+            if (currentEnv.ReplaceHost)
+            {
+                return;
+            }
             OdyConfigHelper.sortUpstream(currentEnv.Upstreams);
             foreach (var u in currentEnv.Upstreams)
             {
