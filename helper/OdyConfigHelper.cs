@@ -14,7 +14,9 @@ namespace OdyHostNginx
         public static string sysHostsPath = WindowsLocalHostImpl.hostsPath;
         public static string nginxConfigDir = WindowsNginxImpl.nginxConfigDir;
         public static string userNginxConfigDir = FileHelper.getCurrentDirectory() + "\\config";
+        public static string userOdyNginxConfigDir = userNginxConfigDir + "\\ody";
         public static string userHostsDir = FileHelper.getCurrentDirectory() + "\\bin\\hosts";
+        public static string odyConfigBackDir = FileHelper.getCurrentDirectory() + "\\config_back";
         public static string userHostsFileName = "hosts.config";
         public static string modifyResponse = FileHelper.getCurrentDirectory() + "\\ModifyResponse.txt";
 
@@ -46,6 +48,7 @@ namespace OdyHostNginx
             priority["agent-web"] = 83;
             priority["opms-web"] = 82;
             priority["back-finance-web"] = 81;
+            priority["ofms-web"] = 81;
             priority["ad-whale-web"] = 80;
         }
 
@@ -257,12 +260,26 @@ namespace OdyHostNginx
         {
             try
             {
-                return FileHelper.writeFile(userHostsDir + "\\" + name, Encoding.UTF8, "");
+                return FileHelper.writeFile(userHostsDir + "\\" + name, FileHelper.UTF_8, "");
             }
             catch
             {
                 return false;
             }
+        }
+
+        public static string createOdyEnv(string name, string domain, string ip)
+        {
+            if (!Directory.Exists(odyConfigBackDir)) return "config_back 不存在";
+            string dir = userOdyNginxConfigDir + "\\" + name;
+            if (Directory.Exists(dir)) return "Env Name 已存在";
+            FileHelper.copyDirectory(odyConfigBackDir, dir, false);
+            Dictionary<string, string> replaceMap = new Dictionary<string, string>();
+            replaceMap.Add("#name", name);
+            replaceMap.Add("#adminDomain", domain);
+            replaceMap.Add("#adminIp", ip);
+            FileHelper.replaceDirFileContent(dir, replaceMap);
+            return null;
         }
 
         public static void delHostGroup(string name)
@@ -290,7 +307,7 @@ namespace OdyHostNginx
         private static List<HostConfig> loadHosts(string path)
         {
             List<HostConfig> list = new List<HostConfig>();
-            FileHelper.readTextFile(path, Encoding.UTF8, (index, line) =>
+            FileHelper.readTextFile(path, FileHelper.UTF_8, (index, line) =>
             {
                 if (!StringHelper.isBlank(line))
                 {
@@ -323,7 +340,7 @@ namespace OdyHostNginx
                     sb.Append(item.Domain).Append("=").AppendLine(item.Ip);
                 }
             }
-            FileHelper.writeFile(path, Encoding.UTF8, sb.ToString());
+            FileHelper.writeFile(path, FileHelper.UTF_8, sb.ToString());
         }
 
         public static void writeHostGroup(string groupName, List<HostConfig> userHostConfigs)

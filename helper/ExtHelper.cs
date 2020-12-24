@@ -27,7 +27,7 @@ namespace OdyHostNginx
             }
             if (!File.Exists(extPath)) return;
             List<MenuItem> list = new List<MenuItem>();
-            FileHelper.readTextFile(extPath, Encoding.UTF8, (line, text) =>
+            FileHelper.readTextFile(extPath, FileHelper.UTF_8, (line, text) =>
             {
                 text = text.Trim();
                 if (!StringHelper.isBlank(text) && !text.StartsWith("#"))

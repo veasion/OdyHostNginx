@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -10,11 +11,14 @@ namespace OdyHostNginx
     /// <summary>
     /// 文件工具类
     /// </summary>
-    class FileHelper
+    public class FileHelper
     {
+
+        public static UTF8Encoding UTF_8 = new UTF8Encoding(false);
+
         public static string readTextFile(string path)
         {
-            return readTextFile(path, Encoding.UTF8);
+            return readTextFile(path, UTF_8);
         }
 
         public static string readTextFile(string path, Encoding encoding)
@@ -30,7 +34,7 @@ namespace OdyHostNginx
 
         public static void readTextFile(string path, LineHandle lineHandle)
         {
-            readTextFile(path, Encoding.UTF8, lineHandle);
+            readTextFile(path, UTF_8, lineHandle);
         }
 
         public static void readTextFile(string path, Encoding encoding, LineHandle lineHandle)
@@ -62,7 +66,7 @@ namespace OdyHostNginx
 
         public static bool writeFile(string path, string context)
         {
-            return writeFile(path, Encoding.UTF8, context);
+            return writeFile(path, UTF_8, context);
         }
 
         public static bool writeFile(string path, Encoding encoding, string context)
@@ -102,7 +106,7 @@ namespace OdyHostNginx
 
         public static bool appendFile(string path, string line)
         {
-            return appendFile(path, Encoding.UTF8, line);
+            return appendFile(path, UTF_8, line);
         }
 
         public static bool appendFile(string path, Encoding encoding, string line)
@@ -193,6 +197,24 @@ namespace OdyHostNginx
                 {
                     Directory.Delete(dirPath);
                 }
+            }
+        }
+
+        public static void replaceDirFileContent(string dir, Dictionary<string, string> replaceMap)
+        {
+            replaceFileContent(Directory.GetFiles(dir), replaceMap);
+        }
+
+        public static void replaceFileContent(string[] files, Dictionary<string, string> replaceMap)
+        {
+            foreach (var file in files)
+            {
+                string context = readTextFile(file, UTF_8);
+                foreach (var key in replaceMap.Keys)
+                {
+                    context = context.Replace(key, replaceMap[key]);
+                }
+                writeFile(file, UTF_8, context);
             }
         }
 

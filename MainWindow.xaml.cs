@@ -281,14 +281,77 @@ namespace OdyHostNginx
             Process.Start("explorer.exe", FileHelper.getCurrentDirectory());
         }
 
+        private void AddOdyEnv_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigShowParam param = new ConfigShowParam();
+            param.Title = "Add Ody Env";
+            param.Keys = new List<string>();
+            param.Keys.Add("Env Name: ");
+            param.Keys.Add("Domain: ");
+            param.Keys.Add("Domain Host Ip: ");
+            param.Button = "OK";
+            param.Check = (values) =>
+            {
+                if (StringHelper.isBlank(values[0]))
+                {
+                    return "Env Name 不能为空！";
+                }
+                else if (!StringHelper.isEnvName(values[0].Trim()))
+                {
+                    return "Env Name 只支持(数字字母下划线)不能包含特殊字符！";
+                }
+                if (StringHelper.isBlank(values[1]))
+                {
+                    return "Domain 不能为空！";
+                }
+                else if (!StringHelper.isDomain(values[1].Trim()))
+                {
+                    return "Domain 域名格式错误！";
+                }
+                if (StringHelper.isBlank(values[2]))
+                {
+                    return "Domain Host Ip 不能为空！";
+                }
+                else if (!StringHelper.isIp(values[2].Trim()))
+                {
+                    return "Ip 格式错误！";
+                }
+                return null;
+            };
+            Confirm f = new Confirm(param);
+            List<string> result = f.showAndGetResult();
+            if (result == null || result.Count == 0) return;
+            string error = OdyConfigHelper.createOdyEnv(result[0].Trim(), result[1].Trim(), result[2].Trim());
+            if (error == null)
+            {
+                OdyHostNginxSwitch(false);
+                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+                if (hostGroup != null && hostGroup.Count > 0)
+                {
+                    ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
+                }
+                drawingSwitchUI();
+            }
+            else
+            {
+                MessageBox.Show("创建失败：" + error);
+            }
+        }
+
         private void AddHostGroup_Click(object sender, RoutedEventArgs e)
         {
-            Confirm f = new Confirm();
-            f.title = "Add Host Group";
-            f.name = "Group Name: ";
-            f.value = "";
-            f.but = "OK";
-            string groupName = f.showAndGetResult();
+            ConfigShowParam param = new ConfigShowParam();
+            param.Title = "Add Host Group";
+            param.Keys = new List<string>();
+            param.Keys.Add("Group Name: ");
+            param.Button = "OK";
+            Confirm f = new Confirm(param);
+            List<string> result = f.showAndGetResult();
+            if (result == null || result.Count == 0)
+            {
+                return;
+            }
+            string groupName = result[0];
             if (groupName == null) return;
             bool b = OdyConfigHelper.createHostGroup(groupName);
             if (b)
@@ -541,6 +604,7 @@ namespace OdyHostNginx
                 envMap.TryGetValue(key, out env);
                 if (env != null)
                 {
+                    isHostConfig = false;
                     drawingEnvConfig(env);
                     CheckBox eui;
                     envSwitchUI.TryGetValue(key, out eui);
@@ -587,12 +651,20 @@ namespace OdyHostNginx
 
         private void EnvEditName(EnvConfig env)
         {
-            Confirm f = new Confirm();
-            f.title = env.HostGroup ? "Modify Group Name" : "Modify Env Name";
-            f.name = env.HostGroup ? "Group Name: " : "Env Name: ";
-            f.value = env.EnvName;
-            f.but = "OK";
-            string name = f.showAndGetResult();
+            ConfigShowParam param = new ConfigShowParam();
+            param.Title = env.HostGroup ? "Modify Group Name" : "Modify Env Name";
+            param.Keys = new List<string>();
+            param.Values = new List<string>();
+            param.Keys.Add(env.HostGroup ? "Group Name: " : "Env Name: ");
+            param.Values.Add(env.EnvName);
+            param.Button = "OK";
+            Confirm f = new Confirm(param);
+            List<string> result = f.showAndGetResult();
+            if (result == null || result.Count == 0)
+            {
+                return;
+            }
+            string name = result[0];
             if (name == null || env.EnvName.Equals(name)) return;
             env.Use = false;
             if (env.HostGroup)

@@ -15,7 +15,7 @@ namespace OdyHostNginx
         /// </summary>
         public static string get(string url)
         {
-            return get(url, Encoding.UTF8);
+            return get(url, FileHelper.UTF_8);
         }
 
         public static string get(string url, Encoding encoding)

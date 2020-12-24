@@ -36,6 +36,7 @@
                         <MenuItem Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="AddOdyEnv_Click" Header="Add Ody Env" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="AddHostGroup_Click" Header="Add Host Group" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="View" FontSize="14">

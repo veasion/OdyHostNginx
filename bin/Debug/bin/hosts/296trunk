@@ -1,4 +1,4 @@
-﻿redis_ip=10.10.0.48
+redis_ip=10.10.0.48
 mysql_ip=10.10.0.48
 zipkin_ip=10.10.0.48
 elastic_ip=10.10.0.48

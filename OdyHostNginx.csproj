@@ -105,6 +105,7 @@
     <Compile Include="AboutWindows.xaml.cs">
       <DependentUpon>AboutWindows.xaml</DependentUpon>
     </Compile>
+    <Compile Include="bean\ConfigShowParam.cs" />
     <Compile Include="bean\KeyValue.cs" />
     <Compile Include="bean\SSHConnInfo.cs" />
     <Compile Include="bean\TracesInfo.cs" />

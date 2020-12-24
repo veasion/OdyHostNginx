@@ -14,6 +14,7 @@ namespace OdyHostNginx
 
         static Regex blankReg = new Regex(@"[\s]+");
         static string chinesePattern = @"[\u4e00-\u9fa5]+";
+        static string envNamePattern = @"^[-a-zA-Z0-9_]+$";
         static string ipPattern = @"^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$";
         static string domainPattern = @"^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
 
@@ -35,6 +36,11 @@ namespace OdyHostNginx
         public static bool isDomain(string domain)
         {
             return !isEmpty(domain) && Regex.IsMatch(domain, domainPattern);
+        }
+
+        public static bool isEnvName(string envName)
+        {
+            return !isEmpty(envName) && Regex.IsMatch(envName, envNamePattern);
         }
 
         public static bool isIp(string ip)
