@@ -149,7 +149,11 @@ namespace OdyHostNginx
 
         public string trace()
         {
-            if (respHeaders.TryGetValue("Trace-Full-Info", out string trace))
+            string trace;
+            if (respHeaders.TryGetValue("Trace-Full-Info", out trace) ||
+                respHeaders.TryGetValue("trace-full-info", out trace) ||
+                respHeaders.TryGetValue("sTrace-Full-Info", out trace) ||
+                respHeaders.TryGetValue("strace-full-info", out trace))
             {
                 int index = trace.IndexOf("http://");
                 if (index == -1)
@@ -166,7 +170,7 @@ namespace OdyHostNginx
 
         public bool show(bool https)
         {
-            if (uri != null && uri.StartsWith("/zipkin/"))
+            if (uri != null && (uri.StartsWith("/zipkin/") || uri.EndsWith("/graphql")))
             {
                 return false;
             }

@@ -15,6 +15,7 @@ namespace OdyHostNginx
         private long? duration;
         private string serviceName;
         private string clientName;
+        private bool? error;
         private Dictionary<string, string> details;
 
         private List<TracesInfo> children;
@@ -35,6 +36,7 @@ namespace OdyHostNginx
         public string ClientName { get => clientName; set => clientName = value; }
         public Dictionary<string, string> Details { get => details; set => details = value; }
         public List<TracesInfo> Children { get => children; set => children = value; }
+        public bool? Error { get => error; set => error = value; }
 
         public string Pool()
         {
@@ -43,6 +45,10 @@ namespace OdyHostNginx
 
         public bool isError()
         {
+            if (error != null)
+            {
+                return (bool)error;
+            }
             return details != null && details.ContainsKey("error");
         }
 

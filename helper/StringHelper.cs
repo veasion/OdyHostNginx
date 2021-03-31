@@ -129,6 +129,10 @@ namespace OdyHostNginx
             {
                 format = "yyyy/MM/dd HH:mm:ss.fff";
             }
+            if (jsTimeStamp.ToString().Length >= 16)
+            {
+                jsTimeStamp = jsTimeStamp / 1000;
+            }
             DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
             DateTime dt = startTime.AddMilliseconds(jsTimeStamp);
             return dt.ToString(format);

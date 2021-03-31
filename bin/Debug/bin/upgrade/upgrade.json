@@ -1,13 +1,23 @@
 {
-	"version": "v1.6",
+	"version": "v1.8",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > host支持分组",
+	"desc": "\r\n\r\n  > 支持新增env",
 	"adds": [
 		{
 			"dir": "",
 			"fileName": "OdyHostNginx.exe",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.6/OdyHostNginx.exe"
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/OdyHostNginx.exe"
+		},
+		{
+			"dir": "config_back",
+			"fileName": "upstream.conf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/config_back/upstream.conf"
+		},
+		{
+			"dir": "config_back",
+			"fileName": "superadmin.conf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/config_back/superadmin.conf"
 		}
 	],
 	"deletes": [

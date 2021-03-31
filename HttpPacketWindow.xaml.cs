@@ -341,14 +341,13 @@ namespace OdyHostNginx
                 {
                     drawingTraceDetails(trace);
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("\tid: ").Append(trace.Id);
                     if (trace.Timestamp != null && trace.Timestamp > 0)
                     {
-                        sb.Append("\tdate: ").Append(StringHelper.timeStampFormat(trace.Timestamp.Value / 1000, null));
+                        sb.Append("date: ").Append(StringHelper.timeStampFormat(trace.Timestamp.Value, null));
                     }
                     if (trace.Duration != null)
                     {
-                        sb.Append("\ttime: ").Append(trace.Duration.Value / 1000).Append("ms");
+                        sb.Append("\ttime: ").Append(trace.Duration.Value).Append("ms");
                     }
                     if (trace.ServiceName != null)
                     {
@@ -372,7 +371,14 @@ namespace OdyHostNginx
             if (trace.Name != null && trace.Name.EndsWith("companyid")) return;
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
-            item.Header = "【" + trace.Pool() + "】" + trace.Name;
+            if (trace.Pool() != null)
+            {
+                item.Header = "【" + trace.Pool() + "】" + trace.Name;
+            }
+            else
+            {
+                item.Header = trace.Name;
+            }
             if (trace.isError())
             {
                 item.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
