@@ -43,17 +43,29 @@ namespace OdyHostNginx
                 {
                     value = param.Values[i];
                 }
+
                 Label label = new Label();
                 label.Text = key;
                 label.Height = kvHeight;
                 label.AutoSize = true;
-                label.Location = new Point(15, top + 5 + (kvTop + kvHeight) * i);
 
                 TextBox textBox = new TextBox();
                 textBox.Text = value;
                 textBox.Height = kvHeight;
                 textBox.Width = 150;
-                textBox.Location = new Point(120, top + (kvTop + kvHeight) * i);
+
+                int left = (this.Width - label.Width - textBox.Width) / 2 - 10;
+                if (left < 20)
+                {
+                    left = 20;
+                }
+                else if (left > 100)
+                {
+                    left = 100;
+                }
+                label.Location = new Point(left, top + 5 + (kvTop + kvHeight) * i);
+                textBox.Location = new Point(label.Width + left + 10, top + (kvTop + kvHeight) * i);
+
                 textBoxes.Add(textBox);
                 this.kvPanel.Controls.Add(label);
                 this.kvPanel.Controls.Add(textBox);

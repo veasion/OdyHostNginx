@@ -68,6 +68,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\FiddlerCore.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=6.7.4.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\MySql.Data.dll</HintPath>
@@ -117,7 +121,9 @@
     <Compile Include="Confirm.Designer.cs">
       <DependentUpon>Confirm.cs</DependentUpon>
     </Compile>
+    <Compile Include="helper\BrowserHelper.cs" />
     <Compile Include="helper\UserCacheHelper.cs" />
+    <Compile Include="helper\ZipHelper.cs" />
     <Compile Include="LogsWindows.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -171,6 +177,12 @@
     <Compile Include="mybatis\MybtaisGenerate.cs" />
     <Compile Include="mybatis\Result.cs" />
     <Compile Include="mybatis\TableVo.cs" />
+    <Compile Include="NewPoolWindows.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewPoolWindows.Designer.cs">
+      <DependentUpon>NewPoolWindows.cs</DependentUpon>
+    </Compile>
     <Compile Include="NginxConfigWindows.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -263,6 +275,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="HostConfigWindows.resx">
       <DependentUpon>HostConfigWindows.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewPoolWindows.resx">
+      <DependentUpon>NewPoolWindows.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="NginxConfigWindows.resx">
       <DependentUpon>NginxConfigWindows.cs</DependentUpon>

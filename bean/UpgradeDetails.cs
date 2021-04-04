@@ -13,8 +13,12 @@ namespace OdyHostNginx
         private string dir;
         // 是否清空目录
         private bool clearDir;
+        // zip解压目录
+        private string zipOutDir;
         // 文件名称
         private string fileName;
+        // 是否运行
+        private bool run;
         // 下载地址
         private string downloadUrl;
 
@@ -40,6 +44,7 @@ namespace OdyHostNginx
         public bool ClearDir { get => clearDir; set => clearDir = value; }
         public string FileName { get => fileName; set => fileName = value; }
         public string DownloadUrl { get => downloadUrl; set => downloadUrl = value; }
-
+        public string ZipOutDir { get => zipOutDir; set => zipOutDir = value; }
+        public bool Run { get => run; set => run = value; }
     }
 }

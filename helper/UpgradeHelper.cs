@@ -148,10 +148,10 @@ namespace OdyHostNginx
             {
                 foreach (var item in adds)
                 {
-                    string d = dir + item.Dir;
+                    string systemDir = dir + (item.Dir ?? "");
                     if (item.ClearDir)
                     {
-                        FileHelper.delDir(d, true);
+                        FileHelper.delDir(systemDir, true);
                     }
                     if (!StringHelper.isEmpty(item.DownloadUrl))
                     {
@@ -160,12 +160,21 @@ namespace OdyHostNginx
                             int s = item.DownloadUrl.LastIndexOf("/");
                             item.FileName = item.DownloadUrl.Substring(s + 1);
                         }
-                        string path = d + "\\" + item.FileName;
+                        string path = systemDir + "\\" + item.FileName;
                         bool suc = HttpHelper.downloadFile(item.DownloadUrl, path);
                         if (!suc)
                         {
                             Logger.error("下载升级文件失败！url = " + item.DownloadUrl);
                             throw new ServiceException("下载升级文件失败！");
+                        }
+                        if (item.Run)
+                        {
+                            CmdHelper.Cmd(new string[] { "cd " + systemDir, item.FileName });
+                        }
+                        if (item.ZipOutDir != null)
+                        {
+                            // 解压
+                            ZipHelper.UnZipFile(path, dir + item.ZipOutDir);
                         }
                     }
                 }

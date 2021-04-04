@@ -33,15 +33,19 @@
                         <MenuItem Click="About_Click" Header="About" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Edit" FontSize="14">
+                        <MenuItem Click="AddOdyEnv_Click" Header="Add Ody Env" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="AddHostGroup_Click" Header="Add Host Group" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="AddNewPool_Click" Header="Add New Pool" FontSize="12" Background="White" Foreground="Black"/>
+                    </MenuItem>
+                    <MenuItem Header="View" FontSize="14">
+                        <!--
                         <MenuItem Click="HostConfig_Click" Header="Host Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="NginxConfig_Click" Header="Nginx Config" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="UserConfig_Click" Header="User Config" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem Click="AddOdyEnv_Click" Header="Add Ody Env" FontSize="12" Background="White" Foreground="Black"/>
-                        <MenuItem Click="AddHostGroup_Click" Header="Add Host Group" FontSize="12" Background="White" Foreground="Black"/>
-                    </MenuItem>
-                    <MenuItem Header="View" FontSize="14">
-                        <MenuItem Click="ShowLog_Click" Header="Show Log" FontSize="12" Background="White" Foreground="Black"/>
+                        -->
                         <MenuItem Click="ShowHosts_Click" Header="Show Hosts" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="ShowLogs_Click" Header="Show Logs" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="ShowLog_Click" Header="Show Nginx Log" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Explorer_Click" Header="Show in Explorer" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                     <MenuItem Header="Tools" FontSize="14" x:Name="Tools">
@@ -52,8 +56,9 @@
                     </MenuItem>
                     <MenuItem Header="Help" FontSize="14">
                         <MenuItem Click="Flush_Click" Header="Flush" FontSize="12" Background="White" Foreground="Black"/>
-                        <!-- <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/> -->
-                        <MenuItem Click="ShowLogs_Click" Header="Show Logs" FontSize="12" Background="White" Foreground="Black"/>
+                        <!--
+                        <MenuItem Click="DingTalk_Click" Header="DingTalk" FontSize="12" Background="White" Foreground="Black"/>
+                        -->
                         <MenuItem Click="CheckUpdate_Click" Header="Check Update" FontSize="12" Background="White" Foreground="Black"/>
                     </MenuItem>
                 </Menu>

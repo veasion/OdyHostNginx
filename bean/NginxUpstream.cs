@@ -16,6 +16,7 @@ namespace OdyHostNginx
         private int oldPort;
 
         private EnvConfig env;
+        private UpstreamDetails ud;
 
         private string contextPath;
 
@@ -26,7 +27,7 @@ namespace OdyHostNginx
         public int OldPort { get => oldPort; set => oldPort = value; }
         public string ContextPath { get => contextPath; set => contextPath = value; }
         internal EnvConfig Env { get => env; set => env = value; }
-
+        internal UpstreamDetails Ud { get => ud; set => ud = value; }
     }
 
 }

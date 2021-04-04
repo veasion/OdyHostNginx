@@ -30,11 +30,13 @@ namespace OdyHostNginx
             priority["ouser-web"] = 96;
             priority["ouser-center"] = 95;
             priority["ouser-service"] = 94;
+            priority["crm-web"] = 94;
             priority["back-merchant-web"] = 93;
             priority["back-product-web"] = 92;
             priority["back-product-service"] = 91;
             priority["frontier-trade-web"] = 90;
             priority["frontier-cms"] = 90;
+            priority["hermes-web"] = 89;
             priority["back-promotion-web"] = 89;
             priority["basics-promotion-service"] = 89;
             priority["social-web"] = 88;
@@ -47,9 +49,12 @@ namespace OdyHostNginx
             priority["osc-web"] = 84;
             priority["agent-web"] = 83;
             priority["opms-web"] = 82;
+            priority["pms-web"] = 82;
+            priority["ofms-web"] = 82;
             priority["back-finance-web"] = 81;
             priority["ofms-web"] = 81;
-            priority["ad-whale-web"] = 80;
+            priority["appdflow-web"] = 80;
+            priority["ad-whale-web"] = 79;
         }
 
         /// <summary>

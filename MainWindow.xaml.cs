@@ -288,7 +288,7 @@ namespace OdyHostNginx
             param.Keys = new List<string>();
             param.Keys.Add("Env Name: ");
             param.Keys.Add("Domain: ");
-            param.Keys.Add("Domain Host Ip: ");
+            param.Keys.Add("Host Ip: ");
             param.Button = "OK";
             param.Check = (values) =>
             {
@@ -310,7 +310,7 @@ namespace OdyHostNginx
                 }
                 if (StringHelper.isBlank(values[2]))
                 {
-                    return "Domain Host Ip 不能为空！";
+                    return "Host Ip 不能为空！";
                 }
                 else if (!StringHelper.isIp(values[2].Trim()))
                 {
@@ -419,14 +419,27 @@ namespace OdyHostNginx
             MessageBox.Show(sb.ToString(), "hosts");
         }
 
-        private void Reload_Click(object sender, RoutedEventArgs e)
+        private void ReloadConfig(bool copyUserConfig)
         {
-            odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+            if (copyUserConfig)
+            {
+                odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, false);
+            }
+            else
+            {
+                upstreamDetailsMap.Clear();
+                odyProjectConfig = OdyConfigHelper.loadConfig(null, upstreamDetailsMap);
+            }
             if (hostGroup != null && hostGroup.Count > 0)
             {
                 ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
             }
             drawingSwitchUI();
+        }
+
+        private void Reload_Click(object sender, RoutedEventArgs e)
+        {
+            this.ReloadConfig(true);
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
@@ -461,6 +474,17 @@ namespace OdyHostNginx
         private void ShowLogs_Click(object sender, RoutedEventArgs e)
         {
             new LogsWindows((Logger.LoggerHandler)null);
+        }
+
+        private void AddNewPool_Click(object sender, RoutedEventArgs e)
+        {
+            NewPoolWindows windows = new NewPoolWindows(odyProjectConfig);
+            windows.ShowDialog();
+            if (windows.IsUpdate())
+            {
+                // 重新加载
+                this.ReloadConfig(false);
+            }
         }
 
         private void Trace_Click(object sender, RoutedEventArgs e)
@@ -551,7 +575,7 @@ namespace OdyHostNginx
                 {
                     // 启动更新程序
                     UpgradeHelper.doUpdate();
-                    Thread.Sleep(100);
+                    Thread.Sleep(200);
                     ApplicationHelper.exit(true);
                 }
                 else
@@ -956,7 +980,8 @@ namespace OdyHostNginx
 
         private void Button_Config_Host_Click(object sender, RoutedEventArgs e)
         {
-            if ((currentEnv != null && currentEnv.ReplaceHost)) {
+            if ((currentEnv != null && currentEnv.ReplaceHost))
+            {
                 switchConfigHost(true);
                 return;
             }
@@ -1081,6 +1106,7 @@ namespace OdyHostNginx
                 {
                     continue;
                 }
+                u.Ud = ud;
                 HashSet<string> contextPaths = new HashSet<string>();
                 if (ud != null)
                 {
@@ -1223,33 +1249,27 @@ namespace OdyHostNginx
                 Background = new SolidColorBrush(OdyResources.butInitColor),
                 Foreground = new SolidColorBrush(change ? Colors.Black : OdyResources.configFontColor)
             };
-            
+
             localBut.DataContext = u;
             localBut.Click += LocalBut_Click;
             dockLocal.MouseLeftButtonDown += CommonMouseLeftButtonUp;
-            if (isOpenSshLog)
+            Label logLabel = new Label
             {
-                Label logLabel = new Label
-                {
-                    Width = 22,
-                    Height = 28,
-                    FontSize = 14,
-                    Content = "⊙",
-                    Cursor = Cursors.Hand,
-                    ToolTip = "tail -f log",
-                    Margin = new Thickness(-10, 0, 0, 0)
-                };
-                
-                logLabel.DataContext = u;
-                logLabel.MouseLeftButtonUp += LogsBut_Click;
-                localBut.Margin = new Thickness(40, 0, 0, 0);
-                dockLocal.Children.Add(localBut);
-                dockLocal.Children.Add(logLabel);
-            }
-            else
-            {
-                dockLocal.Children.Add(localBut);
-            }
+                Width = 22,
+                Height = 28,
+                FontSize = 14,
+                Content = "⊙",
+                Cursor = Cursors.Hand,
+                ToolTip = "tail -f log",
+                Margin = new Thickness(-10, 0, 0, 0)
+            };
+
+            logLabel.DataContext = u;
+            logLabel.MouseLeftButtonUp += LogsBut_Click;
+            localBut.Margin = new Thickness(40, 0, 0, 0);
+            dockLocal.Children.Add(localBut);
+            dockLocal.Children.Add(logLabel);
+
             // empty
             DockPanel emptyDock = new DockPanel();
             DockPanel.SetDock(emptyDock, Dock.Left);
@@ -1331,12 +1351,57 @@ namespace OdyHostNginx
             {
                 try
                 {
-                    LogsWindows logsWindows = new LogsWindows();
-                    string command = logsWindows.openAndGetCommand(u);
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (isOpenSshLog)
                     {
-                        logsWindows.showLogs(command);
-                    });
+                        // ssh log
+                        LogsWindows logsWindows = new LogsWindows();
+                        string command = logsWindows.openAndGetCommand(u);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            logsWindows.showLogs(command);
+                        });
+                    }
+                    else
+                    {
+                        // web log
+                        List<HostConfig> hosts = u.Env.Hosts;
+                        string adminDomain = null;
+                        foreach (var item in hosts)
+                        {
+                            if (adminDomain == null)
+                            {
+                                adminDomain = item.Domain;
+                            }
+                            if (item.Domain.Contains("admin"))
+                            {
+                                adminDomain = item.Domain;
+                                break;
+                            }
+                        }
+                        if (adminDomain == null)
+                        {
+                            Logger.info("adminDomain is null");
+                            return;
+                        }
+                        string uri = "/" + u.ContextPath;
+                        if (u.Ud != null && u.Ud.Uris != null && u.Ud.Uris.Count > 0)
+                        {
+                            foreach (var item in u.Ud.Uris)
+                            {
+                                if (!item.Contains("/api") && item.StartsWith("/"))
+                                {
+                                    uri = item;
+                                    break;
+                                }
+                            }
+                        }
+                        string url = "http://" + adminDomain + uri + "/public/logger/view";
+                        Logger.info(url);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            BrowserHelper.OpenBrowserUrl(url);
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
