@@ -1,8 +1,9 @@
-redis_ip=192.168.70.82
 mysql_ip=192.168.70.82
+redis_ip=192.168.70.82
 zipkin_ip=192.168.70.82
-elastic_ip=192.168.70.82
 mongodb_ip=192.168.70.82
+elastic_ip=192.168.70.82
 rabbitma_ip=192.168.70.82
 zookeeper_ip=192.168.70.82
 xxl-job-admin=192.168.70.82
+admin-2d9d6-dev.oudianyun.com=127.0.0.1
