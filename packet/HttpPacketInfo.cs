@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OdyHostNginx
 {
-    public class HttpPacketInfo
+    public class HttpPacketInfo : ICloneable
     {
 
         private int number;
@@ -21,6 +21,8 @@ namespace OdyHostNginx
         private string hostname;
         private string reqBody;
         private string response;
+        private Encoding reqEncoding;
+        private Encoding respEncoding;
         private int status;
         private bool isModify;
         private JToken respJson;
@@ -46,7 +48,7 @@ namespace OdyHostNginx
         public Dictionary<string, string> RespHeaders { get => respHeaders; set => respHeaders = value; }
         public Dictionary<string, List<string>> RespCookies { get => respCookies; set => respCookies = value; }
 
-        private static string contentType(Dictionary<string, string> header)
+        public static string contentType(Dictionary<string, string> header)
         {
             header.TryGetValue("Content-Type", out string type);
             if (type == null)
@@ -59,9 +61,25 @@ namespace OdyHostNginx
         private static bool isJson(Dictionary<string, string> header, string body)
         {
             string type = contentType(header);
-            if (type != null && body != null && type.ToLower().Contains("application/json"))
+            if (type == null || body == null)
+            {
+                return false;
+            }
+            if (type.ToLower().Contains("application/json"))
             {
                 return true;
+            }
+            else if (type.ToLower().Contains("text/plain") &&
+                body.StartsWith("{") && body.EndsWith("}"))
+            {
+                try
+                {
+                    if (JToken.Parse(body) != null)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception) { }
             }
             return false;
         }
@@ -168,9 +186,9 @@ namespace OdyHostNginx
             return null;
         }
 
-        public bool show(bool https)
+        public bool show(bool https, bool modify)
         {
-            if (uri != null && (uri.StartsWith("/zipkin/") || uri.EndsWith("/graphql")))
+            if (uri != null && uri.StartsWith("/zipkin/"))
             {
                 return false;
             }
@@ -182,9 +200,20 @@ namespace OdyHostNginx
             if (response != null && type != null)
             {
                 type = type.ToLower();
-                return type.Contains("application/json") || type.Contains("text/plain");
+                if (type.Contains("application/json") || type.Contains("text/plain"))
+                {
+                    return true;
+                }
+                else if (modify && type.Contains("text/html"))
+                {
+                    return true;
+                }
             }
-            else if (https && "CONNECT".Equals(reqMethod))
+            if (https && "CONNECT".Equals(reqMethod))
+            {
+                return true;
+            }
+            if (modify && (status == 404 || status == 504 || status == 500))
             {
                 return true;
             }
@@ -204,6 +233,8 @@ namespace OdyHostNginx
         }
 
         public bool IsModify { get => isModify; set => isModify = value; }
+        public Encoding ReqEncoding { get => reqEncoding; set => reqEncoding = value; }
+        public Encoding RespEncoding { get => respEncoding; set => respEncoding = value; }
 
         public bool isError()
         {
@@ -230,9 +261,17 @@ namespace OdyHostNginx
                 {
                     return true;
                 }
+                if (respJson["message"] != null && respJson["message"].Contains("异常"))
+                {
+                    return true;
+                }
             }
             return false;
         }
 
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

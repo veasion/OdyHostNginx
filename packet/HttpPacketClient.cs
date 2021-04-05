@@ -24,12 +24,14 @@ namespace OdyHostNginx
 
         private HashSet<string> whiteList;
         private HttpPacketHandler handler;
+        private List<ModifyRequstBean> modifys;
 
         public delegate void HttpPacketHandler(HttpPacketInfo info);
 
-        public void Start(HttpPacketHandler handler, bool https, HashSet<string> whiteList)
+        public void Start(HttpPacketHandler handler, List<ModifyRequstBean> modifys, bool https, HashSet<string> whiteList)
         {
             ssl = https;
+            this.modifys = modifys;
             this.handler = handler;
             this.whiteList = whiteList;
 
@@ -115,6 +117,7 @@ namespace OdyHostNginx
             };
             session.utilDecodeRequest();
             encoding = session.GetRequestBodyEncoding();
+            info.ReqEncoding = encoding;
             if (encoding != null && session.RequestBody != null)
             {
                 info.ReqBody = encoding.GetString(session.RequestBody);
@@ -126,6 +129,7 @@ namespace OdyHostNginx
             info.ReqHeaders = header(session.RequestHeaders);
             session.utilDecodeResponse();
             encoding = session.GetResponseBodyEncoding();
+            info.RespEncoding = encoding;
             if (encoding != null && session.ResponseBody != null)
             {
                 info.Response = encoding.GetString(session.ResponseBody);
@@ -136,8 +140,8 @@ namespace OdyHostNginx
             }
             info.RespHeaders = header(session.ResponseHeaders);
 
-            info.ReqCookies = cookies(info.ReqHeaders);
-            info.RespCookies = cookies(info.RespHeaders);
+            info.ReqCookies = HttpHelper.cookies(info.ReqHeaders);
+            info.RespCookies = HttpHelper.cookies(info.RespHeaders);
 
             // info.Id = session.Timers.ClientBeginRequest.Ticks + "-" + session.fullUrl.GetHashCode();
 
@@ -157,73 +161,111 @@ namespace OdyHostNginx
             return headers;
         }
 
-        private Dictionary<string, List<string>> cookies(Dictionary<string, string> headers)
-        {
-            Dictionary<string, List<string>> cookies = new Dictionary<string, List<string>>();
-            if (headers.TryGetValue("Cookie", out string cookie))
-            {
-                string[] cookieArr = cookie.Split(';');
-                if (cookieArr != null && cookieArr.Length > 0)
-                {
-                    foreach (var item in cookieArr)
-                    {
-                        if (item.IndexOf("=") > 0)
-                        {
-                            string[] kv = item.Split('=');
-                            string key = kv[0].Trim(), val = kv[1].Trim();
-                            if (cookies.TryGetValue(key, out List<string> value))
-                            {
-                                value.Add(val);
-                                cookies[key] = value;
-                            }
-                            else
-                            {
-                                value = new List<string>
-                                {
-                                    val
-                                };
-                                cookies[key] = value;
-                            }
-                        }
-                    }
-                }
-            }
-            return cookies;
-        }
-
         private void BeforeRequest(Session session)
         {
-            if (ConfigDialogData.modifyResponse)
+            if (!ConfigDialogData.modifyResponse || modifys == null)
             {
-                string resp = HttpPacketHelper.updateResponse(session.fullUrl);
-                if (resp != null)
+                return;
+            }
+            List<ModifyRequstBean> list = new List<ModifyRequstBean>(modifys);
+            foreach (var item in list)
+            {
+                if (!item.matchFullUrl(session.fullUrl))
+                {
+                    continue;
+                }
+                if (item.InterceptType == 0)
+                {
+                    // 修改http请求
+                    modifyRequest(session, item);
+                }
+                else if (item.InterceptType == 1)
                 {
                     // 修改http响应
-                    session.bBufferResponse = true;
-                    session.utilCreateResponseAndBypassServer();
-                    session.oResponse.headers.Add("Content-Type", "application/json;charset=UTF-8");
-                    if (session.RequestHeaders != null)
+                    modifyResponse(session, item);
+                }
+                break;
+            }
+        }
+
+        private void modifyRequest(Session session, ModifyRequstBean bean)
+        {
+            Logger.info("修改请求: " + session.fullUrl);
+            if (!StringHelper.isBlank(bean.ParamsStr))
+            {
+                string url = session.fullUrl;
+                int index = url.IndexOf("?");
+                if (index > -1)
+                {
+                    url = url.Substring(0, index);
+                }
+                url = url + "?" + bean.ParamsStr;
+                session.fullUrl = url;
+                Logger.info("修改后的请求: " + session.fullUrl);
+            }
+            if (bean.Headers != null && bean.Headers.Count > 0)
+            {
+                session.oRequest.headers.RemoveAll();
+                foreach (var key in bean.Headers.Keys)
+                {
+                    if ("Content-Length".Equals(key))
                     {
-                        foreach (var item in session.RequestHeaders)
-                        {
-                            if ("accept-encoding".Equals(item.Name.ToLower()) || "content-length".Equals(item.Name.ToLower()))
-                            {
-                                continue;
-                            }
-                            session.oResponse.headers.Add(item.Name, item.Value);
-                        }
+                        continue;
                     }
-                    session.oResponse.headers.SetStatus(200, "Ok");
-                    session.utilSetResponseBody(resp);
-                    // 处理请求&响应
-                    this.SessionHandler(session, true);
+                    session.oRequest.headers.Add(key, bean.Headers[key]);
                 }
             }
+            if (!StringHelper.isBlank(bean.Body))
+            {
+                session.utilSetRequestBody(bean.Body);
+            }
+        }
+
+        private void modifyResponse(Session session, ModifyRequstBean bean)
+        {
+            Logger.info("修改响应: " + session.fullUrl);
+            session.bBufferResponse = true;
+            session.utilCreateResponseAndBypassServer();
+            if (bean.Headers != null)
+            {
+                foreach (var key in bean.Headers.Keys)
+                {
+                    session.oResponse.headers.Add(key, bean.Headers[key]);
+                }
+            }
+            session.oResponse.headers.SetStatus(200, "Ok");
+            session.utilSetResponseBody(bean.Body);
+            // 处理请求&响应
+            this.SessionHandler(session, true);
         }
 
         private void BeforeResponse(Session session)
         {
             // BeforeResponse
+        }
+
+        public static bool InstallCertificate()
+        {
+            // http://127.0.0.1:8888/FiddlerRoot.cer
+            if (!CertMaker.rootCertExists())
+            {
+                if (!CertMaker.createRootCert())
+                    return false;
+
+                if (!CertMaker.trustRootCert())
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool UninstallCertificate()
+        {
+            if (CertMaker.rootCertExists())
+            {
+                if (!CertMaker.removeFiddlerGeneratedCerts(true))
+                    return false;
+            }
+            return true;
         }
 
         public bool IsStarted()

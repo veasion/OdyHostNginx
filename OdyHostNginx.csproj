@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="bean\ConfigShowParam.cs" />
     <Compile Include="bean\KeyValue.cs" />
+    <Compile Include="bean\ModifyRequstBean.cs" />
     <Compile Include="bean\SSHConnInfo.cs" />
     <Compile Include="bean\TracesInfo.cs" />
     <Compile Include="bean\UpgradeDetails.cs" />
@@ -162,6 +163,12 @@
     </Compile>
     <Compile Include="FormatWindows.xaml.cs">
       <DependentUpon>FormatWindows.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ModifyRequstWindows.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModifyRequstWindows.Designer.cs">
+      <DependentUpon>ModifyRequstWindows.cs</DependentUpon>
     </Compile>
     <Compile Include="MybatisGenerateWindows.xaml.cs">
       <DependentUpon>MybatisGenerateWindows.xaml</DependentUpon>
@@ -275,6 +282,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="HostConfigWindows.resx">
       <DependentUpon>HostConfigWindows.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModifyRequstWindows.resx">
+      <DependentUpon>ModifyRequstWindows.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="NewPoolWindows.resx">
       <DependentUpon>NewPoolWindows.cs</DependentUpon>

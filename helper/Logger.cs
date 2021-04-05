@@ -25,15 +25,23 @@ namespace OdyHostNginx
 
         public static void error(Exception e)
         {
-            if (e != null)
-            {
-                printLog("发生错误：" + e.Message);
-            }
+            error(null, e);
         }
 
         public static void error(string title, Exception e)
         {
-            printLog(title + "，发生错误" + (e != null ? ("：" + e.Message) : "！"));
+            if (title != null)
+            {
+                printLog(title + "，发生错误" + (e != null ? ("：" + e.Message) : "！"));
+            }
+            else if (e != null)
+            {
+                printLog("发生错误：" + e.Message);
+            }
+            if (e != null)
+            {
+                printLog(e.StackTrace);
+            }
         }
 
         private static void printLog(string log)

@@ -41,13 +41,13 @@
                             <DockPanel DockPanel.Dock="Left" Margin="10,0,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <Label VerticalAlignment="Center">https</Label>
-                                    <CheckBox x:Name="httpsFilter" Click="HttpsFilter_Click" VerticalAlignment="Center" ToolTip="Open Https Packet" />
+                                    <CheckBox x:Name="httpsFilter" Click="HttpsFilter_Click" VerticalAlignment="Center" ToolTip="Open Https Packet" IsChecked="True" />
                                 </StackPanel>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Left" Margin="10,0,0,0">
                                 <StackPanel Orientation="Horizontal">
                                     <Label VerticalAlignment="Center">modify</Label>
-                                    <CheckBox x:Name="modifyResponse" Click="ModifyResponse_Click" VerticalAlignment="Center" ToolTip="Modify Http Response" />
+                                    <CheckBox x:Name="modifyResponse" Click="ModifyResponse_Click" VerticalAlignment="Center" ToolTip="Modify Http Response" IsChecked="True" />
                                 </StackPanel>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Left" Margin="10,0,0,0">
@@ -96,6 +96,16 @@
                             </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy url" Click="MenuItem_Click_CopyUrl" FontSize="12" Background="White" Foreground="Black"/>
+                            <MenuItem Header="Replay XHR" Click="MenuItem_Click_ReplayXHR" FontSize="12" Background="White" Foreground="Black"/>
+                            <MenuItem Header="Save As Text" Click="MenuItem_Click_SaveAsText" FontSize="12" Background="White" Foreground="Black"/>
+                            <MenuItem Header="Modify Request" Click="MenuItem_Click_Modify_Request" FontSize="12" Background="White" Foreground="Black"/>
+                            <MenuItem Header="Modify Response" Click="MenuItem_Click_Modify_Response" FontSize="12" Background="White" Foreground="Black"/>
+                            <MenuItem Header="Modify All" Click="MenuItem_Click_Modify" FontSize="12" Background="White" Foreground="Black"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Center" />

@@ -34,10 +34,10 @@ namespace OdyHostNginx
                 }
                 byte[] buf = encoding.GetBytes(body);
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Headers = new WebHeaderCollection();
                 request.Method = "POST";
                 request.ContentType = contentType;
                 request.ContentLength = buf.Length;
-                request.Headers = new WebHeaderCollection();
                 if (header != null)
                 {
                     foreach (var k in header.Keys)
@@ -145,6 +145,124 @@ namespace OdyHostNginx
                 Logger.error("下载文件", e);
             }
             return false;
+        }
+
+        public static Dictionary<string, List<string>> cookies(Dictionary<string, string> headers)
+        {
+            string cookie;
+            Dictionary<string, List<string>> cookies = new Dictionary<string, List<string>>();
+            if (headers.TryGetValue("Cookie", out cookie) || headers.TryGetValue("cookie", out cookie))
+            {
+                string[] cookieArr = cookie.Split(';');
+                if (cookieArr != null && cookieArr.Length > 0)
+                {
+                    foreach (var item in cookieArr)
+                    {
+                        if (item.IndexOf("=") > 0)
+                        {
+                            string[] kv = item.Split('=');
+                            string key = kv[0].Trim(), val = kv[1].Trim();
+                            if (cookies.TryGetValue(key, out List<string> value))
+                            {
+                                value.Add(val);
+                                cookies[key] = value;
+                            }
+                            else
+                            {
+                                value = new List<string>
+                                {
+                                    val
+                                };
+                                cookies[key] = value;
+                            }
+                        }
+                    }
+                }
+            }
+            return cookies;
+        }
+
+        public static bool ReplayXHR(HttpPacketInfo info)
+        {
+            try
+            {
+                HttpPacketInfo packetInfo = (HttpPacketInfo)info.Clone();
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(packetInfo.FullUrl);
+                request.Timeout = 8000;
+                request.ContinueTimeout = 8000;
+                request.ReadWriteTimeout = 8000;
+                request.Headers = new WebHeaderCollection();
+                request.Method = packetInfo.ReqMethod ?? "GET";
+                request.ContentType = HttpPacketInfo.contentType(packetInfo.ReqHeaders);
+                request.ServicePoint.Expect100Continue = false;
+
+                byte[] body = null;
+                if (!StringHelper.isEmpty(packetInfo.ReqBody))
+                {
+                    body = (packetInfo.ReqEncoding ?? Encoding.Default).GetBytes(packetInfo.ReqBody);
+                    request.ContentLength = body.Length;
+                }
+                if (packetInfo.ReqHeaders != null)
+                {
+                    foreach (var k in packetInfo.ReqHeaders.Keys)
+                    {
+                        try
+                        {
+                            string v = packetInfo.ReqHeaders[k];
+                            if ("Accept".Equals(k))
+                            {
+                                request.Accept = v;
+                            }
+                            else if ("Host".Equals(k))
+                            {
+                                request.Host = v;
+                            }
+                            else if ("User-Agent".Equals(k))
+                            {
+                                request.UserAgent = v;
+                            }
+                            else if ("Referer".Equals(k))
+                            {
+                                request.Referer = v;
+                            }
+                            else if ("Content-Type".Equals(k))
+                            {
+                                request.ContentType = v;
+                            }
+                            request.Headers.Add(k, v);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.error("ReplayXHR.Headers.Add", e);
+                        }
+                    }
+                }
+                if (body != null && body.Length > 0)
+                {
+                    using (Stream reqStream = request.GetRequestStream())
+                    {
+                        reqStream.Write(body, 0, body.Length);
+                    }
+                }
+                // 请求
+                WebResponse response = request.GetResponse();
+                Stream respStream = response.GetResponseStream();
+                string responseStr = null;
+                if (respStream != null)
+                {
+                    StreamReader reader = new StreamReader(respStream, packetInfo.RespEncoding ?? Encoding.GetEncoding("UTF-8"));
+                    responseStr = reader.ReadToEnd();
+                    reader.Close();
+                    respStream.Close();
+                }
+                response.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.error("ReplayXHR请求", e);
+                return false;
+            }
         }
 
     }

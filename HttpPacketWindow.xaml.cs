@@ -24,11 +24,14 @@ namespace OdyHostNginx
 
         static int number = 1;
 
+        string span = "    ";
         static bool https = false;
         bool currentTraceTab = false;
         HttpPacketInfo currentPacket;
+        ModifyRequstWindows modifyRequstWindows;
         HashSet<string> ids = new HashSet<string>();
         HashSet<string> domains = new HashSet<string>();
+        List<ModifyRequstBean> modifys = new List<ModifyRequstBean>();
         ObservableCollection<HttpPacketInfo> list = new ObservableCollection<HttpPacketInfo>();
 
         public HttpPacketWindow()
@@ -50,7 +53,16 @@ namespace OdyHostNginx
             httpDataGrid.DataContext = null;
             domains = MainWindow.domainWhiteList();
             https = this.httpsFilter.IsChecked == true;
-            ConfigDialogData.httpPacketClient.Start(httpPacketHandler, https, null);
+            try
+            {
+                HttpPacketClient.InstallCertificate();
+            }
+            catch (Exception e)
+            {
+                Logger.error("安装证书", e);
+            }
+            // open packet client
+            ConfigDialogData.httpPacketClient.Start(httpPacketHandler, modifys, https, null);
         }
 
         private void clear()
@@ -69,7 +81,7 @@ namespace OdyHostNginx
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (ids.Contains(info.Id) || !info.show(https))
+                    if (ids.Contains(info.Id) || !info.show(https, modifyResponse.IsChecked == true))
                     {
                         return;
                     }
@@ -174,7 +186,7 @@ namespace OdyHostNginx
                 sb.AppendLine().AppendLine("Params：");
                 foreach (var item in paramList)
                 {
-                    sb.AppendLine(item);
+                    sb.AppendLine(span + item);
                 }
             }
             if (!StringHelper.isEmpty(currentPacket.ReqBody))
@@ -193,7 +205,7 @@ namespace OdyHostNginx
                 sb.AppendLine().AppendLine("Header：");
                 foreach (var key in headers.Keys)
                 {
-                    sb.AppendLine("  " + key + ": " + headers[key]);
+                    sb.AppendLine(span + key + ": " + headers[key]);
                 }
             }
             if (cookies != null && cookies.Count > 0)
@@ -203,7 +215,7 @@ namespace OdyHostNginx
                 {
                     foreach (var value in cookies[key])
                     {
-                        sb.AppendLine("  " + key + "=" + value);
+                        sb.AppendLine(span + key + "=" + value);
                     }
                 }
             }
@@ -233,7 +245,7 @@ namespace OdyHostNginx
                 sb.AppendLine().AppendLine("Header：");
                 foreach (var key in headers.Keys)
                 {
-                    sb.AppendLine("  " + key + ": " + headers[key]);
+                    sb.AppendLine(span + key + ": " + headers[key]);
                 }
             }
             if (cookies != null && cookies.Count > 0)
@@ -243,7 +255,7 @@ namespace OdyHostNginx
                 {
                     foreach (var value in cookies[key])
                     {
-                        sb.AppendLine("  " + key + "=" + value);
+                        sb.AppendLine(span + key + "=" + value);
                     }
                 }
             }
@@ -257,17 +269,17 @@ namespace OdyHostNginx
             {
                 if (currentPacket.IsModify)
                 {
-                    json = "The response is modify:\r\n" + json;
+                    json = "The response is modify:\r\n\r\n" + json;
                 }
                 this.infoResponseJson.Text = json;
             }
             else if (currentPacket.IsModify)
             {
-                this.infoResponseJson.Text = "The response is modify:\r\n" + currentPacket.Response;
+                this.infoResponseJson.Text = "The response is modify:\r\n\r\n" + currentPacket.Response;
             }
             else
             {
-                this.infoResponseJson.Text = "The response is not json:\r\n" + currentPacket.Response;
+                this.infoResponseJson.Text = "The response is not json:\r\n\r\n" + currentPacket.Response;
             }
         }
         #endregion
@@ -531,5 +543,161 @@ namespace OdyHostNginx
         }
         #endregion
 
+        private void MenuItem_Click_CopyUrl(object sender, RoutedEventArgs e)
+        {
+            if (currentPacket != null)
+            {
+                Clipboard.SetText(currentPacket.FullUrl);
+            }
+        }
+
+        private void MenuItem_Click_ReplayXHR(object sender, RoutedEventArgs e)
+        {
+            if (currentPacket != null)
+            {
+                if (!HttpHelper.ReplayXHR(currentPacket))
+                {
+                    MessageBox.Show("Replay请求失败");
+                }
+            }
+        }
+
+        private void MenuItem_Click_SaveAsText(object sender, RoutedEventArgs e)
+        {
+            if (currentPacket != null)
+            {
+                drawingInfoReq();
+                drawingInfoResp();
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Request:");
+                sb.AppendLine(this.infoRequestText.Text);
+                sb.AppendLine();
+                sb.AppendLine("Response:");
+                sb.AppendLine(this.infoResponseText.Text);
+                System.Windows.Forms.SaveFileDialog dialog = new System.Windows.Forms.SaveFileDialog
+                {
+                    Title = "Save As Text",
+                    RestoreDirectory = true,
+                    FileName = "response.txt",
+                    Filter = "TXT(*.txt)|*.txt"
+                };
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    FileHelper.writeFile(dialog.FileName, sb.ToString());
+                }
+            }
+        }
+
+        private void MenuItem_Click_Modify(object sender, RoutedEventArgs e)
+        {
+            showModifyAllWindows();
+        }
+
+        private void MenuItem_Click_Modify_Request(object sender, RoutedEventArgs e)
+        {
+            showModifyRequstWindows(0);
+        }
+
+        private void MenuItem_Click_Modify_Response(object sender, RoutedEventArgs e)
+        {
+            showModifyRequstWindows(1);
+        }
+
+        private void showModifyRequstWindows(int interceptType)
+        {
+            string title = "Modify Request";
+            ModifyRequstBean bean = new ModifyRequstBean();
+            bean.InterceptType = interceptType;
+            if (currentPacket != null)
+            {
+                HttpPacketInfo info = (HttpPacketInfo)currentPacket.Clone();
+                bean.MatchType = 1;
+                bean.MatchText = info.FullUrl;
+                if (interceptType == 0)
+                {
+                    title = "Modify Request - " + info.FullUrl;
+                    int index = info.FullUrl.IndexOf("?");
+                    if (index != -1)
+                    {
+                        bean.ParamsStr = info.FullUrl.Substring(index + 1);
+                    }
+                    else
+                    {
+                        bean.ParamsStr = "";
+                    }
+                    bean.Body = info.ReqBody;
+                    bean.Headers = new Dictionary<string, string>(info.ReqHeaders);
+                }
+                else
+                {
+                    title = "Modify Response - " + info.FullUrl;
+                    bean.Body = info.Response;
+                    bean.Headers = new Dictionary<string, string>(info.RespHeaders);
+                }
+            }
+            else
+            {
+                bean.Headers = new Dictionary<string, string>();
+                bean.Headers.Add("Content-Type", "application/json;charset=utf-8");
+            }
+            List<ModifyRequstBean> init = new List<ModifyRequstBean>
+            {
+                bean
+            };
+            List<ModifyRequstBean> history = new List<ModifyRequstBean>();
+            ModifyRequstWindows windows = new ModifyRequstWindows(init, (list) =>
+            {
+                if (list != null && list.Count > 0)
+                {
+                    foreach (var item in history)
+                    {
+                        if (!list.Contains(item))
+                        {
+                            modifys.Remove(item);
+                        }
+                    }
+                    history.Clear();
+                    foreach (var item in list)
+                    {
+                        if (!modifys.Contains(item))
+                        {
+                            modifys.Add(item);
+                            history.Add(item);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var item in history)
+                    {
+                        modifys.Remove(item);
+                    }
+                    history.Clear();
+                }
+                if (modifyRequstWindows != null && !modifyRequstWindows.IsDisposed)
+                {
+                    modifyRequstWindows.updateData(modifys);
+                }
+            });
+            windows.Text = title;
+            windows.Show();
+        }
+
+        private void showModifyAllWindows()
+        {
+            if (modifyRequstWindows == null || modifyRequstWindows.IsDisposed)
+            {
+                modifyRequstWindows = new ModifyRequstWindows(modifys, (list) =>
+                {
+                    modifys.Clear();
+                    if (list != null)
+                    {
+                        modifys.AddRange(list);
+                    }
+                });
+                modifyRequstWindows.Text = "Modify All";
+            }
+            modifyRequstWindows.Show();
+        }
     }
 }
