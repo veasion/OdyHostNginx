@@ -29,10 +29,11 @@ namespace OdyHostNginx
             {
                 this.list = new List<ModifyRequstBean>();
             }
-            this.Width = this.Width < 705 ? 705 : this.Width;
-            this.Height = this.Width < 674 ? 674 : this.Width;
             InitializeComponent();
             this.drawing();
+            this.Width = this.panel_modifys.Width + 10;
+            this.Width = this.Width < 705 ? 705 : this.Width;
+            this.Height = this.Width < 674 ? 674 : this.Width;
         }
 
         private void ModifyRequstWindows_SizeChanged(object sender, EventArgs e)

@@ -13,7 +13,7 @@ namespace OdyHostNginx
     class UpgradeHelper
     {
 
-        public const string version = "v2.0";
+        public const string version = "v2.0.1";
         public static string reqUrl = "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade.json";
 
         private static UpgradeVo upgrade;

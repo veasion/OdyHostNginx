@@ -19,7 +19,7 @@ namespace OdyHostNginx
 
         public static HttpPacketClient httpPacketClient = new HttpPacketClient();
 
-        public static bool modifyResponse = false;
+        public static bool modifyResponse = true;
 
     }
 }

@@ -1,29 +1,51 @@
 {
-	"version": "v1.8",
+	"version": "v2.0",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > 支持新增env",
-	"adds": [
-		{
-			"dir": "",
-			"fileName": "OdyHostNginx.exe",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/OdyHostNginx.exe"
-		},
-		{
-			"dir": "config_back",
-			"fileName": "upstream.conf",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/config_back/upstream.conf"
-		},
-		{
-			"dir": "config_back",
-			"fileName": "superadmin.conf",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/1.8/config_back/superadmin.conf"
-		}
-	],
+	"desc": "\r\n\r\n  > 支持env自定义新pool\r\n\r\n  > 抓包支持拦截修改请求/响应\r\n\r\n  > trace支持kywalking解析\r\n\r\n  > 支持h5端请求转发\r\n\r\n  > 支持查看pool日志 & 加强升级实现",
 	"deletes": [
 		{
 			"dir": "",
 			"fileName": "OdyHostNginx.exe"
+		},
+		{
+			"dir": "",
+			"fileName": "logssh.cf"
+		},
+		{
+			"dir": "config_back",
+			"clearDir": true
+		},
+		{
+			"dir": "",
+			"fileName": "ModifyResponse.txt"
+		}
+	],
+	"adds": [
+		{
+			"dir": "",
+			"fileName": "ICSharpCode.SharpZipLib.dll",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ICSharpCode.SharpZipLib.dll"
+		},
+		{
+			"dir": "",
+			"fileName": "OdyHostNginx.exe",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/OdyHostNginx.exe"
+		},
+		{
+			"dir": "",
+			"fileName": "logssh.cf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/logssh.cf"
+		},
+		{
+			"dir": "config_back",
+			"fileName": "superadmin.conf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/config_back/superadmin.conf"
+		},
+		{
+			"dir": "config_back",
+			"fileName": "upstream.conf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/config_back/upstream.conf"
 		}
 	],
 	"traceVersion": "v2",
