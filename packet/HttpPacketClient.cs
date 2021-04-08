@@ -193,14 +193,7 @@ namespace OdyHostNginx
             Logger.info("修改请求: " + session.fullUrl);
             if (!StringHelper.isBlank(bean.ParamsStr))
             {
-                string url = session.fullUrl;
-                int index = url.IndexOf("?");
-                if (index > -1)
-                {
-                    url = url.Substring(0, index);
-                }
-                url = url + "?" + bean.ParamsStr;
-                session.fullUrl = url;
+                session.fullUrl = bean.getFullUrl(session.fullUrl);
                 Logger.info("修改后的请求: " + session.fullUrl);
             }
             if (bean.Headers != null && bean.Headers.Count > 0)

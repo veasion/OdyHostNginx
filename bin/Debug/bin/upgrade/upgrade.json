@@ -1,5 +1,5 @@
 {
-	"version": "v2.0",
+	"version": "v2.0.1",
 	"updateType": 1,
 	"force": false,
 	"desc": "\r\n\r\n  > 支持env自定义新pool\r\n\r\n  > 抓包支持拦截修改请求/响应\r\n\r\n  > trace支持kywalking解析\r\n\r\n  > 支持h5端请求转发\r\n\r\n  > 支持查看pool日志 & 加强升级实现",

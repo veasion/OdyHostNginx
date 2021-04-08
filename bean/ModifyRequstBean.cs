@@ -124,5 +124,56 @@ namespace OdyHostNginx
             }
             return false;
         }
+
+        public string getFullUrl(string fullUrl)
+        {
+            if (StringHelper.isBlank(paramsStr))
+            {
+                return fullUrl;
+            }
+            paramsStr = paramsStr.Trim();
+            if (paramsStr.StartsWith("http://") || paramsStr.StartsWith("https://"))
+            {
+                // 修改整个url
+                return paramsStr;
+            }
+            else if (paramsStr.StartsWith("/") && fullUrl.Contains("//"))
+            {
+                // 修改uri
+                int idx = fullUrl.IndexOf("/", fullUrl.IndexOf("//") + 2);
+                if (idx == -1)
+                {
+                    return fullUrl + paramsStr;
+                }
+                else
+                {
+                    return fullUrl.Substring(0, idx) + paramsStr;
+                }
+            }
+            else if (paramsStr.StartsWith("&"))
+            {
+                // 拼接参数
+                if (fullUrl.Contains("?"))
+                {
+                    return fullUrl + paramsStr;
+                }
+                else
+                {
+                    return fullUrl + "?" + paramsStr.Substring(1);
+                }
+            }
+            else
+            {
+                // 修改参数
+                string url = fullUrl;
+                int index = url.IndexOf("?");
+                if (index > -1)
+                {
+                    url = url.Substring(0, index);
+                }
+                url = url + (paramsStr.StartsWith("?") ? "" : "?") + paramsStr;
+                return url;
+            }
+        }
     }
 }

@@ -124,6 +124,7 @@ namespace OdyHostNginx
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             cbx_intercept.Tag = item;
+            cbx_intercept.TabIndex = 99;
             cbx_intercept.Items.AddRange(new string[] { "请求", "响应" });
             cbx_intercept.DataBindings.Add("SelectedIndex", item, "interceptType");
             cbx_intercept.SelectedIndexChanged += Cbx_intercept_SelectedIndexChanged;
@@ -143,12 +144,14 @@ namespace OdyHostNginx
                 Location = new Point(373, 12),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
+            cbx_match.TabIndex = 99;
             cbx_match.Items.AddRange(new string[] { "包含", "等于", "正则" });
             cbx_match.DataBindings.Add("SelectedIndex", item, "matchType");
             panel.Controls.Add(cbx_match);
 
             // matchText
             TextBox textBox_matchText = new TextBox();
+            textBox_matchText.TabIndex = 99;
             textBox_matchText.Size = new Size(132, 25);
             textBox_matchText.Location = new Point(461, 11);
             textBox_matchText.DataBindings.Add("Text", item, "matchText");
@@ -187,13 +190,14 @@ namespace OdyHostNginx
                 y += groupBox_parmas.Height + margin;
 
                 TextBox textBox_params = new TextBox();
+                textBox_params.TabIndex = 0;
                 textBox_params.Size = new Size(groupBox_parmas.Width - 20, 25);
                 textBox_params.Location = new Point(10, (groupBox_parmas.Height - textBox_params.Height) / 2);
                 textBox_params.DataBindings.Add("Text", item, "paramsStr");
                 textBox_params.KeyDown += textBox_KeyDown_SelectAll;
                 textBox_params.MouseEnter += (object sender, EventArgs e) =>
                 {
-                    toolTip.Show((sender as TextBox).Text, sender as TextBox);
+                    toolTip.Show("支持修改URL参数和整个URL", sender as TextBox);
                 };
                 groupBox_parmas.Controls.Add(textBox_params);
             }
@@ -215,6 +219,7 @@ namespace OdyHostNginx
 
             // body/response
             GroupBox groupBox_body = new GroupBox();
+            groupBox_body.TabIndex = 0;
             groupBox_body.Text = item.InterceptType == 0 ? "body" : "response";
             groupBox_body.Size = new Size(595, 150);
             groupBox_body.Location = new Point(15, y);
