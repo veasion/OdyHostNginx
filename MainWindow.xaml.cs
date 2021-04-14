@@ -290,6 +290,27 @@ namespace OdyHostNginx
             param.Keys.Add("Domain: ");
             param.Keys.Add("Host Ip: ");
             param.Button = "OK";
+            param.ChangeListener = (key, val, dic) =>
+            {
+                if ("Domain: ".Equals(key))
+                {
+                    if (val.Contains("http://") || val.Contains("https://"))
+                    {
+                        val = val.Replace("http://", "").Replace("https://", "").Trim();
+                    }
+                    if (val.Contains("/"))
+                    {
+                        val = val.Substring(0, val.IndexOf("/"));
+                    }
+                    dic["Domain: "].Text = val;
+                    if (StringHelper.isDomain(val))
+                    {
+                        System.Windows.Forms.TextBox ipText = dic["Host Ip: "];
+                        string ip = HttpHelper.getIp(val);
+                        ipText.Text = ip ?? "";
+                    }
+                }
+            };
             param.Check = (values) =>
             {
                 if (StringHelper.isBlank(values[0]))
@@ -730,12 +751,25 @@ namespace OdyHostNginx
             string key = (string)envSwitch.DataContext;
             EnvConfig env;
             envMap.TryGetValue(key, out env);
+            bool forceDrawing = false;
             bool isGroup = env != null && env.HostGroup;
             if (env != null && (odyProjectConfig.Use || env.Use))
             {
                 env.Use = !env.Use;
                 if (env.Use && !isGroup)
                 {
+                    if (OdyConfigHelper.isOdyDockerEnv(env))
+                    {
+                        // 开启所有 env host
+                        foreach (var host in env.Hosts)
+                        {
+                            if (!host.Use)
+                            {
+                                forceDrawing = true;
+                            }
+                            host.Use = true;
+                        }
+                    }
                     foreach (var envConfig in env.Project.Envs)
                     {
                         if (envConfig != env)
@@ -765,7 +799,7 @@ namespace OdyHostNginx
                 drawingHostConfig();
             }
             apply();
-            drawingEnvConfig(env);
+            drawingEnvConfig(env, forceDrawing);
         }
         #endregion
 

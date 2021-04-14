@@ -37,9 +37,7 @@ namespace OdyHostNginx
             {
                 foreach (var env in project.Envs)
                 {
-                    if (env.Hosts != null && env.Hosts.Count == 1 &&
-                        env.Upstreams.Count >= 2 &&
-                        env.Upstreams[0].OldIp.Equals(env.Upstreams[1].OldIp))
+                    if (OdyConfigHelper.isOdyDockerEnv(env))
                     {
                         checkBox = new CheckBox
                         {

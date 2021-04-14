@@ -14,11 +14,13 @@ namespace OdyHostNginx
         private List<string> keys;
         private List<string> values;
         private CofirmParamCheck check;
+        private CofirmParamChangeListener changeListener;
 
         public string Title { get => title; set => title = value; }
         public string Button { get => button; set => button = value; }
         public List<string> Keys { get => keys; set => keys = value; }
         public List<string> Values { get => values; set => values = value; }
         public CofirmParamCheck Check { get => check; set => check = value; }
+        public CofirmParamChangeListener ChangeListener { get => changeListener; set => changeListener = value; }
     }
 }

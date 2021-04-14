@@ -704,6 +704,14 @@ namespace OdyHostNginx
             return pe;
         }
 
+        public static bool isOdyDockerEnv(EnvConfig env)
+        {
+            return env != null &&
+                env.Hosts != null && env.Hosts.Count == 1 &&
+                env.Upstreams.Count >= 2 &&
+                env.Upstreams[0].OldIp.Equals(env.Upstreams[1].OldIp);
+        }
+
     }
 
 }

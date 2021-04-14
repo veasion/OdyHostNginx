@@ -11,19 +11,24 @@ using System.Windows.Forms;
 namespace OdyHostNginx
 {
     public delegate string CofirmParamCheck(List<string> values);
+    public delegate void CofirmParamChangeListener(string key, string value, Dictionary<string, TextBox> map);
 
     public partial class Confirm : Form
     {
 
+        private ToolTip toolTip = new ToolTip();
+
         private bool isClick;
         private ConfigShowParam param;
         private List<TextBox> textBoxes;
+        private Dictionary<string, TextBox> textMap;
 
         public Confirm(ConfigShowParam param)
         {
             this.param = param;
             this.isClick = false;
             this.textBoxes = new List<TextBox>();
+            this.textMap = new Dictionary<string, TextBox>();
             InitializeComponent();
         }
 
@@ -66,6 +71,21 @@ namespace OdyHostNginx
                 label.Location = new Point(left, top + 5 + (kvTop + kvHeight) * i);
                 textBox.Location = new Point(label.Width + left + 10, top + (kvTop + kvHeight) * i);
 
+                if (!textMap.ContainsKey(key))
+                {
+                    textMap.Add(key, textBox);
+                }
+
+                textBox.TextChanged += (sender, e) =>
+                {
+                    param.ChangeListener?.Invoke(key, textBox.Text, textMap);
+                };
+                textBox.KeyDown += textBox_KeyDown_SelectAll;
+                textBox.MouseEnter += (object sender, EventArgs e) =>
+                {
+                    toolTip.Show((sender as TextBox).Text, sender as TextBox);
+                };
+
                 textBoxes.Add(textBox);
                 this.kvPanel.Controls.Add(label);
                 this.kvPanel.Controls.Add(textBox);
@@ -81,6 +101,12 @@ namespace OdyHostNginx
                 values.Add(StringHelper.isBlank(item.Text) ? null : item.Text);
             }
             return values;
+        }
+
+        private void textBox_KeyDown_SelectAll(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.A)
+                (sender as TextBox).SelectAll();
         }
 
         private void Button_Click(object sender, EventArgs e)

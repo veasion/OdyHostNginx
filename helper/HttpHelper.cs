@@ -265,5 +265,20 @@ namespace OdyHostNginx
             }
         }
 
+        public static string getIp(string domain)
+        {
+            try
+            {
+                IPHostEntry hostEntry = Dns.GetHostEntry(domain);
+                IPEndPoint ipEndPoint = new IPEndPoint(hostEntry.AddressList[0], 0);
+                return ipEndPoint.Address.ToString();
+            }
+            catch (Exception e)
+            {
+                Logger.error("获取ip失败 domain=" + domain, e);
+                return null;
+            }
+        }
+
     }
 }
