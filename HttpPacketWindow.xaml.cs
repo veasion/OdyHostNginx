@@ -434,7 +434,14 @@ namespace OdyHostNginx
                 if (item != null && "Trace".Equals(item.Header))
                 {
                     currentTraceTab = true;
-                    drawingTrace();
+                    try
+                    {
+                        drawingTrace();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.error("trace", ex);
+                    }
                 }
                 else
                 {
@@ -633,6 +640,10 @@ namespace OdyHostNginx
                     title = "Modify Response - " + info.FullUrl;
                     bean.Body = info.Response;
                     bean.Headers = new Dictionary<string, string>(info.RespHeaders);
+                }
+                if (bean.Headers != null && bean.Headers.ContainsKey("Content-Length"))
+                {
+                    bean.Headers.Remove("Content-Length");
                 }
             }
             else

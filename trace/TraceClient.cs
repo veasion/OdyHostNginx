@@ -41,6 +41,7 @@ namespace OdyHostNginx
             // Dictionary<string, string> servicesMap = services(graphqlUrl, traceid);
             string reqJson = "{\"query\":\"query queryTraces($condition: TraceQueryCondition) {\\n  data: queryBasicTraces(condition: $condition) {\\n    traces {\\n      key: segmentId\\n      endpointNames\\n      duration\\n      start\\n      isError\\n      traceIds\\n    }\\n    total\\n  }}\",\"variables\":{\"condition\":{\"queryDuration\":{\"start\":\"2000-01-01\",\"end\":\"2099-01-01\",\"step\":\"MINUTE\"},\"traceState\":\"ALL\",\"paging\":{\"pageNum\":1,\"pageSize\":15,\"needTotal\":true},\"queryOrder\":\"BY_DURATION\",\"traceId\":\"" + traceid + "\"}}}";
             string response = HttpHelper.post(graphqlUrl, reqJson);
+            if (StringHelper.isEmpty(response)) return null;
             JToken jsonObj = JToken.Parse(response);
             if (jsonObj == null || jsonObj["data"] == null)
             {

@@ -14,7 +14,7 @@ namespace OdyHostNginx
         static bool loaded = false;
         static string cachePath = FileHelper.getCurrentDirectory() + "\\bin\\config\\cache.json";
 
-        public static void loadCache(OdyProjectConfig odyConfig, List<HostConfig> userHosts)
+        public static void loadCache(OdyProjectConfig odyConfig)
         {
             if (loaded) return;
             try
@@ -26,10 +26,6 @@ namespace OdyHostNginx
                 if (odyConfig.Projects != null)
                 {
                     loadConfig(jt, odyConfig.Projects);
-                }
-                if (jt["UserHostConfig"] != null)
-                {
-                    loadHost(jt["UserHostConfig"], userHosts);
                 }
             }
             catch (Exception) { }
@@ -45,6 +41,7 @@ namespace OdyHostNginx
                 foreach (var e in p.Envs)
                 {
                     loadHost(j, e.Hosts);
+                    loadHost(j, e.UserHosts);
                     e.Use = j[e.EnvName] != null;
                 }
             });
@@ -64,7 +61,7 @@ namespace OdyHostNginx
             }
         }
 
-        public static void saveCache(OdyProjectConfig odyConfig, List<HostConfig> userHosts)
+        public static void saveCache(OdyProjectConfig odyConfig)
         {
             try
             {
@@ -72,15 +69,6 @@ namespace OdyHostNginx
                 if (odyConfig != null && odyConfig.Projects != null)
                 {
                     cacheConfig(odyConfig.Projects, cache);
-                }
-                if (userHosts != null)
-                {
-                    Dictionary<string, object> host = new Dictionary<string, object>();
-                    cacheHost(userHosts, host);
-                    if (host.Count > 0)
-                    {
-                        cache["UserHostConfig"] = host;
-                    }
                 }
                 if (cache.Count > 0)
                 {
@@ -105,6 +93,7 @@ namespace OdyHostNginx
                             evhMap[e.EnvName] = true;
                         }
                         cacheHost(e.Hosts, evhMap);
+                        cacheHost(e.UserHosts, evhMap);
                     }
                     if (evhMap != null)
                     {

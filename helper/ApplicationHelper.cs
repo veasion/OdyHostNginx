@@ -48,6 +48,7 @@ namespace OdyHostNginx
         public static void applyNginx(OdyProjectConfig config, bool writeBody, bool checkStatus)
         {
             string configDir = WindowsNginxImpl.nginxConfigDir;
+            OdyConfigHelper.writeUserHosts(config);
             OdyConfigHelper.writeConfig(config, configDir, writeBody);
             List<string> confs = new List<string>();
             getUseConfig(config, confs);

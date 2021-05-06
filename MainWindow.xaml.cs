@@ -24,7 +24,6 @@ namespace OdyHostNginx
         string hostSearch;
         string configSearch;
         static EnvConfig currentEnv;
-        static List<HostConfig> userHosts;
         static HttpPacketWindow httpPacket;
         static OdyProjectConfig odyProjectConfig;
         static Dictionary<string, List<HostConfig>> hostGroup;
@@ -98,13 +97,12 @@ namespace OdyHostNginx
             {
                 odyProjectConfig = ApplicationHelper.copyUserConfigToNginx(upstreamDetailsMap, true);
             }
-            userHosts = OdyConfigHelper.loadUserHosts();
             hostGroup = OdyConfigHelper.loadHostGroup();
-            UserCacheHelper.loadCache(odyProjectConfig, userHosts);
             if (hostGroup != null && hostGroup.Count > 0)
             {
                 ApplicationHelper.hostGroupToProjectConfig(odyProjectConfig, hostGroup);
             }
+            UserCacheHelper.loadCache(odyProjectConfig);
             drawingSwitchUI();
         }
 
@@ -113,7 +111,6 @@ namespace OdyHostNginx
             bool isGroup = currentEnv != null && currentEnv.HostGroup;
             ApplicationHelper.applyNginx(odyProjectConfig, false, !isGroup);
             ApplicationHelper.applySwitch(getCurrentHost());
-            OdyConfigHelper.writeUserHosts(userHosts);
             if (hostGroup.Count > 0)
             {
                 foreach (var groupName in hostGroup.Keys)
@@ -124,7 +121,7 @@ namespace OdyHostNginx
             this.applyBut.Source = OdyResources.img_not_apply;
             ThreadPool.QueueUserWorkItem(o =>
             {
-                UserCacheHelper.saveCache(odyProjectConfig, userHosts);
+                UserCacheHelper.saveCache(odyProjectConfig);
             });
         }
 
@@ -150,9 +147,9 @@ namespace OdyHostNginx
             // 总开关控制所有 host
             if (odyProjectConfig.Use)
             {
-                bool openEnv = false;
                 foreach (var p in odyProjectConfig.Projects)
                 {
+                    if (p.Envs == null) continue;
                     // env 开关控制 env host
                     foreach (var env in p.Envs)
                     {
@@ -164,20 +161,15 @@ namespace OdyHostNginx
                                 hostDic[host.Domain] = host;
                             }
                         }
-                        if (!env.HostGroup)
+                        if (env.UserHosts != null)
                         {
-                            openEnv = true;
-                        }
-                    }
-                }
-                // user host 不受 env 开关影响
-                if (userHosts != null && !(currentEnv != null && currentEnv.HostGroup && !openEnv))
-                {
-                    foreach (var host in userHosts)
-                    {
-                        if (host.Use)
-                        {
-                            hostDic[host.Domain] = host;
+                            foreach (var host in env.UserHosts)
+                            {
+                                if (host.Use)
+                                {
+                                    hostDic[host.Domain] = host;
+                                }
+                            }
                         }
                     }
                 }
@@ -762,6 +754,17 @@ namespace OdyHostNginx
                     {
                         // 开启所有 env host
                         foreach (var host in env.Hosts)
+                        {
+                            if (!host.Use)
+                            {
+                                forceDrawing = true;
+                            }
+                            host.Use = true;
+                        }
+                    }
+                    if (env.UserHosts != null)
+                    {
+                        foreach (var host in env.UserHosts)
                         {
                             if (!host.Use)
                             {
@@ -1544,22 +1547,22 @@ namespace OdyHostNginx
             }
             else
             {
-                if (userHosts != null && userHosts.Count > 0)
-                {
-                    userHost = hostGroupBox(userHosts, "User Host", true, search);
-                }
                 if (currentEnv != null && currentEnv.Hosts != null && currentEnv.Hosts.Count > 0)
                 {
                     envHost = hostGroupBox(currentEnv.Hosts, "Env Host", false, search);
                 }
-            }
-            if (userHost != null)
-            {
-                hostViewer.Children.Add(userHost);
+                if (currentEnv != null && currentEnv.UserHosts != null && currentEnv.UserHosts.Count > 0)
+                {
+                    userHost = hostGroupBox(currentEnv.UserHosts, "User Host", true, search);
+                }
             }
             if (envHost != null)
             {
                 hostViewer.Children.Add(envHost);
+            }
+            if (userHost != null)
+            {
+                hostViewer.Children.Add(userHost);
             }
             if (isHostConfig)
             {
@@ -1775,7 +1778,8 @@ namespace OdyHostNginx
             CommonMouseLeftButtonUp(null, null);
             Image addImage = sender as Image;
             HostConfig host = addImage.DataContext as HostConfig;
-            userHosts.Add(new HostConfig()
+            if (currentEnv == null) return;
+            currentEnv.UserHosts.Add(new HostConfig()
             {
                 Use = false,
                 Ip = host.Ip,
@@ -1822,7 +1826,7 @@ namespace OdyHostNginx
             {
                 HostConfig host = data as HostConfig;
                 bool isGroup = currentEnv != null && currentEnv.HostGroup;
-                List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : userHosts;
+                List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : currentEnv.UserHosts;
                 foreach (var item in hostList)
                 {
                     if (host == item)
@@ -1886,7 +1890,7 @@ namespace OdyHostNginx
                 hostConfigWindows.ShowDialog();
                 if (ConfigDialogData.success)
                 {
-                    List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : userHosts;
+                    List<HostConfig> hostList = isGroup ? hostGroup[currentEnv.EnvName] : currentEnv.UserHosts;
                     ConfigDialogData.hosts.ForEach(host =>
                     {
                         foreach (var h in hostList)
@@ -1935,9 +1939,9 @@ namespace OdyHostNginx
 
         private void ResetBut_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (isHostConfig)
+            if (isHostConfig && currentEnv != null)
             {
-                userHosts = OdyConfigHelper.loadUserHosts();
+                OdyConfigHelper.loadUserHosts(currentEnv);
             }
             else if (currentEnv != null)
             {
@@ -1961,10 +1965,6 @@ namespace OdyHostNginx
         public static HashSet<string> domainWhiteList()
         {
             HashSet<string> domains = new HashSet<string>();
-            if (userHosts != null && userHosts.Count > 0)
-            {
-                userHosts.ForEach(h => domains.Add(h.Domain));
-            }
             if (hostGroup != null && hostGroup.Count > 0)
             {
                 foreach (var g in hostGroup.Values)
@@ -1972,7 +1972,17 @@ namespace OdyHostNginx
                     g.ForEach(h => domains.Add(h.Domain));
                 }
             }
-            odyProjectConfig.Projects.ForEach(p => p.Envs.ForEach(e => e.Hosts.ForEach(h => domains.Add(h.Domain))));
+            odyProjectConfig.Projects.ForEach(p => p.Envs.ForEach(e =>
+            {
+                if (e.Hosts != null)
+                {
+                    e.Hosts.ForEach(h => domains.Add(h.Domain));
+                }
+                if (e.UserHosts != null)
+                {
+                    e.UserHosts.ForEach(h => domains.Add(h.Domain));
+                }
+            }));
             return domains;
         }
 

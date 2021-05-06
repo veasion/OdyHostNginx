@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +18,7 @@ namespace OdyHostNginx
         public static string userOdyNginxConfigDir = userNginxConfigDir + "\\ody";
         public static string userHostsDir = FileHelper.getCurrentDirectory() + "\\bin\\hosts";
         public static string odyConfigBackDir = FileHelper.getCurrentDirectory() + "\\config_back";
-        public static string userHostsFileName = "hosts.config";
+        public static string userHostsFileName = "hosts.json";
         public static string modifyResponse = FileHelper.getCurrentDirectory() + "\\ModifyResponse.txt";
 
         private static Dictionary<string, int> priority = new Dictionary<string, int>();
@@ -71,6 +72,7 @@ namespace OdyHostNginx
             {
                 path = nginxConfigDir;
             }
+            JToken userHostsJToken = getUserHostsJToken();
             List<ProjectConfig> projects = new List<ProjectConfig>();
             DirectoryInfo dir = new DirectoryInfo(path);
             DirectoryInfo[] proDirs = dir.GetDirectories();
@@ -98,6 +100,7 @@ namespace OdyHostNginx
                         EnvName = envDir.Name
                     };
                     parseEnv(env, envDir);
+                    loadUserHosts(userHostsJToken, env);
                     if (!(env.Configs == null || env.Configs.Count == 0))
                     {
                         if (upstreamDetailsMap != null)
@@ -241,12 +244,6 @@ namespace OdyHostNginx
             }
         }
 
-        public static List<HostConfig> loadUserHosts()
-        {
-            // 读取用户 hosts 配置
-            return loadHosts(userHostsDir + "\\" + userHostsFileName);
-        }
-
         public static Dictionary<string, List<HostConfig>> loadHostGroup()
         {
             Dictionary<string, List<HostConfig>> dir = new Dictionary<string, List<HostConfig>>();
@@ -353,9 +350,73 @@ namespace OdyHostNginx
             writeHosts(userHostsDir + "\\" + groupName, userHostConfigs);
         }
 
-        public static void writeUserHosts(List<HostConfig> userHostConfigs)
+        public static void writeUserHosts(OdyProjectConfig odyProjectConfig)
         {
-            writeHosts(userHostsDir + "\\" + userHostsFileName, userHostConfigs);
+            string userHostPath = userHostsDir + "\\" + userHostsFileName;
+            Dictionary<string, Dictionary<string, string>> map = new Dictionary<string, Dictionary<string, string>>();
+            if (odyProjectConfig != null && odyProjectConfig.Projects != null)
+            {
+                foreach (var p in odyProjectConfig.Projects)
+                {
+                    if (p.Envs == null) continue;
+                    foreach (var env in p.Envs)
+                    {
+                        if (env.UserHosts == null || env.UserHosts.Count == 0)
+                        {
+                            continue;
+                        }
+                        string key = env.Project.Name + "." + env.EnvName;
+                        Dictionary<string, string> userHostMap = new Dictionary<string, string>();
+                        foreach (var host in env.UserHosts)
+                        {
+                            userHostMap[host.Domain] = host.Ip;
+                        }
+                        map[key] = userHostMap;
+                    }
+                }
+            }
+            FileHelper.writeJsonFile(map, userHostPath);
+        }
+
+        public static JToken getUserHostsJToken()
+        {
+            try
+            {
+                string userHostPath = userHostsDir + "\\" + userHostsFileName;
+                if (!File.Exists(userHostPath)) return null;
+                string json = FileHelper.readTextFile(userHostPath);
+                return JToken.Parse(json);
+            }
+            catch (Exception e)
+            {
+                Logger.error("加载" + userHostsFileName, e);
+                return null;
+            }
+        }
+
+        public static void loadUserHosts(EnvConfig env)
+        {
+            loadUserHosts(getUserHostsJToken(), env);
+        }
+
+        public static void loadUserHosts(JToken jToken, EnvConfig env)
+        {
+            env.UserHosts = new List<HostConfig>();
+            if (jToken == null || !jToken.HasValues) return;
+            string key = env.Project.Name + "." + env.EnvName;
+            if (jToken[key] != null)
+            {
+                Dictionary<string, string> userHostMap = jToken[key].ToObject<Dictionary<string, string>>();
+                foreach (var domain in userHostMap.Keys)
+                {
+                    env.UserHosts.Add(new HostConfig
+                    {
+                        Use = false,
+                        Domain = domain,
+                        Ip = userHostMap[domain]
+                    });
+                }
+            }
         }
 
         private static List<HostConfig> getHosts(EnvConfig env)
@@ -633,7 +694,8 @@ namespace OdyHostNginx
             DirectoryInfo envDir = new DirectoryInfo(userNginxConfigDir + "\\" + project.Name);
             if (envDir.Exists)
             {
-                envDir.MoveTo(userNginxConfigDir + "\\" + deleteStartsWith + project.Name);
+                // envDir.MoveTo(userNginxConfigDir + "\\" + deleteStartsWith + project.Name);
+                FileHelper.delDir(userNginxConfigDir + "\\" + project.Name, true);
             }
         }
 
@@ -643,7 +705,8 @@ namespace OdyHostNginx
             DirectoryInfo envDir = new DirectoryInfo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName);
             if (envDir.Exists)
             {
-                envDir.MoveTo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + deleteStartsWith + env.EnvName);
+                // envDir.MoveTo(userNginxConfigDir + "\\" + env.Project.Name + "\\" + deleteStartsWith + env.EnvName);
+                FileHelper.delDir(userNginxConfigDir + "\\" + env.Project.Name + "\\" + env.EnvName, true);
             }
         }
 

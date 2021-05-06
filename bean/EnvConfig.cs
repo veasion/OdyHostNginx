@@ -15,6 +15,7 @@ namespace OdyHostNginx
         private String upstreamFileName;
         private List<NginxUpstream> upstreams;
         private List<HostConfig> hosts;
+        private List<HostConfig> userHosts;
 
         private ProjectConfig project;
         private bool hostGroup;
@@ -29,5 +30,6 @@ namespace OdyHostNginx
         internal List<HostConfig> Hosts { get => hosts; set => hosts = value; }
         public bool HostGroup { get => hostGroup; set => hostGroup = value; }
         public bool ReplaceHost { get => replaceHost; set => replaceHost = value; }
+        public List<HostConfig> UserHosts { get => userHosts; set => userHosts = value; }
     }
 }
