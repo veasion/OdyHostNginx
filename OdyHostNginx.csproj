@@ -123,6 +123,7 @@
       <DependentUpon>Confirm.cs</DependentUpon>
     </Compile>
     <Compile Include="helper\BrowserHelper.cs" />
+    <Compile Include="helper\I18nHelper.cs" />
     <Compile Include="helper\UserCacheHelper.cs" />
     <Compile Include="helper\ZipHelper.cs" />
     <Compile Include="LogsWindows.cs">
@@ -210,6 +211,12 @@
       <DependentUpon>TraceWindows.xaml</DependentUpon>
     </Compile>
     <Compile Include="trace\TraceClient.cs" />
+    <Compile Include="TranslateWindows.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TranslateWindows.Designer.cs">
+      <DependentUpon>TranslateWindows.cs</DependentUpon>
+    </Compile>
     <Compile Include="ui\ConfigDialogData.cs" />
     <Compile Include="ui\OdyEvents.cs" />
     <Compile Include="ui\OdyResources.cs" />
@@ -295,6 +302,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TranslateWindows.resx">
+      <DependentUpon>TranslateWindows.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\app.manifest" />

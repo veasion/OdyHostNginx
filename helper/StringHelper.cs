@@ -228,5 +228,74 @@ namespace OdyHostNginx
             return result.ToString();
         }
 
+        public static HashSet<string> GetPlaceHolders(string s, string placeHolderPrefix, string placeHolderSuffix)
+        {
+            HashSet<string> phs = new HashSet<string>();
+            string placeHolder = null;
+            string sc;
+            for (int beginIndex = 0; (placeHolder = DoGetPlaceHolder(s, beginIndex, placeHolderPrefix, placeHolderSuffix)) != null; beginIndex = s.IndexOf(sc, beginIndex) + sc.Length)
+            {
+                phs.Add(placeHolder);
+                sc = placeHolderPrefix + placeHolder + placeHolderSuffix;
+            }
+            return phs;
+        }
+
+        private static string DoGetPlaceHolder(string s, int beginIndex, string placeHolderPrefix, string placeHolderSuffix)
+        {
+            string str = s.Substring(beginIndex);
+            int start = str.IndexOf(placeHolderPrefix);
+            if (start != -1)
+            {
+                int end = str.IndexOf(placeHolderSuffix, start + 1);
+                if (end != -1)
+                {
+                    return Substring(str, start + placeHolderPrefix.Length, end);
+                }
+            }
+            return null;
+        }
+
+        public static string Substring(string str, int startIndex, int endIndex)
+        {
+            return str.Substring(startIndex, endIndex - startIndex);
+        }
+
+        public static string UrlEncode(string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            byte[] byStr = Encoding.UTF8.GetBytes(str);
+            for (int i = 0; i < byStr.Length; i++)
+            {
+                sb.Append(@"%" + Convert.ToString(byStr[i], 16));
+            }
+
+            return (sb.ToString());
+        }
+
+        public static string md5(string Text)
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(Text);
+            try
+            {
+                MD5CryptoServiceProvider check;
+                check = new MD5CryptoServiceProvider();
+                byte[] somme = check.ComputeHash(buffer);
+                string ret = "";
+                foreach (byte a in somme)
+                {
+                    if (a < 16)
+                        ret += "0" + a.ToString("X");
+                    else
+                        ret += a.ToString("X");
+                }
+                return ret.ToLower();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
     }
 }

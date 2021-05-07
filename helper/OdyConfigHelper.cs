@@ -639,7 +639,7 @@ namespace OdyHostNginx
                 {
                     string envDir = projectDir + "\\" + env.EnvName;
                     FileHelper.mkdirAndDel(envDir, writeBody);
-                    if (env.ReplaceHost) {
+                    if (env.ReplaceHost || isOdyDockerEnv(env)) {
                         List<NginxConfig> confs = env.Configs;
                         foreach (var conf in confs)
                         {

@@ -50,6 +50,7 @@
                     </MenuItem>
                     <MenuItem Header="Tools" FontSize="14" x:Name="Tools">
                         <MenuItem Click="Format_Click" Header="Format" FontSize="12" Background="White" Foreground="Black"/>
+                        <MenuItem Click="Translate_Click" Header="Translate" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="Trace_Click" Header="Trace Info" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="HttpPacket_Click" Header="Http Packet" FontSize="12" Background="White" Foreground="Black"/>
                         <MenuItem Click="MybatisGenerate_Click" Header="Mybatis Generate" FontSize="12" Background="White" Foreground="Black"/>

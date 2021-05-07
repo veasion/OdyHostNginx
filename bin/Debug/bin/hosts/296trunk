@@ -1,8 +1,0 @@
-redis_ip=10.10.0.48
-mysql_ip=10.10.0.48
-zipkin_ip=10.10.0.48
-elastic_ip=10.10.0.48
-mongodb_ip=10.10.0.48
-rabbitma_ip=10.10.0.48
-zookeeper_ip=10.10.0.48
-admin.2d9d6-trunk.oudianyun.com=127.0.0.1

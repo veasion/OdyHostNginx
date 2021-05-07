@@ -510,6 +510,11 @@ namespace OdyHostNginx
             new FormatWindows().Show();
         }
 
+        private void Translate_Click(object sender, RoutedEventArgs e)
+        {
+            new TranslateWindows().Show();
+        }
+
         private void HttpPacket_Click(object sender, RoutedEventArgs e)
         {
             if (httpPacket == null)
