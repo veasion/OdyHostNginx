@@ -345,6 +345,7 @@ namespace OdyHostNginx
             FileHelper.writeFile(path, FileHelper.UTF_8, sb.ToString());
         }
 
+
         public static void writeHostGroup(string groupName, List<HostConfig> userHostConfigs)
         {
             writeHosts(userHostsDir + "\\" + groupName, userHostConfigs);
@@ -649,7 +650,9 @@ namespace OdyHostNginx
                             string body = conf.Body.Substring(0, sIndex) + "server_name " + hosts[0].Domain + conf.Body.Substring(eIndex);
                             FileHelper.writeFile(envDir + "\\" + conf.FileName, WindowsNginxImpl.confEncoding, body);
                         }
-                    } else {
+                    }
+                    if (!env.ReplaceHost || isOdyDockerEnv(env))
+                    {
                         string upstreamFile = envDir + "\\" + env.UpstreamFileName;
                         StringBuilder upstreamBody = new StringBuilder();
                         List<NginxUpstream> upstreams = env.Upstreams;

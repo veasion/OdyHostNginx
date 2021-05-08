@@ -57,7 +57,7 @@ namespace OdyHostNginx
                     return;
                 }
                 string enUsContext = null;
-                if (!StringHelper.isBlank(this.textBox_enUs.Text))
+                if (this.checkBox_filter.Checked && !StringHelper.isBlank(this.textBox_enUs.Text))
                 {
                     enUsContext = FileHelper.readTextFile(this.textBox_enUs.Text);
                 }
@@ -75,14 +75,15 @@ namespace OdyHostNginx
                     {
                         foreach (var item in result)
                         {
-                            if (!wordMap.ContainsKey(item))
+                            if (wordMap.ContainsKey(item))
                             {
-                                if (enUsContext != null && i18n.hasKey(enUsContext, item))
-                                {
-                                    continue;
-                                }
-                                wordMap.Add(item, "");
+                                continue;
                             }
+                            if (this.checkBox_filter.Checked && enUsContext != null && i18n.hasKey(enUsContext, item))
+                            {
+                                continue;
+                            }
+                            wordMap.Add(item, "");
                         }
                     }
                 }
@@ -100,6 +101,7 @@ namespace OdyHostNginx
                     wordMap[key] = i18n.translate(key);
                     this.textBox_result.Text = i18n.getJSON(wordMap);
                     this.Text = "翻译进度(" + (++count) + "/" + wordMap.Count + ")";
+                    System.Threading.Thread.Sleep(1000);
                 }
 
                 this.textBox_result.Text = i18n.getJSON(wordMap);

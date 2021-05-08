@@ -27,8 +27,15 @@ namespace OdyHostNginx
                 {
                     loadConfig(jt, odyConfig.Projects);
                 }
+                if (jt["_CONFIG"] != null)
+                {
+                    odyConfig.Config = jt["_CONFIG"];
+                }
             }
-            catch (Exception) { }
+            catch (Exception e)
+            {
+                Logger.error("加载缓存", e);
+            }
             loaded = true;
         }
 
@@ -68,17 +75,20 @@ namespace OdyHostNginx
                 Dictionary<string, object> cache = new Dictionary<string, object>();
                 if (odyConfig != null && odyConfig.Projects != null)
                 {
-                    cacheConfig(odyConfig.Projects, cache);
+                    cacheConfig(odyConfig, odyConfig.Projects, cache);
                 }
                 if (cache.Count > 0)
                 {
                     FileHelper.writeJsonFile(cache, cachePath);
                 }
             }
-            catch (Exception) { }
+            catch (Exception e)
+            {
+                Logger.error("保存缓存", e);
+            }
         }
 
-        private static void cacheConfig(List<ProjectConfig> projects, Dictionary<string, object> cache)
+        private static void cacheConfig(OdyProjectConfig odyConfig, List<ProjectConfig> projects, Dictionary<string, object> cache)
         {
             Dictionary<string, object> evhMap;
             foreach (var p in projects)
@@ -94,11 +104,29 @@ namespace OdyHostNginx
                         }
                         cacheHost(e.Hosts, evhMap);
                         cacheHost(e.UserHosts, evhMap);
+                        savePortCache(e.Upstreams, odyConfig.Config);
                     }
                     if (evhMap != null)
                     {
                         cache[p.Name] = evhMap;
                     }
+                }
+            }
+            cache["_CONFIG"] = odyConfig.Config;
+        }
+
+        private static void savePortCache(List<NginxUpstream> ups, JToken config)
+        {
+            if (config["portCache"] == null)
+            {
+                config["portCache"] = JToken.Parse("{}");
+            }
+            if (ups == null) return;
+            foreach (var item in ups)
+            {
+                if (item.Port != item.OldPort && item.ContextPath != null)
+                {
+                    config["portCache"][item.ContextPath] = item.Port.ToString();
                 }
             }
         }

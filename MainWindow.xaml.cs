@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1465,6 +1466,12 @@ namespace OdyHostNginx
                 u.Ip = "127.0.0.1";
                 but.Content = "back";
                 but.ToolTip = "Set to old ip";
+                JToken portCache = odyProjectConfig.Config["portCache"];
+                if (portCache != null && u.ContextPath != null && portCache[u.ContextPath] != null
+                    && int.TryParse(portCache[u.ContextPath].ToString(), out int cachePort))
+                {
+                    u.Port = cachePort;
+                }
             }
             else
             {

@@ -36,6 +36,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.but_translate = new System.Windows.Forms.Button();
             this.textBox_result = new System.Windows.Forms.TextBox();
+            this.checkBox_filter = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -112,11 +113,25 @@
             this.textBox_result.TabIndex = 6;
             this.textBox_result.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox_KeyDown_SelectAll);
             // 
+            // checkBox_filter
+            // 
+            this.checkBox_filter.AutoSize = true;
+            this.checkBox_filter.Checked = true;
+            this.checkBox_filter.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_filter.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.checkBox_filter.Location = new System.Drawing.Point(538, 65);
+            this.checkBox_filter.Name = "checkBox_filter";
+            this.checkBox_filter.Size = new System.Drawing.Size(51, 21);
+            this.checkBox_filter.TabIndex = 7;
+            this.checkBox_filter.Text = "过滤";
+            this.checkBox_filter.UseVisualStyleBackColor = true;
+            // 
             // TranslateWindows
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(616, 489);
+            this.Controls.Add(this.checkBox_filter);
             this.Controls.Add(this.textBox_result);
             this.Controls.Add(this.but_translate);
             this.Controls.Add(this.textBox_enUs);
@@ -145,5 +160,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button but_translate;
         private System.Windows.Forms.TextBox textBox_result;
+        private System.Windows.Forms.CheckBox checkBox_filter;
     }
 }
