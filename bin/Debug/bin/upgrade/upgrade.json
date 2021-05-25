@@ -1,8 +1,8 @@
 {
-	"version": "v2.0.3",
+	"version": "v2.0.4",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > 支持env和host绑定\r\n\r\n  > 支持vue文件国际化翻译\r\n\r\n  > 修复domain切换不生效bug",
+	"desc": "\r\n\r\n  > 支持env和host绑定\r\n\r\n  > 支持pool端口缓存\r\n\r\n  > 支持vue文件国际化翻译\r\n\r\n  > 修复domain切换不生效bug",
 	"deletes": [
 		{
 			"dir": "",
