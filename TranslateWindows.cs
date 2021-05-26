@@ -6,8 +6,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace OdyHostNginx
 {
@@ -45,28 +47,98 @@ namespace OdyHostNginx
             }
         }
 
-        private void But_translate_Click(object sender, EventArgs e)
+        private void updateText(string text)
         {
             try
             {
-                this.Text = "正在翻译...";
-                string[] lines = this.textBox_vueFiles.Lines;
+                this.BeginInvoke((MethodInvoker)delegate ()
+                {
+                    this.Text = text;
+                });
+            }
+            catch (Exception)
+            {
+                this.Text = text;
+            }
+        }
+
+        private void updateResultText(string text)
+        {
+            try
+            {
+                textBox_result.BeginInvoke((MethodInvoker)delegate ()
+                {
+                    textBox_result.Text = text;
+                });
+            }
+            catch (Exception)
+            {
+                textBox_result.Text = text;
+            }
+        }
+
+        private void showMessage(string message)
+        {
+            try
+            {
+                this.Invoke((MethodInvoker)delegate ()
+            {
+                MessageBox.Show(message);
+            });
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(message);
+            }
+        }
+
+        private void updateButEnabled(bool enabled)
+        {
+            but_translate.BeginInvoke((MethodInvoker)delegate ()
+            {
+                but_translate.Enabled = enabled;
+            });
+        }
+
+        private void But_translate_Click(object sender, EventArgs e)
+        {
+            string text = this.Text;
+            string enUs = this.textBox_enUs.Text;
+            bool filter = this.checkBox_filter.Checked;
+            string[] lines = this.textBox_vueFiles.Lines;
+            if (!but_translate.Enabled)
+            {
+                return;
+            }
+            new Thread(() =>
+            {
+                doHandle(text, enUs, filter, lines);
+            })
+            { IsBackground = true }.Start();
+        }
+
+        private void doHandle(string text, string enUs, bool filter, string[] lines)
+        {
+            try
+            {
+                updateButEnabled(false);
+                updateText("正在翻译...");
                 if (lines == null || lines.Length == 0)
                 {
-                    MessageBox.Show("请选择vue文件");
+                    showMessage("请选择vue文件");
                     return;
                 }
                 string enUsContext = null;
-                if (this.checkBox_filter.Checked && !StringHelper.isBlank(this.textBox_enUs.Text))
+                if (filter && !StringHelper.isBlank(enUs))
                 {
-                    enUsContext = FileHelper.readTextFile(this.textBox_enUs.Text);
+                    enUsContext = FileHelper.readTextFile(enUs);
                 }
                 Dictionary<string, string> wordMap = new Dictionary<string, string>();
                 foreach (var file in lines)
                 {
                     if (!File.Exists(file))
                     {
-                        MessageBox.Show("文件不存在: " + file);
+                        showMessage("文件不存在: " + file);
                         continue;
                     }
                     string context = FileHelper.readTextFile(file);
@@ -79,7 +151,7 @@ namespace OdyHostNginx
                             {
                                 continue;
                             }
-                            if (this.checkBox_filter.Checked && enUsContext != null && i18n.hasKey(enUsContext, item))
+                            if (filter && enUsContext != null && i18n.hasKey(enUsContext, item))
                             {
                                 continue;
                             }
@@ -89,32 +161,32 @@ namespace OdyHostNginx
                 }
                 if (wordMap.Count == 0)
                 {
-                    this.textBox_result.Text = "已存在或无需翻译";
+                    updateResultText("已存在或无需翻译");
                     return;
                 }
-                this.textBox_result.Text = i18n.getJSON(wordMap);
+                updateResultText(i18n.getJSON(wordMap));
 
                 int count = 0;
                 List<string> keys = wordMap.Keys.ToList();
                 foreach (var key in keys)
                 {
                     wordMap[key] = i18n.translate(key);
-                    this.textBox_result.Text = i18n.getJSON(wordMap);
-                    this.Text = "翻译进度(" + (++count) + "/" + wordMap.Count + ")";
-                    System.Threading.Thread.Sleep(1000);
+                    updateResultText(i18n.getJSON(wordMap));
+                    updateText("翻译进度 ( " + (++count) + " / " + wordMap.Count + " )");
+                    Thread.Sleep(1000);
                 }
 
-                this.textBox_result.Text = i18n.getJSON(wordMap);
+                updateResultText(i18n.getJSON(wordMap));
             }
             catch (Exception ex)
             {
                 Logger.error("翻译", ex);
-                MessageBox.Show("翻译失败：" + ex.Message);
+                showMessage("翻译失败：" + ex.Message);
             }
             finally
             {
-                this.Text = "TranslateWindows";
-                this.but_translate.Enabled = true;
+                updateText(text);
+                updateButEnabled(true);
             }
         }
 

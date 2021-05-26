@@ -15,13 +15,20 @@ namespace OdyHostNginx
 
         public static TracesInfo traces(string url)
         {
-            if (url.IndexOf("/zipkin/") > 0)
+            try
             {
-                return zipkin(url);
+                if (url.IndexOf("/zipkin/") > 0)
+                {
+                    return zipkin(url);
+                }
+                else if (url.IndexOf("/trace") > 0)
+                {
+                    return skywalking(url);
+                }
             }
-            else if (url.IndexOf("/trace") > 0)
+            catch (Exception e)
             {
-                return skywalking(url);
+                Logger.error("trace错误: " + url, e);
             }
             return null;
         }
@@ -43,7 +50,7 @@ namespace OdyHostNginx
             string response = HttpHelper.post(graphqlUrl, reqJson);
             if (StringHelper.isEmpty(response)) return null;
             JToken jsonObj = JToken.Parse(response);
-            if (jsonObj == null || jsonObj["data"] == null)
+            if (jsonObj == null || jsonObj["data"] == null || jsonObj["data"]["data"] == null)
             {
                 return null;
             }

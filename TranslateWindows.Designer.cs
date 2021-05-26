@@ -145,7 +145,7 @@
             this.MinimizeBox = false;
             this.Name = "TranslateWindows";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "TranslateWindows";
+            this.Text = "vue国际化翻译";
             this.ResumeLayout(false);
             this.PerformLayout();
 
