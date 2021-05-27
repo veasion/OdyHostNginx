@@ -17,6 +17,7 @@ namespace OdyHostNginx
     {
 
         I18nHelper i18n;
+        Dictionary<string, string> wordMap = new Dictionary<string, string>();
 
         public TranslateWindows()
         {
@@ -36,7 +37,7 @@ namespace OdyHostNginx
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Multiselect = true;
             dialog.Title = "请选择需要翻译的vue文件";
-            dialog.Filter = "vue文件(*.vue)|*.vue";
+            dialog.Filter = "vue/js文件|*.vue;*.js";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 this.textBox_vueFiles.Lines = dialog.FileNames;
@@ -104,6 +105,7 @@ namespace OdyHostNginx
         {
             string text = this.Text;
             string enUs = this.textBox_enUs.Text;
+            bool merge = this.checkBox_merge.Checked;
             bool filter = this.checkBox_filter.Checked;
             string[] lines = this.textBox_vueFiles.Lines;
             if (!but_translate.Enabled)
@@ -112,12 +114,12 @@ namespace OdyHostNginx
             }
             new Thread(() =>
             {
-                doHandle(text, enUs, filter, lines);
+                doHandle(text, enUs, filter, merge, lines);
             })
             { IsBackground = true }.Start();
         }
 
-        private void doHandle(string text, string enUs, bool filter, string[] lines)
+        private void doHandle(string text, string enUs, bool filter, bool merge, string[] lines)
         {
             try
             {
@@ -133,7 +135,11 @@ namespace OdyHostNginx
                 {
                     enUsContext = FileHelper.readTextFile(enUs);
                 }
-                Dictionary<string, string> wordMap = new Dictionary<string, string>();
+                if (!merge)
+                {
+                    updateResultText("");
+                    wordMap = new Dictionary<string, string>();
+                }
                 foreach (var file in lines)
                 {
                     if (!File.Exists(file))
@@ -142,7 +148,7 @@ namespace OdyHostNginx
                         continue;
                     }
                     string context = FileHelper.readTextFile(file);
-                    HashSet<string> result = i18n.getPlaceHolders(context, true);
+                    HashSet<string> result = i18n.getPlaceHolders(file, context, true);
                     if (result != null && result.Count > 0)
                     {
                         foreach (var item in result)
@@ -161,7 +167,14 @@ namespace OdyHostNginx
                 }
                 if (wordMap.Count == 0)
                 {
-                    updateResultText("已存在或无需翻译");
+                    if (merge)
+                    {
+                        showMessage("已存在或无需翻译");
+                    }
+                    else
+                    {
+                        updateResultText("已存在或无需翻译");
+                    }
                     return;
                 }
                 updateResultText(i18n.getJSON(wordMap));

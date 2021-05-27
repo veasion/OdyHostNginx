@@ -37,6 +37,7 @@
             this.but_translate = new System.Windows.Forms.Button();
             this.textBox_result = new System.Windows.Forms.TextBox();
             this.checkBox_filter = new System.Windows.Forms.CheckBox();
+            this.checkBox_merge = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -126,11 +127,24 @@
             this.checkBox_filter.Text = "过滤";
             this.checkBox_filter.UseVisualStyleBackColor = true;
             // 
+            // checkBox_merge
+            // 
+            this.checkBox_merge.AutoSize = true;
+            this.checkBox_merge.Checked = true;
+            this.checkBox_merge.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_merge.Location = new System.Drawing.Point(11, 130);
+            this.checkBox_merge.Name = "checkBox_merge";
+            this.checkBox_merge.Size = new System.Drawing.Size(54, 16);
+            this.checkBox_merge.TabIndex = 8;
+            this.checkBox_merge.Text = "merge";
+            this.checkBox_merge.UseVisualStyleBackColor = true;
+            // 
             // TranslateWindows
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(616, 489);
+            this.Controls.Add(this.checkBox_merge);
             this.Controls.Add(this.checkBox_filter);
             this.Controls.Add(this.textBox_result);
             this.Controls.Add(this.but_translate);
@@ -161,5 +175,6 @@
         private System.Windows.Forms.Button but_translate;
         private System.Windows.Forms.TextBox textBox_result;
         private System.Windows.Forms.CheckBox checkBox_filter;
+        private System.Windows.Forms.CheckBox checkBox_merge;
     }
 }

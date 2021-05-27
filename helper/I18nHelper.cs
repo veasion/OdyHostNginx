@@ -61,6 +61,46 @@ namespace OdyHostNginx
             }
         }
 
+        public HashSet<string> getPlaceHolders(string file, string context, bool skipNonChinese)
+        {
+            HashSet<string> result = getPlaceHolders(context, skipNonChinese);
+            try
+            {
+                if (file != null && file.EndsWith(".js") && file.Contains("router"))
+                {
+                    // router > title: ''
+                    int startIndex = 0;
+                    while ((startIndex = context.IndexOf("title: '", startIndex)) != -1)
+                    {
+                        string title = StringHelper.substring(context, "title: '", "'", startIndex);
+                        if (StringHelper.hasChinese(title))
+                        {
+                            result.Add(title);
+                        }
+                        startIndex = context.IndexOf("'", startIndex + 1);
+                    }
+                }
+                int startData = context.IndexOf("data() {");
+                if (startData > 0)
+                {
+                    string dataVue = context.Substring(startData);
+                    // label: ''
+                    int startIndex = 0;
+                    while ((startIndex = dataVue.IndexOf("label: '", startIndex)) != -1)
+                    {
+                        string label = StringHelper.substring(dataVue, "label: '", "'", startIndex);
+                        if (StringHelper.hasChinese(label))
+                        {
+                            result.Add(label);
+                        }
+                        startIndex = dataVue.IndexOf("'", startIndex + 1);
+                    }
+                }
+            }
+            catch (Exception) { }
+            return result;
+        }
+
         public HashSet<string> getPlaceHolders(string context, bool skipNonChinese)
         {
             HashSet<string> result = StringHelper.GetPlaceHolders(context, i18nPrefix, i18nSuffix);
