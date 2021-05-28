@@ -40,7 +40,23 @@ namespace OdyHostNginx
             dialog.Filter = "vue/js文件|*.vue;*.js";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                this.textBox_vueFiles.Lines = dialog.FileNames;
+                if (this.checkBox_merge.Checked)
+                {
+                    HashSet<string> files = new HashSet<string>();
+                    foreach (var line in this.textBox_vueFiles.Lines)
+                    {
+                        files.Add(line);
+                    }
+                    foreach (var f in dialog.FileNames)
+                    {
+                        files.Add(f);
+                    }
+                    this.textBox_vueFiles.Lines = files.ToArray();
+                }
+                else
+                {
+                    this.textBox_vueFiles.Lines = dialog.FileNames;
+                }
                 if (i18n != null)
                 {
                     this.textBox_enUs.Text = i18n.getEnJsFilePath(dialog.FileName);
@@ -183,10 +199,13 @@ namespace OdyHostNginx
                 List<string> keys = wordMap.Keys.ToList();
                 foreach (var key in keys)
                 {
-                    wordMap[key] = i18n.translate(key);
+                    if (StringHelper.isBlank(wordMap[key]))
+                    {
+                        wordMap[key] = i18n.translate(key);
+                        Thread.Sleep(1000);
+                    }
                     updateResultText(i18n.getJSON(wordMap));
                     updateText("翻译进度 ( " + (++count) + " / " + wordMap.Count + " )");
-                    Thread.Sleep(1000);
                 }
 
                 updateResultText(i18n.getJSON(wordMap));

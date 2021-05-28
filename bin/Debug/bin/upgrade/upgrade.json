@@ -1,8 +1,8 @@
 {
-	"version": "v2.0.4",
+	"version": "v2.0.5",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > 支持env和host绑定\r\n\r\n  > 支持pool端口缓存\r\n\r\n  > 支持vue文件国际化翻译\r\n\r\n  > 修复domain切换不生效bug",
+	"desc": "\r\n\r\n  > 国际化翻译支持无$t\r\n\r\n  > 支持env和host绑定\r\n\r\n  > 支持pool端口缓存",
 	"deletes": [
 		{
 			"dir": "",
@@ -17,24 +17,24 @@
 			"clearDir": true
 		},
 		{
-			"dir": "",
-			"fileName": "ModifyResponse.txt"
-		},
-		{
 			"dir": "bin/hosts",
 			"fileName": "hosts.config"
+		},
+		{
+			"dir": "bin/config",
+			"fileName": "cache.json"
 		}
 	],
 	"adds": [
 		{
-			"dir": "",
-			"fileName": "ICSharpCode.SharpZipLib.dll",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ICSharpCode.SharpZipLib.dll"
-		},
-		{
 			"dir": "bin/config",
 			"fileName": "i18n.json",
 			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/i18n.json"
+		},
+		{
+			"dir": "bin/config",
+			"fileName": "cache.json",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/cache.json"
 		},
 		{
 			"dir": "",
