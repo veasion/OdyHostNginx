@@ -100,6 +100,22 @@ namespace OdyHostNginx
 
         private void Trace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            /*
+            if (selected != null)
+            {
+                TracesInfo trace = selected.DataContext as TracesInfo;
+                if (trace.isError())
+                {
+                    selected.Foreground = new SolidColorBrush(OdyResources.errorFontColor);
+                    selected.Background = new SolidColorBrush(OdyResources.errorBackgroundColor);
+                }
+                else
+                {
+                    selected.Foreground = new SolidColorBrush(Colors.Black);
+                    selected.Background = null;
+                }
+            }
+            */
             this.traceScroll.ScrollToTop();
             this.traceScroll.ScrollToHome();
             ItemsControl item = e.NewValue as ItemsControl;
@@ -132,7 +148,13 @@ namespace OdyHostNginx
                     }
                     this.traceTreeInfoText.Text = sb.ToString();
                 }
+                /*
+                selected = sender;
+                selected.Foreground = new SolidColorBrush(OdyResources.selectBorderColor);
+                selected.Background = null;
+                */
             }
+            // Title = "Trace: " + selected.Header as string;
         }
 
         private void traceTreeChildren(ItemsControl parent, TracesInfo trace)
@@ -140,14 +162,20 @@ namespace OdyHostNginx
             if (trace.Name != null && trace.Name.EndsWith("companyid")) return;
             TreeViewItem item = new TreeViewItem();
             item.DataContext = trace;
+            string header = null;
             if (trace.Pool() != null)
             {
-                item.Header = "【" + trace.Pool() + "】" + trace.Name;
+                header = "【" + trace.Pool() + "】" + trace.Name;
             }
             else
             {
-                item.Header = trace.Name;
+                header = trace.Name;
             }
+            if (trace.Duration != null)
+            {
+                header = header + "  --" + trace.Duration.Value + "ms";
+            }
+            item.Header = header;
             if (trace.isError())
             {
                 item.Foreground = new SolidColorBrush(OdyResources.errorFontColor);

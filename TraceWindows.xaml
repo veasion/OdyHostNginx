@@ -8,9 +8,13 @@
         Title="Trace"
         Height="750" Width="880"
         WindowStartupLocation="CenterScreen"
-        Icon="favicon.ico" ResizeMode="CanMinimize">
+        Icon="favicon.ico">
     <Grid>
-        <ScrollViewer x:Name="traceScroll" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="213*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer x:Name="traceScroll" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
             <DockPanel Background="#FFF0F0F0">
                 <DockPanel DockPanel.Dock="Top">
                     <DockPanel Margin="10,10,10,10">
