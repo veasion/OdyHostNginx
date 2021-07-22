@@ -75,15 +75,18 @@
             while ((endIndex = sql.IndexOf("?", startIndex)) > -1)
             {
                 sb.Append(StringHelper.Substring(sql, startIndex, endIndex));
-                string paramStr = paramArray[paramIndex++];
-                string p = StringHelper.substring(paramStr, null, "(").Trim();
-                if (paramStr.Contains("Integer") || paramStr.Contains("Long"))
+                if (paramArray.Length >= paramIndex)
                 {
-                    sb.Append(p);
-                }
-                else
-                {
-                    sb.Append("'").Append(p).Append("'");
+                    string paramStr = paramArray[paramIndex++];
+                    string p = paramStr.Contains("(") ? StringHelper.substring(paramStr, null, "(").Trim() : paramStr.Trim();
+                    if (paramStr.Contains("Integer") || paramStr.Contains("Long") || "null".Equals(paramStr.Trim()))
+                    {
+                        sb.Append(p);
+                    }
+                    else
+                    {
+                        sb.Append("'").Append(p).Append("'");
+                    }
                 }
                 startIndex = endIndex + 1;
             }
