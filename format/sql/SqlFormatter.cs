@@ -47,9 +47,47 @@
         {
             try
             {
-                return doFormat(text);
+                if (text.Contains("Preparing:") && text.Contains("Parameters:"))
+                {
+                    return handleMybatisConsoleLog(text);
+                }
+                else
+                {
+                    return doFormat(text);
+                }
             }
-            catch (Exception) { return null; }
+            catch (Exception e)
+            {
+                Logger.error("sql", e);
+                return null;
+            }
+        }
+
+        private string handleMybatisConsoleLog(string text)
+        {
+            string sql = StringHelper.substring(text, "Preparing:", "\n").Replace("\r", "").Trim();
+            string param = StringHelper.substring(text, "Parameters:", "\n").Replace("\r", "").Trim();
+
+            StringBuilder sb = new StringBuilder();
+            string[] paramArray = param.Split(',');
+            int paramIndex = 0;
+            int startIndex = 0, endIndex;
+            while ((endIndex = sql.IndexOf("?", startIndex)) > -1)
+            {
+                sb.Append(StringHelper.Substring(sql, startIndex, endIndex));
+                string paramStr = paramArray[paramIndex++];
+                string p = StringHelper.substring(paramStr, null, "(").Trim();
+                if (paramStr.Contains("Integer") || paramStr.Contains("Long"))
+                {
+                    sb.Append(p);
+                }
+                else
+                {
+                    sb.Append("'").Append(p).Append("'");
+                }
+                startIndex = endIndex + 1;
+            }
+            return sb.ToString();
         }
 
         public string doFormat(string str)

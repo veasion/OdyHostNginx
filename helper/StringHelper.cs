@@ -90,10 +90,14 @@ namespace OdyHostNginx
             {
                 return null;
             }
-            int sIndex = str.IndexOf(start, startIndex), eIndex;
+            int sIndex = start != null ? str.IndexOf(start, startIndex) : startIndex;
+            int eIndex;
             if (sIndex > -1)
             {
-                sIndex += start.Length;
+                if (start != null)
+                {
+                    sIndex += start.Length;
+                }
                 eIndex = str.IndexOf(end, sIndex);
                 if (eIndex > 0 && (maxDiffer == -1 || eIndex - startIndex < maxDiffer))
                 {
