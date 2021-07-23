@@ -56,19 +56,35 @@ namespace OdyHostNginx
                 MenuItem item = new MenuItem();
                 string name = jt["name"].ToString();
                 string run = null;
+                string[] runs = null;
                 if (jt["run"] != null)
                 {
-                    run = jt["run"].ToString();
+                    if (jt["run"] is JArray)
+                    {
+                        runs = jt["run"].ToObject<string[]>();
+                    }
+                    else
+                    {
+                        run = jt["run"].ToString();
+                    }
                 }
                 item.Header = name;
                 item.FontSize = 12;
                 item.DataContext = true;
                 item.Background = new SolidColorBrush(Colors.White);
                 item.Foreground = new SolidColorBrush(Colors.Black);
-                if (run != null)
+                if (run != null || runs != null)
                 {
-                    item.Click += (sender, e) => {
-                        CmdHelper.Cmd(run);
+                    item.Click += (sender, e) =>
+                    {
+                        if (runs != null)
+                        {
+                            CmdHelper.Cmd(runs);
+                        }
+                        else
+                        {
+                            CmdHelper.Cmd(run);
+                        }
                     };
                 }
                 return item;
