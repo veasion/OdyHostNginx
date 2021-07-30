@@ -95,6 +95,17 @@ namespace OdyHostNginx
                         }
                         startIndex = dataVue.IndexOf("'", startIndex + 1);
                     }
+                    startIndex = 0;
+                    // 'label': ''
+                    while ((startIndex = dataVue.IndexOf("'label': '", startIndex)) != -1)
+                    {
+                        string label = StringHelper.substring(dataVue, "'label': '", "'", startIndex);
+                        if (StringHelper.hasChinese(label))
+                        {
+                            result.Add(label);
+                        }
+                        startIndex = dataVue.IndexOf("'", startIndex + 1);
+                    }
                 }
             }
             catch (Exception) { }

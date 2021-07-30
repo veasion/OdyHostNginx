@@ -36,7 +36,7 @@ namespace OdyHostNginx
 
         public HttpPacketWindow()
         {
-            ThreadPool.SetMaxThreads(100, 10);
+            ThreadPool.SetMaxThreads(10, 10);
             this.ContentRendered += (sender, e) => init();
             InitializeComponent();
         }

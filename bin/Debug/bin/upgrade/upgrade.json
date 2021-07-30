@@ -1,40 +1,31 @@
 {
-	"version": "v2.0.5",
+	"version": "v2.0.6",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > 国际化翻译支持无$t\r\n\r\n  > 支持env和host绑定\r\n\r\n  > 支持pool端口缓存",
+	"desc": "\r\n\r\n  > 新增资深CV工程师必备神器！\r\n\r\n  工具路径: 菜单栏 > Tools > 复制粘贴",
 	"deletes": [
+		{
+			"dir": "",
+			"fileName": "ext.cf"
+		},
 		{
 			"dir": "",
 			"fileName": "OdyHostNginx.exe"
 		},
 		{
-			"dir": "",
-			"fileName": "logssh.cf"
+			"dir": "ext",
+			"fileName": "cvtools.js"
 		},
 		{
-			"dir": "config_back",
-			"clearDir": true
-		},
-		{
-			"dir": "bin/hosts",
-			"fileName": "hosts.config"
-		},
-		{
-			"dir": "bin/config",
-			"fileName": "cache.json"
+			"dir": "ext",
+			"fileName": "cv.js"
 		}
 	],
 	"adds": [
 		{
-			"dir": "bin/config",
-			"fileName": "i18n.json",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/i18n.json"
-		},
-		{
-			"dir": "bin/config",
-			"fileName": "cache.json",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/cache.json"
+			"dir": "",
+			"fileName": "ext.cf",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext.cf"
 		},
 		{
 			"dir": "",
@@ -42,19 +33,14 @@
 			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/OdyHostNginx.exe"
 		},
 		{
-			"dir": "",
-			"fileName": "logssh.cf",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/logssh.cf"
+			"dir": "ext",
+			"fileName": "CopyPasteTool.exe",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/CopyPasteTool.exe"
 		},
 		{
-			"dir": "config_back",
-			"fileName": "superadmin.conf",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/config_back/superadmin.conf"
-		},
-		{
-			"dir": "config_back",
-			"fileName": "upstream.conf",
-			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/config_back/upstream.conf"
+			"dir": "ext",
+			"fileName": "cv.js",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/cv.js"
 		}
 	],
 	"traceVersion": "v2",

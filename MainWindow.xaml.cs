@@ -46,7 +46,7 @@ namespace OdyHostNginx
         #region 初始化、退出
         public MainWindow()
         {
-            ThreadPool.SetMaxThreads(100, 10);
+            ThreadPool.SetMaxThreads(10, 10);
             upstreamDetailsMap = new Dictionary<string, UpstreamDetails>();
             this.ContentRendered += (sender, e) =>
             {

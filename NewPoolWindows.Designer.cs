@@ -44,9 +44,12 @@
             // 
             // groupBox_envs
             // 
+            this.groupBox_envs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox_envs.AutoSize = true;
             this.groupBox_envs.Location = new System.Drawing.Point(12, 13);
             this.groupBox_envs.Name = "groupBox_envs";
-            this.groupBox_envs.Size = new System.Drawing.Size(600, 52);
+            this.groupBox_envs.Size = new System.Drawing.Size(656, 52);
             this.groupBox_envs.TabIndex = 0;
             this.groupBox_envs.TabStop = false;
             this.groupBox_envs.Text = "envs";
@@ -54,7 +57,7 @@
             // textBox_location
             // 
             this.textBox_location.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.textBox_location.Location = new System.Drawing.Point(99, 85);
+            this.textBox_location.Location = new System.Drawing.Point(108, 85);
             this.textBox_location.Name = "textBox_location";
             this.textBox_location.Size = new System.Drawing.Size(127, 23);
             this.textBox_location.TabIndex = 2;
@@ -64,7 +67,7 @@
             // label_location
             // 
             this.label_location.AutoSize = true;
-            this.label_location.Location = new System.Drawing.Point(34, 91);
+            this.label_location.Location = new System.Drawing.Point(43, 91);
             this.label_location.Name = "label_location";
             this.label_location.Size = new System.Drawing.Size(59, 12);
             this.label_location.TabIndex = 3;
@@ -73,7 +76,7 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.richTextBox);
-            this.panel1.Location = new System.Drawing.Point(12, 131);
+            this.panel1.Location = new System.Drawing.Point(21, 131);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(600, 188);
             this.panel1.TabIndex = 4;
@@ -94,7 +97,7 @@
             // label_poolName
             // 
             this.label_poolName.AutoSize = true;
-            this.label_poolName.Location = new System.Drawing.Point(241, 91);
+            this.label_poolName.Location = new System.Drawing.Point(250, 91);
             this.label_poolName.Name = "label_poolName";
             this.label_poolName.Size = new System.Drawing.Size(59, 12);
             this.label_poolName.TabIndex = 6;
@@ -103,7 +106,7 @@
             // textBox_poolName
             // 
             this.textBox_poolName.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.textBox_poolName.Location = new System.Drawing.Point(306, 85);
+            this.textBox_poolName.Location = new System.Drawing.Point(315, 85);
             this.textBox_poolName.Name = "textBox_poolName";
             this.textBox_poolName.Size = new System.Drawing.Size(81, 23);
             this.textBox_poolName.TabIndex = 5;
@@ -113,7 +116,7 @@
             // label_contextPath
             // 
             this.label_contextPath.AutoSize = true;
-            this.label_contextPath.Location = new System.Drawing.Point(403, 91);
+            this.label_contextPath.Location = new System.Drawing.Point(412, 91);
             this.label_contextPath.Name = "label_contextPath";
             this.label_contextPath.Size = new System.Drawing.Size(77, 12);
             this.label_contextPath.TabIndex = 8;
@@ -122,7 +125,7 @@
             // textBox_contextPath
             // 
             this.textBox_contextPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.textBox_contextPath.Location = new System.Drawing.Point(486, 85);
+            this.textBox_contextPath.Location = new System.Drawing.Point(495, 85);
             this.textBox_contextPath.Name = "textBox_contextPath";
             this.textBox_contextPath.Size = new System.Drawing.Size(93, 23);
             this.textBox_contextPath.TabIndex = 7;
@@ -131,8 +134,9 @@
             // 
             // button_apply
             // 
+            this.button_apply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button_apply.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.button_apply.Location = new System.Drawing.Point(529, 315);
+            this.button_apply.Location = new System.Drawing.Point(576, 315);
             this.button_apply.Name = "button_apply";
             this.button_apply.Size = new System.Drawing.Size(75, 29);
             this.button_apply.TabIndex = 9;
@@ -144,7 +148,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 351);
+            this.AutoSize = true;
+            this.ClientSize = new System.Drawing.Size(680, 351);
             this.Controls.Add(this.button_apply);
             this.Controls.Add(this.label_contextPath);
             this.Controls.Add(this.textBox_contextPath);
@@ -154,7 +159,6 @@
             this.Controls.Add(this.label_location);
             this.Controls.Add(this.textBox_location);
             this.Controls.Add(this.groupBox_envs);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;

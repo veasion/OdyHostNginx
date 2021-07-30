@@ -23,7 +23,7 @@ namespace OdyHostNginx
 
         public TraceWindows()
         {
-            ThreadPool.SetMaxThreads(100, 10);
+            ThreadPool.SetMaxThreads(10, 10);
             InitializeComponent();
         }
 
