@@ -76,7 +76,12 @@ namespace OdyHostNginx
 
         public static string substring(string str, string start, string end)
         {
-            return substring(str, start, end, 0);
+            return substring(str, start, end, false);
+        }
+
+        public static string substring(string str, string start, string end, bool ignoreEndNotFound)
+        {
+            return substring(str, start, end, 0, -1, ignoreEndNotFound);
         }
 
         public static string substring(string str, string start, string end, int startIndex)
@@ -85,6 +90,11 @@ namespace OdyHostNginx
         }
 
         public static string substring(string str, string start, string end, int startIndex, int maxDiffer)
+        {
+            return substring(str, start, end, startIndex, maxDiffer, false);
+        }
+
+        public static string substring(string str, string start, string end, int startIndex, int maxDiffer, bool ignoreEndNotFound)
         {
             if (isEmpty(str))
             {
@@ -102,6 +112,10 @@ namespace OdyHostNginx
                 if (eIndex > 0 && (maxDiffer == -1 || eIndex - startIndex < maxDiffer))
                 {
                     return str.Substring(sIndex, eIndex - sIndex);
+                }
+                else if (eIndex == -1 && ignoreEndNotFound)
+                {
+                    return str.Substring(sIndex);
                 }
             }
             return null;

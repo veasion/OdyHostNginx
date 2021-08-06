@@ -65,8 +65,8 @@
 
         private string handleMybatisConsoleLog(string text)
         {
-            string sql = StringHelper.substring(text, "Preparing:", "\n").Replace("\r", "").Trim();
-            string param = StringHelper.substring(text, "Parameters:", "\n").Replace("\r", "").Trim();
+            string sql = StringHelper.substring(text, "Preparing:", "\n", true).Replace("\r", "").Trim();
+            string param = StringHelper.substring(text, "Parameters:", "\n", true).Replace("\r", "").Trim();
 
             StringBuilder sb = new StringBuilder();
             string[] paramArray = param.Split(',');
@@ -89,6 +89,10 @@
                     }
                 }
                 startIndex = endIndex + 1;
+            }
+            if (startIndex < sql.Length)
+            {
+                sb.Append(sql.Substring(startIndex));
             }
             return sb.ToString();
         }
