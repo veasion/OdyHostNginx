@@ -122,6 +122,7 @@
     <Compile Include="Confirm.Designer.cs">
       <DependentUpon>Confirm.cs</DependentUpon>
     </Compile>
+    <Compile Include="format\StringFormatter.cs" />
     <Compile Include="helper\BrowserHelper.cs" />
     <Compile Include="helper\I18nHelper.cs" />
     <Compile Include="helper\UserCacheHelper.cs" />

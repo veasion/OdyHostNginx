@@ -31,6 +31,7 @@
                                 <RadioButton Content="js" DataContext="JavaScript Format" Margin="10,3,0,0" Click="RadioButton_Click" VerticalAlignment="Center" />
                                 <RadioButton Content="html" DataContext="Html Format" Margin="10,3,0,0" Click="RadioButton_Click" VerticalAlignment="Center" />
                                 <RadioButton Content="xml" DataContext="XML Format" Margin="10,3,0,0" Click="RadioButton_Click" VerticalAlignment="Center" />
+                                <RadioButton Content="str" DataContext="String Format" Margin="10,3,0,0" Click="RadioButton_Click" VerticalAlignment="Center" />
                             </StackPanel>
                         </GroupBox>
                     </DockPanel>

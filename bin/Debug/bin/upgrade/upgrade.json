@@ -15,10 +15,6 @@
 		{
 			"dir": "ext",
 			"fileName": "cvtools.js"
-		},
-		{
-			"dir": "ext",
-			"fileName": "cv.js"
 		}
 	],
 	"adds": [
@@ -41,6 +37,11 @@
 			"dir": "ext",
 			"fileName": "cv.js",
 			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/cv.js"
+		},
+		{
+			"dir": "ext",
+			"fileName": "Noesis.Javascript.dll",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/Noesis.Javascript.dll"
 		}
 	],
 	"traceVersion": "v2",

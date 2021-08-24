@@ -172,6 +172,19 @@ namespace OdyHostNginx
             return sb.ToString();
         }
 
+        public static string stringFormat(string text)
+        {
+            if (text == null || "".Equals(text))
+            {
+                return text;
+            }
+            if (text.StartsWith("\"") || text.StartsWith("\'"))
+            {
+                return Substring(text, 1, text.Length - 1).Replace("\\\"", "\"").Replace("\\\'", "\'");
+            }
+            return text;
+        }
+
         public static string jsonFormat(string json)
         {
             if (isBlank(json)) return null;

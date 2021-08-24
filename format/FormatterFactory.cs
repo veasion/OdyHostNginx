@@ -18,6 +18,7 @@ namespace OdyHostNginx
                 case "js": return new JsFormatter();
                 case "html": return new HtmlFormatter();
                 case "xml": return new XmlFormatter();
+                case "str": return new StringFormatter();
             }
             return new JsonFormatter();
         }

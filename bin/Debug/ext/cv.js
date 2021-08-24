@@ -1,3 +1,5 @@
+function params() { return "导出|字典|翻译|变量|变量U|转换"; }
+
 /**
  * 执行函数
  */
@@ -19,7 +21,7 @@ function change(code, param) {
 		}
 		// 翻译
 		if (param == '翻译') {
-			return fanyiOne(code);
+			return fanyiOne(code, true);
 		}
 		// 变量
 		if (param == '变量' || param == '变量U') {
@@ -56,6 +58,9 @@ function mybatilsConsoleSQLFormat(code) {
 			}
 		}
 		startIndex = endIndex + 1;
+	}
+	if (startIndex < sql.length) {
+		result += sql.substring(startIndex);
 	}
 	return result;
 }
@@ -129,11 +134,11 @@ function miscCodeSQL(str) {
 		}
 	}
 	valueMap = fanyi(valueMap);
-	var result = "INSERT INTO misc.code (pool, category, parent_code, code, name, data_type, language, sort, is_deleted, company_id) VALUES \n";
+	var result = "set @pool = '';\nINSERT INTO misc.code (pool, category, parent_code, code, name, data_type, language, sort, is_deleted, company_id) VALUES \n";
 	for (var i = 0; i < keys.length; i++) {
 		var key = keys[i];
-		result += ("('pool', '" + code + "', null, '" + key + "', '" + kvMap[key] + "', 'string', 'zh_CN', 0, 0, -1), \n");
-		result += ("('pool', '" + code + "', null, '" + key + "', '" + (valueMap[kvMap[key]] || "") + "', 'string', 'en_US', 0, 0, -1)");
+		result += ("(@pool, '" + code + "', null, '" + key + "', '" + kvMap[key] + "', 'string', 'zh_CN', 0, 0, -1), \n");
+		result += ("(@pool, '" + code + "', null, '" + key + "', '" + (valueMap[kvMap[key]] || "") + "', 'string', 'en_US', 0, 0, -1)");
 		result += (i >= keys.length - 1 ? ";" : ", \n");
 	}
 	return result;
@@ -170,11 +175,11 @@ function fanyi(map) {
 	for (var i = 0; i < keys.length; i++) {
 		query += keys[i];
 		if (i < keys.length - 1) {
-			query += " | ";
+			query += " # ";
 		}
 	}
 	var result = fanyiOne(query);
-	var arrays = result.split(" | ");
+	var arrays = result.split(" # ");
 	if (arrays.length >= keys.length) {
 		for (var i = 0; i < keys.length; i++) {
 			map[keys[i]] = arrays[i];
@@ -186,12 +191,17 @@ function fanyi(map) {
 /**
  * 翻译
  */
-function fanyiOne(query) {
+function fanyiOne(query, langMatch) {
 	var url = "http://api.fanyi.baidu.com/api/trans/vip/translate?";
 	var params = {};
 	params["q"] = query;
-	params["from"] = "zh";
-	params["to"] = "en";
+	if (langMatch && !/.*[\u4e00-\u9fa5]+.*$/.test(query)) {
+        params["from"] = "en";
+        params["to"] = "zh";
+    } else {
+        params["from"] = "zh";
+        params["to"] = "en";
+    }
 	params["appid"] = "20181108000231625";
 	params["salt"] = new Date().getTime();
 	params["sign"] = MD5(params["appid"] + params["q"] + params["salt"] + "rLAv7v55HEAyhWbpn3nM");
@@ -237,6 +247,7 @@ function get(url, params) {
  * 请求
  */
 function httpRequest(url, method, body, contentType) {
+	/*
 	var xmlhttp = null;
 	if (window.XMLHttpRequest) {
 		xmlhttp = new XMLHttpRequest();
@@ -258,6 +269,8 @@ function httpRequest(url, method, body, contentType) {
 	} else {
 		return null;
 	}
+	*/
+	return _request(url, method || 'GET', body, contentType || "application/json");
 }
 
 function sub(str, start, end, startIndex, openNoEnd) {

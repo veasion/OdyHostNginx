@@ -11,6 +11,23 @@ namespace OdyHostNginx
     class HttpHelper
     {
 
+		public static string request(string url, string httpMethod, string body, string contentType)
+        {
+            httpMethod = (httpMethod == null ? "GET" : httpMethod).ToUpper();
+			if (contentType == null || "".Equals(contentType))
+            {
+                contentType = "application/json; charset=UTF-8";
+            }
+            if ("POST".Equals(httpMethod))
+            {
+                return post(url, body, contentType, null, Encoding.UTF8);
+            }
+            else
+            {
+                return get(url);
+            }
+        }
+		
         /// <summary>
         /// post请求
         /// </summary>
