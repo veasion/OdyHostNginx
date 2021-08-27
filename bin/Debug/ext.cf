@@ -5,4 +5,5 @@
 # {"name": "贪吃蛇", "run": "%cd%/ext/SnakeGame.exe"}
 
 {"name": "复制粘贴", "run": ["cd %cd%/ext/", "CopyPasteTool.exe"]}
+{"name": "文件搜索", "run": "start %cd%/ext/ContentQuery.exe"}
 
