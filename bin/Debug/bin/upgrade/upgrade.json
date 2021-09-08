@@ -1,8 +1,8 @@
 {
-	"version": "v2.0.6",
+	"version": "v2.0.8",
 	"updateType": 1,
 	"force": false,
-	"desc": "\r\n\r\n  > 新增资深CV工程师必备神器！\r\n\r\n  工具路径: 菜单栏 > Tools > 复制粘贴",
+	"desc": "\r\n\r\n  > 新增资深CV工程师必备神器！\r\n\r\n  > 新增快速内容搜索工具！\r\n\r\n  工具路径: 菜单栏 > Tools > 复制粘贴 / 文件搜索",
 	"deletes": [
 		{
 			"dir": "",
@@ -42,6 +42,11 @@
 			"dir": "ext",
 			"fileName": "Noesis.Javascript.dll",
 			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/Noesis.Javascript.dll"
+		},
+		{
+			"dir": "ext",
+			"fileName": "ContentQuery.exe",
+			"downloadUrl": "https://veasion.oss-cn-shanghai.aliyuncs.com/ody/OdyHostNginx/upgrade/2.0/ext/ContentQuery.exe"
 		}
 	],
 	"traceVersion": "v2",

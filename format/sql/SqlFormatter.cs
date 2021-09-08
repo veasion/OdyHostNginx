@@ -53,7 +53,7 @@
                 }
                 else
                 {
-                    return doFormat(text);
+                    return doFormat(text).Replace(" (", "(");
                 }
             }
             catch (Exception e)
@@ -69,7 +69,7 @@
             string param = StringHelper.substring(text, "Parameters:", "\n", true).Replace("\r", "").Trim();
 
             StringBuilder sb = new StringBuilder();
-            string[] paramArray = param.Split(',');
+            string[] paramArray = sqlParamArray(param);
             int paramIndex = 0;
             int startIndex = 0, endIndex;
             while ((endIndex = sql.IndexOf("?", startIndex)) > -1)
@@ -78,14 +78,14 @@
                 if (paramArray.Length >= paramIndex)
                 {
                     string paramStr = paramArray[paramIndex++];
-                    string p = paramStr.Contains("(") ? StringHelper.substring(paramStr, null, "(").Trim() : paramStr.Trim();
+                    string p = paramStr.Contains("(") && paramStr.EndsWith(")") ? paramStr.Substring(0, paramStr.LastIndexOf("(")) : paramStr.Trim();
                     if (paramStr.Contains("Integer") || paramStr.Contains("Long") || "null".Equals(paramStr.Trim()))
                     {
                         sb.Append(p);
                     }
                     else
                     {
-                        sb.Append("'").Append(p).Append("'");
+                        sb.Append("'").Append(p.Replace("'", "\\'").Replace("\"", "\\\"")).Append("'");
                     }
                 }
                 startIndex = endIndex + 1;
@@ -95,6 +95,59 @@
                 sb.Append(sql.Substring(startIndex));
             }
             return sb.ToString();
+        }
+
+        private static string[] sqlParamArray(string param)
+        {
+            List<string> list = new List<string>();
+            int startIndex = 0;
+            int index = -1;
+            while ((index = param.IndexOf(", ", index + 1)) > -1)
+            {
+                bool flag = true;
+                for (int i = 1; i <= 15; i++)
+                {
+                    char c = param[index - i];
+                    if (i == 1)
+                    {
+                        if (c == ')')
+                        {
+                            continue;
+                        }
+                        if (c == 'l' && "null".Equals(StringHelper.Substring(param, startIndex, index).Trim()))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (c >= 65 && c <= 122)
+                        {
+                            continue;
+                        }
+                        else if (c == '(' && i > 2)
+                        {
+                            char t = param[index - i + 1];
+                            if (t >= 65 && t <= 90)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    flag = false;
+                    break;
+                }
+                if (flag)
+                {
+                    list.Add(StringHelper.Substring(param, startIndex, index).Trim());
+                    startIndex = index + 2;
+                }
+            }
+            if (startIndex < param.Length)
+            {
+                list.Add(param.Substring(startIndex).Trim());
+            }
+            return list.ToArray();
         }
 
         public string doFormat(string str)
