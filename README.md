@@ -3,7 +3,7 @@
 ## 概述
 项目名: OdyHostNginx
 
-gitlab仓库地址: http://git.odianyun.com/luozhuowei/OdyHostNginx
+github仓库地址: https://github.com/veasion/OdyHostNginx
 
 软件安装下载地址: https://veasion-oss.oss-cn-shanghai.aliyuncs.com/soft/OdyHostNginx.rar
 
